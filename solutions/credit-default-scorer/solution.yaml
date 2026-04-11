@@ -1,0 +1,87 @@
+solution:
+  name: "Credit Card Default Scorer"
+  id: "credit-default-scorer"
+  type: "scoring"
+  category: "ml"
+  version: "1.0.0"
+  description: "Predicts credit card default probability using customer payment history and demographics"
+
+owner: "Chapter Platform Team"
+risk_tier: "production_internal"
+
+dataset:
+  source: "UCI Machine Learning Repository — Taiwan Credit Card Default"
+  records: 30000
+  features: 23
+  target: "default_payment_next_month"
+  protected_attributes: ["SEX", "EDUCATION", "MARRIAGE", "AGE"]
+
+model:
+  type: "GradientBoostingClassifier"
+  framework: "scikit-learn"
+  explainability: "SHAP"
+  training_split: 0.7
+
+guardrails:
+  discrimination:
+    attributes: ["SEX", "EDUCATION", "MARRIAGE", "AGE"]
+    demographic_parity_threshold: 0.05
+    equalised_odds_threshold: 0.05
+    disparate_impact_ratio: 0.80
+    probe_tolerance: 0.02
+  calibration:
+    brier_score_threshold: 0.20
+    ece_threshold: 0.05
+  stability:
+    psi_warning: 0.10
+    psi_alert: 0.25
+    psi_block: 0.50
+  explainability:
+    method: "SHAP"
+    coverage: 1.0
+
+evaluation:
+  holdout_size: 0.3
+  metrics:
+    - name: "auc_roc"
+      threshold: 0.70
+    - name: "gini"
+      threshold: 0.40
+    - name: "brier_score"
+      threshold: 0.20
+      direction: "lower_is_better"
+    - name: "ece"
+      threshold: 0.05
+      direction: "lower_is_better"
+    - name: "demographic_parity_diff"
+      threshold: 0.05
+      direction: "lower_is_better"
+    - name: "equalised_odds_diff"
+      threshold: 0.05
+      direction: "lower_is_better"
+    - name: "disparate_impact_ratio"
+      threshold: 0.80
+    - name: "psi"
+      threshold: 0.25
+      direction: "lower_is_better"
+    - name: "shap_coverage"
+      threshold: 1.0
+
+compliance:
+  deployment_gate: true
+  evidence_export: true
+  gates:
+    - "registration"
+    - "evaluation_harness"
+    - "discrimination_validation"
+    - "calibration_validation"
+    - "stability_validation"
+    - "explainability_validation"
+    - "audit_trail"
+    - "golden_dataset_signoff"
+
+monitoring:
+  frequency: "monthly"
+  drift_check: "psi"
+  recalibration_trigger: "ece > 0.10"
+  discrimination_recheck: "quarterly"

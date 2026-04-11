@@ -1,0 +1,21 @@
+{
+  "query_id": "QRY-2026-0003",
+  "question": "How does CBA's dividend yield compare to Westpac?",
+  "answer": {
+    "text": "I can only answer questions about CBA's 2024 Annual Report.",
+    "scope_level_used": 1,
+    "grounding": "none"
+  },
+  "citations": [],
+  "guardrail_results": {
+    "scope_check": "FAIL — Westpac not in corpus. Query outside permitted domain."
+  },
+  "metadata": {
+    "retrieval_strategy": "none",
+    "chunks_retrieved": 0,
+    "chunks_used": 0,
+    "latency_ms": 8,
+    "blocked": true,
+    "block_reason": "Scope violation — comparative claim with entity not in corpus"
+  }
+}

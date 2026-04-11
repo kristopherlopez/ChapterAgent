@@ -1,0 +1,38 @@
+name: Model Risk Validation Agent
+id: validation-agent
+description: >
+  LLM agent that reviews AI model documentation, runs validation checks
+  against a completeness checklist, and drafts structured findings with
+  severity ratings.
+version: "1.0.0"
+owner: "Risk Modelling Squad"
+type: endpoint
+endpoint:
+  url: "http://localhost:8001/validate"
+  method: POST
+  timeout_ms: 30000
+risk_tier: production_internal
+
+guardrails:
+  - scope_adherence
+  - pii_scan
+  - faithfulness
+  - bias
+  - toxicity
+
+evaluation:
+  golden_dataset: golden_dataset/dataset.json
+  thresholds: production_internal
+
+tracing:
+  contract_version: "1.0"
+  emits:
+    - llm_call
+    - tool_call
+    - reasoning_step
+    - iteration
+  format: opentelemetry
+
+compliance:
+  deployment_gate: true
+  evidence_export: true

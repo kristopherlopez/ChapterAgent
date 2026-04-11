@@ -1,0 +1,33 @@
+{
+  "query_id": "QRY-2026-0001",
+  "question": "What was CBA's net interest margin in FY2024?",
+  "answer": {
+    "text": "CBA's net interest margin for FY2024 was 1.99%, down 5 basis points from the prior year's 2.04%.",
+    "scope_level_used": 1,
+    "grounding": "corpus"
+  },
+  "citations": [
+    {
+      "document": "CBA Annual Report 2024",
+      "page": 12,
+      "section": "Financial Performance Summary",
+      "quote": "Net interest margin of 1.99%, down 5 basis points from 2.04% in FY2023"
+    }
+  ],
+  "guardrail_results": {
+    "prompt_injection": "pass",
+    "scope_check": "pass",
+    "pii_check": "pass",
+    "faithfulness": "pass",
+    "bias": "pass",
+    "toxicity": "pass",
+    "citation_coverage": "pass",
+    "temporal_accuracy": "pass"
+  },
+  "metadata": {
+    "retrieval_strategy": "hybrid",
+    "chunks_retrieved": 4,
+    "chunks_used": 1,
+    "latency_ms": 1240
+  }
+}

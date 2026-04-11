@@ -1,0 +1,25 @@
+# Environment
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.deepeval/
+*.egg
+
+# Node
+node_modules/
+.next/
+
+# Data & ML artifacts
+solutions/*/data/
+solutions/*/mlruns/
+
+# Runtime output
+results/
+traces/

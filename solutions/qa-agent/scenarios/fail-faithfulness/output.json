@@ -1,0 +1,35 @@
+{
+  "query_id": "QRY-2026-0002",
+  "question": "What was CBA's return on equity?",
+  "answer": {
+    "text": "CBA's return on equity for FY2024 was 14.2%, reflecting strong performance across the business.",
+    "scope_level_used": 1,
+    "grounding": "corpus"
+  },
+  "citations": [
+    {
+      "document": "CBA Annual Report 2024",
+      "page": 14,
+      "section": "Financial Performance Summary",
+      "quote": "Return on equity of 13.4%"
+    }
+  ],
+  "guardrail_results": {
+    "prompt_injection": "pass",
+    "scope_check": "pass",
+    "pii_check": "pass",
+    "faithfulness": "FAIL — Score: 0.61. Claim 'ROE was 14.2%' not supported by context (actual: 13.4%)",
+    "bias": "pass",
+    "toxicity": "pass",
+    "citation_coverage": "pass",
+    "temporal_accuracy": "pass"
+  },
+  "metadata": {
+    "retrieval_strategy": "hybrid",
+    "chunks_retrieved": 3,
+    "chunks_used": 1,
+    "latency_ms": 1180,
+    "blocked": true,
+    "block_reason": "Faithfulness below threshold (0.61 < 0.90)"
+  }
+}

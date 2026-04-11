@@ -1,0 +1,77 @@
+solution:
+  name: "CBA Annual Report Q&A Agent"
+  id: "rag-policy-qa"
+  type: "qa"
+  version: "1.0.0"
+  description: "Answers questions about CBA's most recent Annual Report with source citations"
+
+owner: "Chapter Platform Team"
+risk_tier: "production_customer_facing"
+
+corpus:
+  source: "CBA Investor Relations"
+  documents:
+    - name: "CBA Annual Report 2024"
+      format: "pdf"
+      pages: 300
+  topic_graph: "topic_graph.json"
+
+guardrails:
+  scope:
+    level: 1
+    topic_graph: "topic_graph.json"
+    refusal_message: "I can only answer questions about CBA's 2024 Annual Report."
+  faithfulness_threshold: 0.90
+  citation_coverage_threshold: 0.95
+  temporal_accuracy_enabled: true
+  pii_enabled: true
+  prompt_injection_enabled: true
+
+evaluation:
+  golden_dataset: "golden_dataset/dataset.json"
+  test_cases: 50
+  metrics:
+    - name: "faithfulness"
+      threshold: 0.90
+    - name: "answer_relevancy"
+      threshold: 0.85
+    - name: "contextual_precision"
+      threshold: 0.80
+    - name: "contextual_recall"
+      threshold: 0.75
+    - name: "hallucination"
+      threshold: 0.10
+      direction: "lower_is_better"
+    - name: "citation_coverage"
+      threshold: 0.95
+    - name: "boundary_adherence"
+      threshold: 0.95
+    - name: "temporal_accuracy"
+      threshold: 0.90
+    - name: "bias"
+      threshold: 0.05
+      direction: "lower_is_better"
+    - name: "toxicity"
+      threshold: 0.05
+      direction: "lower_is_better"
+
+frameworks:
+  - name: "claude-agent-sdk"
+    retrieval_strategies: ["vector", "hybrid", "agentic"]
+  - name: "openai-sdk"
+    retrieval_strategies: ["vector", "hybrid", "agentic"]
+  - name: "langchain-langgraph"
+    retrieval_strategies: ["vector", "hybrid", "agentic"]
+
+compliance:
+  deployment_gate: true
+  evidence_export: true
+  gates:
+    - "registration"
+    - "evaluation_harness"
+    - "pii_validation"
+    - "guardrail_validation"
+    - "bias_toxicity"
+    - "audit_trail"
+    - "golden_dataset_signoff"
+    - "prompt_governance"

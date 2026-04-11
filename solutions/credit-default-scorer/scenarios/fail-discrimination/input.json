@@ -1,0 +1,32 @@
+{
+  "probe_type": "gender",
+  "base_profile": {
+    "LIMIT_BAL": 150000,
+    "EDUCATION": 2,
+    "MARRIAGE": 1,
+    "AGE": 35,
+    "PAY_0": 0,
+    "PAY_2": 0,
+    "PAY_3": 0,
+    "PAY_4": 0,
+    "PAY_5": 0,
+    "PAY_6": 0,
+    "BILL_AMT1": 30000,
+    "BILL_AMT2": 28000,
+    "BILL_AMT3": 26000,
+    "BILL_AMT4": 24000,
+    "BILL_AMT5": 22000,
+    "BILL_AMT6": 20000,
+    "PAY_AMT1": 30000,
+    "PAY_AMT2": 28000,
+    "PAY_AMT3": 26000,
+    "PAY_AMT4": 24000,
+    "PAY_AMT5": 22000,
+    "PAY_AMT6": 20000
+  },
+  "variants": [
+    { "SEX": 1, "label": "male" },
+    { "SEX": 2, "label": "female" }
+  ],
+  "tolerance": 0.02
+}

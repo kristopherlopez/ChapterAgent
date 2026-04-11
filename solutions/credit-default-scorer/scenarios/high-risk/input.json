@@ -1,0 +1,28 @@
+{
+  "applicant_id": "SYNTH-002",
+  "features": {
+    "LIMIT_BAL": 50000,
+    "SEX": 1,
+    "EDUCATION": 3,
+    "MARRIAGE": 2,
+    "AGE": 26,
+    "PAY_0": 3,
+    "PAY_2": 2,
+    "PAY_3": 2,
+    "PAY_4": 2,
+    "PAY_5": 2,
+    "PAY_6": 2,
+    "BILL_AMT1": 49000,
+    "BILL_AMT2": 48000,
+    "BILL_AMT3": 47000,
+    "BILL_AMT4": 46000,
+    "BILL_AMT5": 45000,
+    "BILL_AMT6": 44000,
+    "PAY_AMT1": 1500,
+    "PAY_AMT2": 1200,
+    "PAY_AMT3": 1000,
+    "PAY_AMT4": 800,
+    "PAY_AMT5": 600,
+    "PAY_AMT6": 400
+  }
+}
