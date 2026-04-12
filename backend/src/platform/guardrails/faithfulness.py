@@ -56,8 +56,10 @@ class FaithfulnessGuardrail(Guardrail):
         """
         import re
 
+        # Strip inline citations like [Source: ...] before splitting
+        clean_output = re.sub(r'\[Source:[^\]]*\]', '', output)
         sentences = [
-            s.strip() for s in re.split(r'[.!?]+', output)
+            s.strip() for s in re.split(r'[.!?]+', clean_output)
             if s.strip() and len(s.strip()) > 10
         ]
         if not sentences:

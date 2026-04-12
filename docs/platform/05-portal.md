@@ -102,11 +102,45 @@ A button on both the dashboard ("Export All") and solution detail page ("Export 
 
 **Format:** JSON and/or PDF. The point is that an auditor gets a structured, reviewable artefact without a meeting.
 
-### 4. Solution Registry (Nav-Level)
+### 4. Solution Registry
 
-Not a dedicated page — this is the navigation. The sidebar or top-level nav lists all registered solutions, discovered from their `solution.yaml` manifests. Each links to its solution detail page.
+Dedicated page at `/registry` showing all registered solutions discovered from their `solution.yaml` manifests. Each row displays:
 
-### 5. Observability / Trace View
+- **Solution** — name and description
+- **Category** — AI or ML
+- **Risk Tier** — Customer-Facing, High, Medium, Internal
+- **Owner** — responsible squad
+- **Gate** — deployment gate pass/fail badge
+- **Health sparkline** — 14-day health trend rendered as a colour-coded sparkline (green = pass, amber = warn, red = fail), giving at-a-glance visibility into solution stability over time
+- **Last Tested** — relative timestamp with a stale indicator (amber warning badge) when a solution has not been tested in 7+ days
+
+Each row links to the solution detail page. Includes an explanation of the self-registration model via manifests and a legend for the sparkline and stale indicators.
+
+### 5. Governance Documents
+
+Dedicated page at `/documents` showing the governance policy documents, standards, and frameworks that the platform's automated controls reference. This is the policy layer made visible — connecting AI-GOV controls back to the documents they enforce.
+
+Each row displays:
+
+- **Document** — title and description
+- **Type** — badge indicating policy, standard, framework, or guideline
+- **Owner** — the team or body responsible (e.g. "Group Risk", "APRA", "DISR")
+- **Status** — active, draft, or under-review
+- **Linked Controls** — AI-GOV control badges showing which automated checks this document requires. Hover for the full policy description.
+- **Review Date** — next scheduled review
+
+The page includes 10 documents covering:
+- CBA internal policies (Group AI Policy, Responsible AI Principles, Data Governance Standard)
+- CBA frameworks (Model Risk Management, AI Testing & Evaluation)
+- CBA standards (AI Solution Registration, Prompt Governance)
+- External standards (APRA CPS 230, APRA CPS 234)
+- Government guidelines (Australia's Voluntary AI Safety Standard)
+
+An explainer card describes how documents connect to automated controls: each document defines requirements, each requirement maps to an AI-GOV control, and each control is enforced by the compliance-as-code pipeline. A legend card shows the colour coding for document types and statuses.
+
+**What Alex sees:** "Every automated check traces back to a policy document. This isn't governance invented from scratch — it's CBA's existing policies, APRA standards, and the Australian AI Safety Standard, operationalised into automated controls."
+
+### 6. Observability / Trace View
 
 Pre-recorded trace data showing step-level execution for a given solution run.
 
@@ -129,7 +163,7 @@ Pre-recorded trace data showing step-level execution for a given solution run.
 
 **What Alex sees:** Even though this is pre-recorded, it shows the level of observability the platform provides. Every step, every cost, every check — traced and auditable.
 
-### 6. Solution Type Comparison
+### 7. Solution Type Comparison
 
 Comparison table across all three demo solutions — showing how the same platform evaluates different solution types.
 
@@ -163,12 +197,14 @@ Comparison table across all three demo solutions — showing how the same platfo
 
 When Alex opens the portal:
 
-1. **Landing page** — sees the compliance health dashboard. Two solutions green, one red. Immediate clarity.
-2. **Clicks the red solution** — sees exactly which guardrail failed and why. No ambiguity.
-3. **Clicks a green solution** — sees everything passing, eval scores above thresholds, gate approved.
-4. **Clicks "Export Evidence"** — gets a structured report. No meeting, no form.
-5. **Navigates to the scorecard** — sees the framework comparison. Strategic value beyond governance.
-6. **Optionally views a trace** — sees step-level observability for a pre-recorded run.
+1. **Landing page** — sees the compliance health dashboard. Three solutions green, one red. Immediate clarity.
+2. **Sidebar** — solutions split into AI Solutions and ML Solutions with health dots. Platform governs both GenAI and traditional ML.
+3. **Clicks the red solution** — sees exactly which guardrail failed and why. Execution trace visible on the same page. No ambiguity.
+4. **Clicks the ML solution** — sees completely different guardrail profile (fairness, calibration, stability). Same platform, different governance.
+5. **Clicks "Export Evidence"** — gets a structured report. No meeting, no form.
+6. **Navigates to the scorecard** — sees the framework comparison. Strategic value beyond governance.
+7. **Opens Solution Registry** — sees manifest-driven self-registration model. Squads onboard themselves.
+8. **Opens Documents** — sees governance documents mapped to automated controls. Every AI-GOV check traces to a policy.
 
 The story in 60 seconds: "This is what governance on autopilot looks like. Every solution, every check, every decision — tracked, scored, and exportable."
 

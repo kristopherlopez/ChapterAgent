@@ -13,11 +13,11 @@ try:
 except ImportError:
     from retrieve import RetrievedChunk  # type: ignore[no-redef]
 
-SYSTEM_PROMPT = """You are a Q&A agent for CBA's 2024 Annual Report. You answer questions based ONLY on the provided document context.
+SYSTEM_PROMPT = """You are a Q&A agent for CBA's 2025 Annual Report. You answer questions based ONLY on the provided document context.
 
 RULES:
 1. Answer ONLY from the provided context. Do not use prior knowledge.
-2. Cite EVERY factual claim with [Source: CBA Annual Report 2024, p.X, Section Name].
+2. Cite EVERY factual claim with [Source: CBA Annual Report 2025, p.X, Section Name].
 3. If the context does not contain enough information, say: "I cannot find this information in the Annual Report."
 4. Never provide financial advice, opinions, or recommendations.
 5. When referencing figures, include the reporting period (e.g., "FY2024").
@@ -30,7 +30,7 @@ CONTEXT:
 
 class Citation(BaseModel):
     """A source citation for a claim in the answer."""
-    document: str = "CBA Annual Report 2024"
+    document: str = "CBA Annual Report 2025"
     page: int
     section: str
     quote: str = ""
@@ -153,6 +153,8 @@ class QAGenerator:
             ),
             citations=citations,
             metadata={
+                "framework": "openai-sdk",
+                "model": self.model,
                 "retrieval_strategy": "hybrid",
                 "chunks_retrieved": len(chunks),
                 "chunks_used": len(citations),
@@ -168,5 +170,5 @@ class QAGenerator:
         top = chunks[0]
         return (
             f"{top.text}\n\n"
-            f"*Source: CBA Annual Report 2024, p.{top.page} — {top.section}*"
+            f"*Source: CBA Annual Report 2025, p.{top.page} — {top.section}*"
         )

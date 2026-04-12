@@ -1,45 +1,75 @@
 {
   "topics": {
+    "overview": {
+      "keywords": ["highlights", "financial highlights", "stakeholders", "value", "purpose", "operating context", "create value"],
+      "subtopics": ["highlights", "about_report", "operating_context", "value_creation"],
+      "pages": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    },
+    "strategic_priorities": {
+      "keywords": ["strategic priorities", "strategy", "digital", "technology", "AI", "artificial intelligence", "innovation", "simplification", "CommBank", "priorities"],
+      "subtopics": ["strategy", "digital_transformation", "technology_investment", "ai_capability"],
+      "pages": [16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+    },
     "financial_performance": {
-      "keywords": ["net profit", "revenue", "operating income", "expenses", "cost-to-income", "NIM", "net interest margin", "dividend", "EPS", "earnings per share", "ROE", "return on equity", "statutory profit", "cash profit"],
-      "subtopics": ["profitability", "revenue_breakdown", "cost_management", "shareholder_returns", "income"],
-      "pages": [12, 13, 14, 15, 16, 17, 18]
+      "keywords": ["net profit", "NPAT", "cash NPAT", "revenue", "operating income", "expenses", "cost-to-income", "NIM", "net interest margin", "dividend", "EPS", "earnings per share", "ROE", "return on equity", "statutory profit", "cash profit", "income", "operating expenses", "impairment"],
+      "subtopics": ["profitability", "revenue", "cost_management", "shareholder_returns", "dividends", "earnings"],
+      "pages": [26, 27, 28, 29, 30, 31, 32, 33]
     },
-    "capital_and_risk": {
-      "keywords": ["CET1", "capital ratio", "risk-weighted assets", "RWA", "credit risk", "operational risk", "market risk", "VaR", "provisions", "past due", "total capital", "capital adequacy", "loss given default"],
-      "subtopics": ["capital_adequacy", "credit_quality", "risk_management", "provisioning"],
-      "pages": [45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58]
+    "corporate_governance": {
+      "keywords": ["board", "director", "committee", "chairman", "chair", "CEO", "executive", "nomination", "audit committee", "risk committee", "independent", "corporate governance", "governance framework", "leadership team"],
+      "subtopics": ["board_composition", "committee_structure", "governance_framework", "leadership"],
+      "pages": [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]
     },
-    "governance": {
-      "keywords": ["board", "director", "committee", "chairman", "chair", "CEO", "remuneration", "executive", "nomination", "audit committee", "risk committee", "independent", "corporate governance"],
-      "subtopics": ["board_composition", "committee_structure", "executive_remuneration", "leadership"],
-      "pages": [72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89]
-    },
-    "strategy": {
-      "keywords": ["strategic priorities", "digital transformation", "technology investment", "AI", "machine learning", "cloud", "innovation", "CommBank Next", "simplification"],
-      "subtopics": ["digital_strategy", "technology_investment", "ai_ml", "transformation"],
-      "pages": [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]
-    },
-    "customers": {
-      "keywords": ["customer satisfaction", "NPS", "complaints", "remediation", "digital banking", "CommBank app", "retail", "business lending", "deposits"],
-      "subtopics": ["satisfaction", "complaints_handling", "digital_adoption", "product_offerings"],
-      "pages": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44]
+    "risk_management": {
+      "keywords": ["risk", "CET1", "capital ratio", "risk-weighted assets", "RWA", "credit risk", "operational risk", "market risk", "provisions", "capital", "capital adequacy", "liquidity", "risk appetite", "risk framework", "managing risks"],
+      "subtopics": ["capital_adequacy", "credit_quality", "risk_framework", "provisioning", "liquidity"],
+      "pages": [58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69]
     },
     "sustainability": {
-      "keywords": ["climate risk", "ESG", "emissions", "net zero", "renewable", "community investment", "diversity", "gender", "indigenous", "TCFD", "sustainability", "Scope 1", "Scope 2", "Scope 3"],
-      "subtopics": ["climate_risk", "emissions", "community", "diversity_inclusion", "esg_ratings"],
-      "pages": [120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145]
+      "keywords": ["sustainability", "ESG", "materiality", "material themes", "stakeholders", "social", "governance performance", "community", "diversity", "gender", "indigenous", "people engagement"],
+      "subtopics": ["materiality", "social_performance", "governance_performance", "community", "diversity_inclusion"],
+      "pages": [70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101]
+    },
+    "climate_disclosures": {
+      "keywords": ["climate", "emissions", "net zero", "renewable", "Scope 1", "Scope 2", "Scope 3", "financed emissions", "TCFD", "energy transition", "climate risk", "climate strategy", "climate governance", "climate targets", "carbon", "decarbonisation"],
+      "subtopics": ["climate_strategy", "emissions", "energy_transition", "climate_risk", "climate_governance", "climate_targets"],
+      "pages": [102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175]
+    },
+    "remuneration": {
+      "keywords": ["remuneration", "compensation", "salary", "bonus", "variable remuneration", "fixed remuneration", "long-term incentive", "short-term incentive", "STI", "LTI", "CEO remuneration", "executive pay", "key management personnel"],
+      "subtopics": ["executive_remuneration", "remuneration_framework", "performance_outcomes"],
+      "pages": [182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219]
+    },
+    "financial_statements": {
+      "keywords": ["financial statements", "income statement", "balance sheet", "cash flow", "notes", "accounting", "assets", "liabilities", "equity", "audit", "auditor", "consolidated"],
+      "subtopics": ["income_statement", "balance_sheet", "cash_flow", "notes", "accounting_policies"],
+      "pages": [222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240]
+    },
+    "customers": {
+      "keywords": ["customer", "NPS", "Net Promoter Score", "complaints", "remediation", "digital banking", "CommBank app", "retail", "business lending", "deposits", "scam", "fraud"],
+      "subtopics": ["satisfaction", "complaints_handling", "digital_adoption", "product_offerings", "fraud_protection"],
+      "pages": [16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
     },
     "regulatory": {
-      "keywords": ["APRA", "ASIC", "CPS 230", "CPS 234", "compliance", "enforcement", "breach", "anti-money laundering", "AML", "BEAR", "regulatory", "Financial Claims Scheme"],
-      "subtopics": ["apra_compliance", "asic_enforcement", "self_reported_breaches", "aml_program"],
-      "pages": [92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108]
+      "keywords": ["APRA", "ASIC", "CPS 230", "CPS 234", "compliance", "enforcement", "breach", "anti-money laundering", "AML", "BEAR", "regulatory", "Financial Claims Scheme", "prudential"],
+      "subtopics": ["apra_compliance", "regulatory_actions", "aml_program", "operational_resilience"],
+      "pages": [58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 34, 35, 36, 37]
     }
   },
   "metadata": {
-    "document": "CBA Annual Report 2024",
-    "total_pages": 300,
-    "generated_at": "2026-04-10T10:00:00Z",
-    "version": "1.0"
+    "document": "CBA Annual Report 2025",
+    "total_pages": 229,
+    "source": "2025-annual-report.pdf",
+    "sections_from_toc": {
+      "overview": "2-15",
+      "creating_value": "16-69",
+      "sustainability": "70-101",
+      "climate_disclosures": "102-175",
+      "directors_report": "176-220",
+      "financial_report": "222-369",
+      "additional_information": "378-453"
+    },
+    "generated_at": "2026-04-12T00:00:00Z",
+    "version": "2.0"
   }
 }

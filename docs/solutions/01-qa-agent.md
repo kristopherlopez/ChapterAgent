@@ -12,7 +12,7 @@ Q&A over documents is the most common GenAI use case in the enterprise:
 
 - Policy lookup ("What does our credit risk policy say about…")
 - Regulatory research ("What did APRA say about operational resilience in…")
-- Report analysis ("What was the net interest margin in FY2024?")
+- Report analysis ("What was the net interest margin in FY2025?")
 - Knowledge management ("Summarise the key findings from…")
 
 It's the first thing squads build. It's the first thing that lands on the Chapter's desk. If the platform can't govern a Q&A agent well, it can't govern anything.
@@ -93,7 +93,7 @@ guardrails:
   scope:
     level: 1  # strict | contextual | open
     topic_graph: "artifacts/topic-graph.json"
-    refusal_message: "I can only answer questions about CBA's 2024 Annual Report."
+    refusal_message: "I can only answer questions about CBA's 2025 Annual Report."
 ```
 
 ### Guardrail Behaviour by Scope Level
@@ -124,18 +124,18 @@ Given a question about CBA's Annual Report, the agent:
 ```json
 {
   "query_id": "QRY-2026-0001",
-  "question": "What was CBA's net interest margin in FY2024?",
+  "question": "What was CBA's net interest margin in FY2025?",
   "answer": {
-    "text": "CBA's net interest margin for FY2024 was 1.99%, down 5 basis points from the prior year.",
+    "text": "CBA's net interest margin for FY2025 was 2.08%, up 9 basis points from FY2024's 1.99%.",
     "scope_level_used": 1,
     "grounding": "corpus"
   },
   "citations": [
     {
-      "document": "CBA Annual Report 2024",
-      "page": 12,
-      "section": "Financial Performance Summary",
-      "quote": "Net interest margin of 1.99%, down 5 basis points"
+      "document": "CBA Annual Report 2025",
+      "page": 26,
+      "section": "Financial Performance — Net Interest Margin",
+      "quote": "Net interest margin of 2.08%, up 9 basis points"
     }
   ],
   "guardrail_results": {
@@ -155,9 +155,9 @@ Given a question about CBA's Annual Report, the agent:
 
 ### User-Facing Rendered Output
 
-> CBA's net interest margin for FY2024 was 1.99%, down 5 basis points from the prior year.
+> CBA's net interest margin for FY2025 was 2.08%, up 9 basis points from FY2024's 1.99%.
 >
-> *Source: CBA Annual Report 2024, p.12 — Financial Performance Summary*
+> *Source: CBA Annual Report 2025, p.26 — Financial Performance — Net Interest Margin*
 
 ## Retrieval Strategies
 
@@ -257,7 +257,7 @@ The agent only answers within the boundaries defined by the scope dial and topic
 When the answer references a metric, figure, or statement, it must be attributed to the correct reporting period.
 
 - **Check:** Does the answer correctly identify which period a figure belongs to?
-- **Failure mode:** Agent says "CBA's CET1 ratio is 12.3%" using a figure from the FY2023 section when the user asked about FY2024. The number is real, the attribution is wrong.
+- **Failure mode:** Agent says "CBA's CET1 ratio is 12.3%" using a figure from the FY2024 section when the user asked about FY2025. The number is real, the attribution is wrong.
 - **Enforcement:** Citation must include temporal context (page, section, reporting period). Evaluation harness checks temporal alignment.
 
 ### 4. Citation Coverage
@@ -327,7 +327,7 @@ The evaluation harness runs against the golden dataset using DeepEval metrics. F
 {
   "case_id": "QA-001",
   "query_type": "direct_factual",
-  "question": "What was CBA's statutory net profit after tax in FY2024?",
+  "question": "What was CBA's statutory net profit after tax in FY2025?",
   "expected_behaviour": "answer_with_citation",
   "expected_grounding": "corpus",
   "scope_level": 1,
@@ -427,7 +427,7 @@ Six scenarios covering the governance story — showing what the platform catche
 
 **Question:** "How does CBA's dividend yield compare to Westpac?"
 
-**What happens:** Agent checks the topic graph. Westpac is not in the corpus. At scope Level 1, the agent refuses: "I can only answer questions about CBA's 2024 Annual Report." Portal shows the scope guardrail activating.
+**What happens:** Agent checks the topic graph. Westpac is not in the corpus. At scope Level 1, the agent refuses: "I can only answer questions about CBA's 2025 Annual Report." Portal shows the scope guardrail activating.
 
 **Point:** The agent knows its boundaries. The platform enforces them.
 
@@ -479,7 +479,7 @@ risk_tier: "production_customer_facing"
 corpus:
   source: "CBA Investor Relations"
   documents:
-    - name: "CBA Annual Report 2024"
+    - name: "CBA Annual Report 2025"
       format: "pdf"
       pages: ~300
   topic_graph: "artifacts/topic-graph.json"
@@ -488,7 +488,7 @@ guardrails:
   scope:
     level: 1
     topic_graph: "artifacts/topic-graph.json"
-    refusal_message: "I can only answer questions about CBA's 2024 Annual Report."
+    refusal_message: "I can only answer questions about CBA's 2025 Annual Report."
   faithfulness:
     threshold: 0.90
     judge_model: "gpt-4o"

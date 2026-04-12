@@ -28,11 +28,11 @@ class TraceLogger:
     """Builds structured execution traces.
 
     Usage:
-        logger = TraceLogger(solution_id="rag-policy-qa")
+        logger = TraceLogger(solution_id="cba-annual-report-qa")
         logger.log_step(1, "Query received", 0)
         logger.log_step(2, "Context retrieval", 120, detail="3 chunks retrieved")
         trace = logger.to_trace()
-        logger.save(Path("traces/rag-policy-qa/run_001.json"))
+        logger.save(Path("traces/cba-annual-report-qa/run_001.json"))
     """
 
     def __init__(self, *, solution_id: str, scenario: str = "live", question: str = ""):

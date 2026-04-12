@@ -21,14 +21,15 @@ from sklearn.base import BaseEstimator
 def get_or_create_experiment(
     name: str = "credit-default-ablation",
     *,
-    tracking_dir: str | Path = "./mlruns",
+    tracking_dir: str | Path = ".",
 ) -> str:
-    """Set up MLflow experiment with local file-based tracking.
+    """Set up MLflow experiment with SQLite-backed tracking.
 
-    No MLflow server required — results stored in ./mlruns/.
-    Browse with: mlflow ui
+    Stores tracking data in mlflow.db and artifacts in ./mlartifacts/.
+    Browse with: python run_mlflow_ui.py
     """
-    mlflow.set_tracking_uri(f"file:{Path(tracking_dir).resolve().as_posix()}")
+    db_path = Path(tracking_dir).resolve() / "mlflow.db"
+    mlflow.set_tracking_uri(f"sqlite:///{db_path.as_posix()}")
     mlflow.set_experiment(name)
     return name
 
@@ -164,7 +165,19 @@ def _save_feature_importance_plot(
     path: Path,
 ) -> None:
     """Save a horizontal bar chart of feature importances."""
-    importances = model.feature_importances_
+    if hasattr(model, "feature_importances_"):
+        importances = model.feature_importances_
+    elif hasattr(model, "coef_"):
+        importances = np.abs(model.coef_).flatten()
+    else:
+        # No importance available — save placeholder
+        fig, ax = plt.subplots(figsize=(6, 3))
+        ax.text(0.5, 0.5, "Feature importance not available for this model type",
+                ha="center", va="center")
+        ax.set_axis_off()
+        fig.savefig(path, dpi=100)
+        plt.close(fig)
+        return
     indices = np.argsort(importances)
 
     fig, ax = plt.subplots(figsize=(10, max(4, len(feature_names) * 0.3)))

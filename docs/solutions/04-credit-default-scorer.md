@@ -394,12 +394,12 @@ monitoring:
 
 ### Experiment Tracking
 
-The solution uses **MLflow** (local file backend, no server) to track experiments. Each training run logs parameters, metrics, and artifacts (feature importance plots, SHAP summaries).
+The solution uses **MLflow** (local SQLite backend) to track experiments. Each training run logs parameters, metrics, model artifacts, feature importance plots, and SHAP summaries.
 
 ```bash
 cd solutions/credit-default-scorer
-python src/ablation.py                    # runs all 5 steps
-mlflow ui                                 # browse at http://localhost:5000
+python src/ablation.py                    # runs all 5 steps, logs to mlflow.db
+python -u run_mlflow_ui.py               # browse at http://127.0.0.1:5000
 ```
 
 ### Incremental Feature Group Ablation
@@ -426,14 +426,77 @@ Features are added incrementally to isolate the contribution of each group. Same
 
 5. **Demographics: the governance tradeoff** — Step 5 adds +0.003 AUC (marginal) but increases demographic parity difference from 0.014 to 0.021 and drops the disparate impact ratio from 0.942 to 0.892. The model is closer to the four-fifths rule threshold (0.80). **The AUC gain is not worth the fairness cost** — this is the governance insight the ablation is designed to surface.
 
-### Recommended Feature Set
+## Model Selection Analysis
 
-Based on the ablation, the recommended production model uses **Steps 1-3** (13 features: payment history + credit limit + bill amounts). This achieves:
+Six studies were conducted to systematically arrive at the optimal production model. All experiments are tracked in MLflow with full artifacts.
 
-- Strong performance (AUC 0.773, Gini 0.546)
-- Best calibration (Brier 0.137, ECE 0.013)
-- Strong fairness (DemParity 0.013, DI Ratio 0.952)
-- No demographic features as inputs
+### Study Summary
+
+| # | Study | MLflow Experiment | Key Finding |
+|---|-------|-------------------|-------------|
+| 1 | Feature group ablation | `credit-default-ablation` | Payment history + credit + bills = sweet spot. Payment amounts add noise. |
+| 2 | Skip payment amounts | `credit-default-ablation` (step 6) | 17 features (no PAY_AMT) achieves best single-split AUC (0.7765). |
+| 3 | Model comparison | `credit-default-model-comparison` | GBM wins on AUC. Logistic regression fails four-fifths rule. |
+| 4 | Threshold tuning | `credit-default-threshold-tuning` | Best F1 at threshold 0.25. Default 0.50 too conservative. |
+| 5 | Hyperparameter sweep | `credit-default-hyperparam-sweep` | `lr=0.05` beats `lr=0.10`. Deeper trees and higher lr both hurt. |
+| 6 | Cross-validation stability | `credit-default-cv-stability` | AUC stable (0.783 +/- 0.007). DI with all demographics fails every fold. |
+| 7 | Individual demographics | `credit-default-demographic-interaction` | SEX is the problem feature. EDUCATION adds AUC. MARRIAGE improves fairness. |
+
+### The Three Candidate Models
+
+Based on the studies, three candidate configurations were evaluated under 5-fold cross-validation:
+
+| Candidate | Features | AUC | Brier | DemParity | DI Ratio | DI Pass Rate |
+|-----------|----------|-----|-------|-----------|----------|-------------|
+| **A: No demographics** | 13 (PAY + LIMIT + BILL) | 0.7812 +/- 0.008 | 0.1345 | 0.0193 | 0.826 +/- 0.020 | **5/5 folds** |
+| B: + EDUCATION, MARRIAGE | 15 | 0.7823 +/- 0.007 | 0.1340 | 0.0186 | 0.819 +/- 0.017 | 4/5 folds |
+| C: All demographics | 17 | 0.7829 +/- 0.007 | 0.1340 | 0.0286 | 0.762 +/- 0.022 | **0/5 folds** |
+
+### Decision: Candidate A — 13 Features, No Demographics
+
+**Selected configuration:**
+- **Model:** GradientBoostingClassifier
+- **Hyperparameters:** `n_estimators=100, max_depth=5, learning_rate=0.05, subsample=0.8`
+- **Features (13):** PAY_0, PAY_2..PAY_6, LIMIT_BAL, BILL_AMT1..BILL_AMT6
+- **Threshold:** 0.25 (optimised for F1)
+
+**Why this model:**
+
+1. **Passes the four-fifths rule in every fold.** Candidate A is the only configuration that passes the disparate impact test (DI >= 0.80) in all 5 CV folds. Candidate B fails 1/5 folds. Candidate C fails every fold. A model that fails the four-fifths rule is a regulatory event — this is non-negotiable.
+
+2. **AUC is within noise of the best.** The gap between Candidate A (0.7812) and Candidate C (0.7829) is 0.0017 — well within the standard deviation of 0.008. There is no statistically meaningful performance difference between the three candidates. Paying a fairness cost for noise is not justified.
+
+3. **No protected attributes as inputs.** Even though EDUCATION and MARRIAGE are technically less harmful than SEX and AGE, excluding all demographics eliminates the risk of proxy discrimination through feature interactions. The model cannot be accused of using demographic information, directly or indirectly.
+
+4. **Simpler model governance.** A model with no demographic inputs requires less ongoing monitoring for discrimination, fewer compliance reviews, and simpler documentation for regulators. The governance overhead of including any demographic feature outweighs the 0.001 AUC it might buy.
+
+5. **Threshold 0.25 recovers recall.** At the default 0.50 threshold, the model is too conservative (36% recall). At 0.25, F1 peaks at 0.540 with 59% recall and 50% precision, flagging 26% of customers — a more actionable workload for the collections team.
+
+### What Was Ruled Out and Why
+
+| Option | Ruled Out Because |
+|--------|-------------------|
+| Adding payment amounts (PAY_AMT1..6) | Decreased AUC by 0.001 (noise, not signal). 6 extra features for no benefit. |
+| Adding SEX | +0.0006 AUC, -0.057 DI. Biggest fairness cost, negligible performance gain. |
+| Adding AGE | +0.0010 AUC, -0.020 DI. Moderate fairness cost for near-zero gain. |
+| Logistic regression | DI ratio 0.751 — fails four-fifths rule outright. Also worst AUC (0.707). |
+| Random forest | AUC 0.769 (worse than GBM), DI 0.882 (borderline). No advantage. |
+| AdaBoost | Fairest model (DI 0.980) but poorly calibrated (ECE 0.036) and lower AUC. |
+| Higher learning rate (0.2) | Overfits — lower AUC, worse calibration, worse fairness. |
+| Deeper trees (depth 7) | Overfits — lower AUC and worse DI than depth 5. |
+| Threshold 0.50 | Only catches 36% of defaults. Precision is high (66%) but too many defaults slip through. |
+
+### Production Metrics (CV-Validated)
+
+| Metric | Value | Threshold | Status |
+|--------|-------|-----------|--------|
+| AUC-ROC | 0.781 +/- 0.008 | >= 0.70 | PASS |
+| Gini | 0.563 +/- 0.016 | >= 0.40 | PASS |
+| Brier Score | 0.135 +/- 0.002 | <= 0.20 | PASS |
+| ECE | 0.013 +/- 0.003 | <= 0.05 | PASS |
+| Demographic Parity Diff | 0.019 +/- 0.002 | <= 0.05 | PASS |
+| Disparate Impact Ratio | 0.826 +/- 0.020 | >= 0.80 | PASS (5/5) |
+| SHAP Coverage | 100% | 100% | PASS |
 
 ## What It Demonstrates
 

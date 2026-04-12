@@ -1,0 +1,152 @@
+---
+description: "Review UI changes by capturing a screenshot and HTML from the running web app. Triggers after UI code changes, or on phrases like 'review the UI', 'check the UI', 'screenshot the page', 'how does it look', 'preview the changes', 'visual check'."
+---
+
+# UI Review Skill
+
+You are a UI review assistant. After UI changes are made (or when asked), you capture a screenshot and the page HTML from the running web app, then evaluate the result visually and structurally.
+
+## Steps
+
+### 1. Ensure the dev server is running
+
+Check if the Next.js dev server is already running on port 3000:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
+```
+
+- If it returns 200, proceed.
+- If it fails, start the dev server in the background:
+  ```bash
+  cd services/web && npm run dev &
+  ```
+  Wait a few seconds for it to be ready, then verify again.
+
+### 2. Determine the target URL
+
+- Default: `http://localhost:3000`
+- If the user specifies a path (e.g., "/about", "/dashboard"), use `http://localhost:3000<path>`
+- If the user specifies a full URL, use that instead
+
+### 3. Capture screenshot and HTML using Playwright CLI
+
+Run these commands to capture both artifacts:
+
+**Screenshot:**
+```bash
+npx playwright screenshot --browser chromium --full-page --wait-for-timeout 3000 "<target_url>" ".claude/skills/ui-review/screenshot.png"
+```
+
+**HTML capture:**
+```bash
+npx playwright screenshot --browser chromium --full-page --wait-for-timeout 3000 "<target_url>" ".claude/skills/ui-review/screenshot.png" 2>/dev/null
+```
+
+For the HTML, use a small inline Playwright script:
+```bash
+npx playwright evaluate --browser chromium "<target_url>" "document.documentElement.outerHTML" > ".claude/skills/ui-review/page.html"
+```
+
+If `playwright evaluate` is not available, use Node.js directly:
+```bash
+node -e "
+const { chromium } = require('playwright');
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await page.goto('<target_url>', { waitUntil: 'networkidle' });
+  const html = await page.content();
+  const fs = require('fs');
+  fs.writeFileSync('.claude/skills/ui-review/page.html', html);
+  await page.screenshot({ path: '.claude/skills/ui-review/screenshot.png', fullPage: true });
+  await browser.close();
+})();
+" 2>&1
+```
+
+### 4. Read both artifacts
+
+- Use the **Read** tool to view the screenshot image (`.claude/skills/ui-review/screenshot.png`)
+- Use the **Read** tool to read the HTML file (`.claude/skills/ui-review/page.html`)
+
+### 5. Evaluate the UI
+
+Review both the screenshot and HTML, checking for:
+
+**Visual quality:**
+- Layout and spacing — does it look balanced and intentional?
+- Typography — consistent font sizes, weights, line heights?
+- Color and contrast — accessible, on-brand?
+- Responsive concerns — anything that looks like it would break on smaller screens?
+- Visual hierarchy — is the most important content prominent?
+
+**Structural quality (from HTML):**
+- Semantic HTML — proper use of headings, sections, nav, main, etc.?
+- Accessibility — alt text on images, aria labels, proper form labels?
+- Meta tags — title, description present?
+- Any obvious issues — broken links, empty containers, console errors?
+
+### 6. Clean up captured artifacts
+
+After reading both the screenshot and HTML, delete them immediately — they are not needed beyond this review:
+
+```bash
+rm -f .claude/skills/ui-review/screenshot.png .claude/skills/ui-review/page.html
+```
+
+### 7. Report findings
+
+Provide a concise evaluation with:
+
+1. **Screenshot** — confirm you've viewed it and describe what you see
+2. **What looks good** — 2-3 positive observations
+3. **Issues found** — any problems, ranked by severity
+4. **Suggestions** — concrete improvements, if any
+
+Keep the report brief and actionable. Don't pad with generic praise.
+
+### 8. Offer to create a single-page HTML design reference
+
+After reporting findings, **always ask the user:**
+
+> "Would you like me to create a standalone single-page HTML version of this page and save it to `docs/designs/`?"
+
+If the user says yes:
+
+1. **Create the `docs/designs/` directory** if it doesn't already exist.
+2. **Generate a self-contained single-page HTML file** that:
+   - Includes ALL CSS inline (in a `<style>` tag) — no external stylesheets
+   - Includes ALL JS inline (in a `<script>` tag) if needed — no external scripts
+   - Embeds any images as base64 data URIs where practical
+   - Faithfully reproduces the current look of the captured page
+   - Is viewable by opening the file directly in a browser (no server needed)
+3. **Name the file** using the route path as a slug:
+   - `/` → `docs/designs/home.html`
+   - `/about` → `docs/designs/about.html`
+   - `/dashboard/settings` → `docs/designs/dashboard-settings.html`
+   - If the user provides a custom name, use that instead
+4. **Include a comment header** in the HTML:
+   ```html
+   <!--
+     Design snapshot: <page name>
+     Captured: <date>
+     Source: <target_url>
+     Generated by: ui-review skill
+   -->
+   ```
+
+These design files serve as portable references — they can be shared, diffed, or used as targets for future UI work without needing the dev server running.
+
+## Configuration
+
+- **Screenshots directory:** `.claude/skills/ui-review/`
+- **Default URL:** `http://localhost:3000`
+- **Default browser:** `chromium`
+- **Timeout:** 3000ms (wait for page to fully render)
+
+## Notes
+
+- Screenshots and HTML are deleted after each review — they are temporary artifacts only
+- If Playwright browsers aren't installed, run `npx playwright install chromium` first
+- For pages behind auth, the user will need to provide cookies or a login flow

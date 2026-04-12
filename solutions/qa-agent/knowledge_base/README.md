@@ -3,7 +3,7 @@
 Document corpus for the Q&A Agent. The ingestion pipeline flows:
 
 ```
-originals/          PDF source documents (e.g., CBA Annual Report 2024)
+originals/          PDF source documents (e.g., CBA Annual Report 2025)
     |
     v  extract.py (marker or pymupdf)
     |

@@ -2,27 +2,24 @@
 
 Pipeline:
     1. Extract: PDF (originals/) -> markdown (markdown/)
-       Engine: marker (default, ML-based) or pymupdf (fast fallback)
+       Engine: pymupdf4llm (default) or pymupdf (basic fallback)
     2. Chunk:   markdown -> structured chunks with metadata
     3. Embed:   chunks -> ChromaDB collection via embedding model
     4. Save:    chunks written to chunks/ as JSON for inspection
 
 Usage:
-    # Full pipeline with Marker (default — best quality)
-    python -m solutions.qa_agent.src.ingest
+    # Full pipeline (default: pymupdf4llm)
+    python ingest.py
 
-    # Full pipeline with Marker + LLM (best for financial tables)
-    python -m solutions.qa_agent.src.ingest --use-llm
-
-    # Full pipeline with PyMuPDF (fast, no GPU)
-    python -m solutions.qa_agent.src.ingest --engine pymupdf
+    # Full pipeline with basic PyMuPDF
+    python ingest.py --engine pymupdf
 
     # Just re-chunk and re-embed existing markdown
-    python -m solutions.qa_agent.src.ingest --skip-extract
+    python ingest.py --skip-extract
 
     # Programmatic
-    from solutions.qa_agent.src.ingest import ingest_knowledge_base
-    collection = ingest_knowledge_base(Path("solutions/qa-agent/knowledge_base"))
+    from ingest import ingest_knowledge_base
+    collection = ingest_knowledge_base(Path("../knowledge_base"))
 """
 
 from __future__ import annotations
@@ -35,7 +32,7 @@ from typing import Literal
 
 import chromadb
 
-Engine = Literal["marker", "pymupdf"]
+Engine = Literal["pymupdf4llm", "pymupdf"]
 
 
 # ---------------------------------------------------------------------------
@@ -45,9 +42,7 @@ Engine = Literal["marker", "pymupdf"]
 def extract_pdfs(
     knowledge_base_dir: Path,
     *,
-    engine: Engine = "marker",
-    use_llm: bool = False,
-    llm_service: str = "gemini",
+    engine: Engine = "pymupdf4llm",
 ) -> list[Path]:
     """Extract all PDFs in originals/ to markdown/.
 
@@ -63,19 +58,25 @@ def extract_pdfs(
     try:
         from solutions.qa_agent.src.extract import extract_all_pdfs
     except ImportError:
-        from extract import extract_all_pdfs  # type: ignore[no-redef]
+        try:
+            from extract import extract_all_pdfs  # type: ignore[no-redef]
+        except ImportError:
+            print(f"Warning: extract module unavailable, skipping PDF extraction")
+            return list(sorted(markdown_dir.glob("*.md")))
 
     # Clear existing markdown before re-extracting
     for old_md in markdown_dir.glob("*.md"):
         old_md.unlink()
 
-    extract_all_pdfs(
-        originals_dir,
-        engine=engine,
-        output_dir=markdown_dir,
-        use_llm=use_llm,
-        llm_service=llm_service,
-    )
+    try:
+        extract_all_pdfs(
+            originals_dir,
+            engine=engine,
+            output_dir=markdown_dir,
+        )
+    except Exception as e:
+        print(f"Warning: PDF extraction failed ({e}), using existing markdown")
+
     return list(sorted(markdown_dir.glob("*.md")))
 
 
@@ -171,7 +172,7 @@ def chunk_markdown(
 def chunk_all_markdown(
     markdown_dir: Path,
     *,
-    document_name: str = "CBA Annual Report 2024",
+    document_name: str = "CBA Annual Report 2025",
     max_chunk_size: int = 500,
     overlap: int = 50,
 ) -> list[dict]:
@@ -256,7 +257,16 @@ def embed_chunks(
     else:
         client = chromadb.Client()
 
-    # Clean slate
+    # Check if collection already exists with the right count
+    try:
+        existing = client.get_collection(collection_name)
+        if existing.count() == len(chunks) and len(chunks) > 0:
+            print(f"Reusing existing ChromaDB collection ({existing.count()} chunks)")
+            return existing
+    except Exception:
+        pass
+
+    # Clean slate — re-embed
     try:
         client.delete_collection(collection_name)
     except Exception:
@@ -270,11 +280,15 @@ def embed_chunks(
     if not chunks:
         return collection
 
-    collection.add(
-        ids=[f"chunk_{i:04d}" for i in range(len(chunks))],
-        documents=[c["text"] for c in chunks],
-        metadatas=[c["metadata"] for c in chunks],
-    )
+    # Batch add to avoid memory issues with large chunk sets
+    batch_size = 200
+    for i in range(0, len(chunks), batch_size):
+        batch = chunks[i : i + batch_size]
+        collection.add(
+            ids=[f"chunk_{j:04d}" for j in range(i, i + len(batch))],
+            documents=[c["text"] for c in batch],
+            metadatas=[c["metadata"] for c in batch],
+        )
 
     return collection
 
@@ -288,11 +302,9 @@ def ingest_knowledge_base(
     *,
     collection_name: str = "cba_annual_report",
     persist_directory: str | None = None,
-    document_name: str = "CBA Annual Report 2024",
+    document_name: str = "CBA Annual Report 2025",
     skip_extract: bool = False,
-    engine: Engine = "marker",
-    use_llm: bool = False,
-    llm_service: str = "gemini",
+    engine: Engine = "pymupdf4llm",
 ) -> chromadb.Collection:
     """Full ingestion pipeline: extract -> chunk -> save -> embed.
 
@@ -303,9 +315,7 @@ def ingest_knowledge_base(
         persist_directory: If set, persist ChromaDB to this path.
         document_name: Human-readable document name for citations.
         skip_extract: If True, skip PDF extraction (use existing markdown).
-        engine: PDF extraction engine — "marker" (default) or "pymupdf".
-        use_llm: (marker only) Enable LLM enhancement for tables.
-        llm_service: (marker only) LLM backend for enhancement.
+        engine: PDF extraction engine — "pymupdf4llm" (default) or "pymupdf".
 
     Returns:
         ChromaDB collection with embedded chunks.
@@ -315,18 +325,25 @@ def ingest_knowledge_base(
 
     # Step 1: Extract PDFs (if present and not skipped)
     if not skip_extract:
-        extract_pdfs(
-            knowledge_base_dir,
-            engine=engine,
-            use_llm=use_llm,
-            llm_service=llm_service,
-        )
+        extract_pdfs(knowledge_base_dir, engine=engine)
 
-    # Step 2: Chunk markdown
-    chunks = chunk_all_markdown(
-        markdown_dir, document_name=document_name,
-    )
-    print(f"Chunked {len(chunks)} chunks from {markdown_dir}")
+    # Step 2: Chunk markdown (or reuse existing chunks if markdown is empty)
+    md_files = list(markdown_dir.glob("*.md"))
+    if md_files:
+        chunks = chunk_all_markdown(
+            markdown_dir, document_name=document_name,
+        )
+        print(f"Chunked {len(chunks)} chunks from {markdown_dir}")
+    else:
+        # No markdown available — try loading pre-existing chunks
+        existing_chunks_path = chunks_dir / "chunks.json"
+        if existing_chunks_path.exists():
+            with open(existing_chunks_path, encoding="utf-8") as f:
+                chunks = json.load(f)
+            print(f"Loaded {len(chunks)} pre-existing chunks from {existing_chunks_path}")
+        else:
+            chunks = []
+            print("No markdown files and no existing chunks found")
 
     # Step 3: Save chunks to disk
     chunks_path = save_chunks(chunks, chunks_dir)
@@ -356,20 +373,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--engine",
-        choices=["marker", "pymupdf"],
-        default="marker",
-        help="PDF extraction engine (default: marker)",
-    )
-    parser.add_argument(
-        "--use-llm",
-        action="store_true",
-        help="(marker only) LLM enhancement for better tables",
-    )
-    parser.add_argument(
-        "--llm-service",
-        default="gemini",
-        choices=["gemini", "anthropic", "openai", "ollama", "openrouter"],
-        help="(marker only) LLM backend (default: gemini)",
+        choices=["pymupdf4llm", "pymupdf"],
+        default="pymupdf4llm",
+        help="PDF extraction engine (default: pymupdf4llm)",
     )
     args = parser.parse_args()
 
@@ -381,8 +387,6 @@ if __name__ == "__main__":
     print(f"  chunks/     -> chunked content (JSON)")
     if not args.skip_extract:
         print(f"  engine:     {args.engine}")
-        if args.engine == "marker" and args.use_llm:
-            print(f"  LLM:        ON ({args.llm_service})")
     print()
 
     originals = kb_dir / "originals"
@@ -407,7 +411,5 @@ if __name__ == "__main__":
         kb_dir,
         skip_extract=args.skip_extract,
         engine=args.engine,
-        use_llm=args.use_llm,
-        llm_service=args.llm_service,
     )
     print(f"\nDone. {collection.count()} chunks ready for retrieval.")

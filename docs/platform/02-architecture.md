@@ -135,6 +135,8 @@ Portal, platform components, and all demo solutions live in a single repository.
 | 10 | [10-observability.md](10-observability.md) | Observability Layer |
 | 11 | [11-build-phases.md](11-build-phases.md) | Build Phases |
 | 12 | [12-interview-delivery.md](12-interview-delivery.md) | Interview Delivery |
+| 13 | [13-governance-framework.md](13-governance-framework.md) | Governance, Responsible AI & Risk Management Framework |
+| 14 | [14-controls-register.md](14-controls-register.md) | Controls Register (cross-reference index) |
 
 ### Solutions (`docs/solutions/`)
 

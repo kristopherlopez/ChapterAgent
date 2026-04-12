@@ -15,11 +15,12 @@ The platform provides **reusable components** that any squad's AI solution plugs
 ### Portal Screens
 
 1. **Compliance health dashboard** (landing page) — green/amber/red across all solutions
-2. **Solution detail page** — guardrail results, eval scores, gate pass/fail for a given solution
+2. **Solution detail page** — guardrail results, eval scores, gate pass/fail, execution trace for a given solution
 3. **Evidence export** — button that produces a structured report (populated template)
-4. **Solution registry** — list of registered solutions (nav-level)
-5. **Observability/trace view** — step-level traces (pre-recorded data)
-6. **Multi-platform scorecard** — framework comparison table
+4. **Solution registry** — dedicated page showing all registered solutions with category (AI/ML), risk tier, owner
+5. **Multi-platform scorecard** — framework comparison table
+
+Sidebar navigation groups solutions into **AI Solutions** (GenAI/agentic) and **ML Solutions** (traditional ML) with health indicator dots. A **Platform** section links to the Solution Registry.
 
 ---
 

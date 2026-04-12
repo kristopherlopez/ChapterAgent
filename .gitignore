@@ -19,6 +19,14 @@ node_modules/
 # Data & ML artifacts
 solutions/*/data/
 solutions/*/mlruns/
+*.db
+*.png
+
+# Vector stores
+.chromadb/
+
+# Lock files
+uv.lock
 
 # Runtime output
 results/

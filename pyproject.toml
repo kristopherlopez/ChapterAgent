@@ -1,0 +1,49 @@
+[project]
+name = "chapter-agent"
+version = "1.0.0"
+description = "AI governance platform — Chapter Agent"
+requires-python = ">=3.12"
+dependencies = [
+    # --- backend ---
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.7",
+    "openai>=1.60",
+    "chromadb>=0.6",
+    "deepeval>=2.5",
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+    "pymupdf>=1.25",
+    "marker-pdf>=1.0",
+    # --- solutions ---
+    "scikit-learn>=1.6",
+    "pandas>=2.2",
+    "numpy>=2.0",
+    "mlflow>=2.19",
+    "shap>=0.46",
+    "numba>=0.60",
+    "scipy>=1.14",
+    "matplotlib>=3.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.24", "ruff>=0.8", "httpx>=0.28"]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["backend", "solutions"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["backend/tests"]

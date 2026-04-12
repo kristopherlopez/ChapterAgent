@@ -34,7 +34,7 @@ class EvidenceReportGenerator:
     Usage:
         generator = EvidenceReportGenerator()
         report = generator.generate(
-            solution_id="rag-policy-qa",
+            solution_id="cba-annual-report-qa",
             solution_name="CBA Annual Report Q&A Agent",
             risk_tier="production_customer_facing",
             guardrail_results=results,

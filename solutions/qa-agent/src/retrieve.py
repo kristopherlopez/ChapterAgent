@@ -42,9 +42,12 @@ class HybridRetriever:
         except ImportError:
             from ingest import ingest_knowledge_base  # type: ignore[no-redef]
 
+        persist_dir = str(knowledge_base_dir / ".chromadb")
         collection = ingest_knowledge_base(
             knowledge_base_dir,
             collection_name=collection_name,
+            persist_directory=persist_dir,
+            skip_extract=True,
         )
         return cls(collection)
 

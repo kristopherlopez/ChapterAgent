@@ -16,6 +16,49 @@ except ImportError:
     from retrieve import HybridRetriever, RetrievedChunk  # type: ignore[no-redef]
 
 
+def _create_generator(framework: str = "openai") -> QAGenerator:
+    """Factory: create the right generator for the chosen framework.
+
+    Frameworks:
+        openai:        OpenAI SDK (gpt-4o)
+        claude:        Claude Agent SDK with tool use (agentic)
+        claude-direct: Anthropic SDK direct call (no tool use)
+        langchain:     LangChain/LangGraph
+    """
+    if framework == "openai":
+        return QAGenerator()
+    elif framework == "claude":
+        try:
+            from solutions.qa_agent.src.generate_claude import (
+                ClaudeAgentGenerator,
+            )
+        except ImportError:
+            from generate_claude import ClaudeAgentGenerator  # type: ignore[no-redef]
+        return ClaudeAgentGenerator()
+    elif framework == "claude-direct":
+        try:
+            from solutions.qa_agent.src.generate_claude import (
+                ClaudeDirectGenerator,
+            )
+        except ImportError:
+            from generate_claude import ClaudeDirectGenerator  # type: ignore[no-redef]
+        return ClaudeDirectGenerator()
+    elif framework == "langchain":
+        try:
+            from solutions.qa_agent.src.generate_langchain import (
+                LangChainQAGenerator,
+            )
+        except ImportError:
+            from generate_langchain import LangChainQAGenerator  # type: ignore[no-redef]
+        return LangChainQAGenerator()
+    else:
+        raise ValueError(
+            f"Unknown framework: {framework!r}. "
+            "Use 'openai', 'claude', 'claude-direct', "
+            "or 'langchain'."
+        )
+
+
 class QAAgent:
     """CBA Annual Report Q&A Agent.
 
@@ -34,7 +77,7 @@ class QAAgent:
         generator: QAGenerator | None = None,
         topic_graph: dict[str, Any] | None = None,
         scope_level: int = 1,
-        refusal_message: str = "I can only answer questions about CBA's 2024 Annual Report.",
+        refusal_message: str = "I can only answer questions about CBA's 2025 Annual Report.",
     ):
         self.retriever = retriever
         self.generator = generator or QAGenerator()
@@ -44,8 +87,19 @@ class QAAgent:
         self._query_counter = 0
 
     @classmethod
-    def from_solution_dir(cls, solution_dir: Path) -> QAAgent:
-        """Create agent from the solution directory structure."""
+    def from_solution_dir(
+        cls,
+        solution_dir: Path,
+        *,
+        framework: str = "openai",
+    ) -> QAAgent:
+        """Create agent from the solution directory structure.
+
+        Args:
+            solution_dir: Path to solutions/qa-agent.
+            framework: LLM framework — "openai" (default),
+                "claude", or "langchain".
+        """
         kb_dir = solution_dir / "knowledge_base"
         topic_graph_path = solution_dir / "topic_graph.json"
 
@@ -56,8 +110,11 @@ class QAAgent:
             with open(topic_graph_path) as f:
                 topic_graph = json.load(f)
 
+        generator = _create_generator(framework)
+
         return cls(
             retriever=retriever,
+            generator=generator,
             topic_graph=topic_graph,
         )
 
@@ -110,12 +167,135 @@ class QAAgent:
         return response
 
 
+class DemoQAAgent:
+    """Demo agent that returns pre-recorded answers without LLM or ChromaDB.
+
+    Loads scenarios from solutions/qa-agent/scenarios/ and matches questions
+    by keyword similarity. Falls back to the pass scenario for unknown questions.
+
+    Usage:
+        agent = DemoQAAgent.from_solution_dir(Path("solutions/qa-agent"))
+        response = await agent.answer("What was CBA's net interest margin?")
+    """
+
+    def __init__(self, scenarios: dict[str, dict]):
+        self._scenarios = scenarios
+        self._query_counter = 0
+
+    @classmethod
+    def from_solution_dir(cls, solution_dir: Path) -> DemoQAAgent:
+        """Load all pre-recorded scenarios."""
+        scenarios_dir = solution_dir / "scenarios"
+        scenarios: dict[str, dict] = {}
+
+        for scenario_dir in sorted(scenarios_dir.iterdir()):
+            if not scenario_dir.is_dir():
+                continue
+            input_path = scenario_dir / "input.json"
+            output_path = scenario_dir / "output.json"
+            if input_path.exists() and output_path.exists():
+                with open(input_path) as f:
+                    inp = json.load(f)
+                with open(output_path) as f:
+                    out = json.load(f)
+                scenarios[scenario_dir.name] = {
+                    "input": inp,
+                    "output": out,
+                }
+
+        return cls(scenarios)
+
+    def _match_scenario(self, question: str) -> dict:
+        """Find the best matching scenario for a question."""
+        q_lower = question.lower()
+
+        # Check for injection patterns
+        injection_words = [
+            "ignore", "pretend", "system prompt",
+            "jailbreak", "dan mode",
+        ]
+        if any(w in q_lower for w in injection_words):
+            if "fail-injection" in self._scenarios:
+                return self._scenarios["fail-injection"]["output"]
+
+        # Check for out-of-scope (comparative) patterns
+        scope_words = ["compare", "westpac", "anz", "nab"]
+        if any(w in q_lower for w in scope_words):
+            if "fail-scope" in self._scenarios:
+                return self._scenarios["fail-scope"]["output"]
+
+        # Check for financial advice
+        advice_words = [
+            "should i buy", "should i invest", "recommend",
+        ]
+        if any(w in q_lower for w in advice_words):
+            if "fail-scope" in self._scenarios:
+                return self._scenarios["fail-scope"]["output"]
+
+        # Default to pass scenario
+        if "pass" in self._scenarios:
+            return self._scenarios["pass"]["output"]
+
+        # Last resort
+        return {
+            "answer": {
+                "text": "I can only answer questions about "
+                "CBA's 2025 Annual Report.",
+            },
+            "citations": [],
+        }
+
+    async def answer(
+        self,
+        question: str,
+        **kwargs: Any,
+    ) -> QAResponse:
+        """Return a pre-recorded answer."""
+        self._query_counter += 1
+        matched = self._match_scenario(question)
+
+        # Build response from scenario, overriding IDs
+        fields = {
+            k: v for k, v in matched.items()
+            if k in QAResponse.model_fields
+        }
+        fields["query_id"] = f"DEMO-{self._query_counter:04d}"
+        fields["question"] = question
+        return QAResponse(**fields)
+
+
 async def main():
     """Run the Q&A agent interactively."""
-    solution_dir = Path(__file__).parent.parent
-    agent = QAAgent.from_solution_dir(solution_dir)
+    import argparse
 
-    print("CBA Annual Report Q&A Agent")
+    parser = argparse.ArgumentParser(
+        description="CBA Annual Report Q&A Agent",
+    )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Demo mode — pre-recorded answers, no API key needed",
+    )
+    parser.add_argument(
+        "--framework",
+        choices=["openai", "claude", "claude-direct", "langchain"],
+        default="openai",
+        help="LLM framework (default: openai)",
+    )
+    args = parser.parse_args()
+
+    solution_dir = Path(__file__).parent.parent
+
+    if args.demo:
+        agent = DemoQAAgent.from_solution_dir(solution_dir)
+        print("CBA Annual Report Q&A Agent (DEMO MODE)")
+        print("Answers are pre-recorded. No API key needed.")
+    else:
+        agent = QAAgent.from_solution_dir(
+            solution_dir, framework=args.framework,
+        )
+        print(f"CBA Annual Report Q&A Agent ({args.framework})")
+
     print("Type 'quit' to exit.\n")
 
     while True:

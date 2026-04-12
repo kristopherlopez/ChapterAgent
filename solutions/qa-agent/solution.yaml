@@ -1,6 +1,6 @@
 solution:
   name: "CBA Annual Report Q&A Agent"
-  id: "rag-policy-qa"
+  id: "cba-annual-report-qa"
   type: "qa"
   version: "1.0.0"
   description: "Answers questions about CBA's most recent Annual Report with source citations"
@@ -11,16 +11,16 @@ risk_tier: "production_customer_facing"
 corpus:
   source: "CBA Investor Relations"
   documents:
-    - name: "CBA Annual Report 2024"
+    - name: "CBA Annual Report 2025"
       format: "pdf"
-      pages: 300
+      pages: 229
   topic_graph: "topic_graph.json"
 
 guardrails:
   scope:
     level: 1
     topic_graph: "topic_graph.json"
-    refusal_message: "I can only answer questions about CBA's 2024 Annual Report."
+    refusal_message: "I can only answer questions about CBA's 2025 Annual Report."
   faithfulness_threshold: 0.90
   citation_coverage_threshold: 0.95
   temporal_accuracy_enabled: true

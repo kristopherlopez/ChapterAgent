@@ -1,27 +1,23 @@
 """PDF extraction — converts PDF documents to structured markdown.
 
 Two extraction engines:
-    - **marker** (default): ML-based with optional LLM enhancement.
-      Best for financial documents with tables, charts, multi-column layouts.
-      Install: pip install marker-pdf
-    - **pymupdf**: Rule-based text extraction. Fast, no GPU needed.
-      Lower quality on tables and complex layouts. Good fallback.
+    - **pymupdf4llm** (default): LLM-optimised markdown output from PyMuPDF.
+      Preserves tables as markdown tables, handles headers/footers,
+      and produces clean structured output. No GPU needed, instant.
+      Install: pip install pymupdf4llm
+    - **pymupdf**: Basic text extraction. Fastest, simplest fallback.
       Install: pip install pymupdf
 
 Usage:
-    # Marker (default) — best quality
-    python -m solutions.qa_agent.src.extract
+    # Default (pymupdf4llm) — best no-GPU option
+    python extract.py
 
-    # Marker with LLM enhancement — best quality for financial tables
-    python -m solutions.qa_agent.src.extract --use-llm
-
-    # PyMuPDF fallback — fast, no GPU
-    python -m solutions.qa_agent.src.extract --engine pymupdf
+    # Basic PyMuPDF fallback
+    python extract.py --engine pymupdf
 
     # Programmatic
-    from solutions.qa_agent.src.extract import extract_pdf
-    extract_pdf(Path("report.pdf"), engine="marker")
-    extract_pdf(Path("report.pdf"), engine="pymupdf")
+    from extract import extract_pdf
+    extract_pdf(Path("report.pdf"))
 """
 
 from __future__ import annotations
@@ -30,31 +26,23 @@ import re
 from pathlib import Path
 from typing import Literal
 
-Engine = Literal["marker", "pymupdf"]
+Engine = Literal["pymupdf4llm", "pymupdf"]
 
 
 def extract_pdf(
     pdf_path: Path,
     *,
-    engine: Engine = "marker",
+    engine: Engine = "pymupdf4llm",
     output_dir: Path | None = None,
     pages_per_file: int | None = None,
-    use_llm: bool = False,
-    llm_service: str = "gemini",
 ) -> list[Path]:
     """Extract a PDF to markdown files with page annotations.
 
     Args:
         pdf_path: Path to the source PDF.
-        engine: Extraction engine — "marker" (default) or "pymupdf".
+        engine: "pymupdf4llm" (default) or "pymupdf".
         output_dir: Where to write markdown files.
-            Defaults to knowledge_base/markdown/ relative to the PDF.
         pages_per_file: Pages per output file (None = auto-detect).
-            Only used by pymupdf engine. Marker handles its own splitting.
-        use_llm: (marker only) Enable LLM enhancement for better
-            table extraction and cross-page table merging.
-        llm_service: (marker only) LLM backend — "gemini" (default),
-            "anthropic", "openai", "ollama", or "openrouter".
 
     Returns:
         List of paths to the generated markdown files.
@@ -63,45 +51,31 @@ def extract_pdf(
         output_dir = pdf_path.parent.parent / "markdown"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    if engine == "marker":
-        return _extract_with_marker(
-            pdf_path,
-            output_dir=output_dir,
-            use_llm=use_llm,
-            llm_service=llm_service,
+    if engine == "pymupdf4llm":
+        return _extract_with_pymupdf4llm(
+            pdf_path, output_dir=output_dir,
+            pages_per_file=pages_per_file,
         )
     elif engine == "pymupdf":
         return _extract_with_pymupdf(
-            pdf_path,
-            output_dir=output_dir,
+            pdf_path, output_dir=output_dir,
             pages_per_file=pages_per_file,
         )
     else:
-        raise ValueError(f"Unknown engine: {engine!r}. Use 'marker' or 'pymupdf'.")
+        raise ValueError(
+            f"Unknown engine: {engine!r}. "
+            "Use 'pymupdf4llm' or 'pymupdf'."
+        )
 
 
 def extract_all_pdfs(
     originals_dir: Path,
     *,
-    engine: Engine = "marker",
+    engine: Engine = "pymupdf4llm",
     output_dir: Path | None = None,
     pages_per_file: int | None = None,
-    use_llm: bool = False,
-    llm_service: str = "gemini",
 ) -> list[Path]:
-    """Extract all PDFs in a directory to markdown.
-
-    Args:
-        originals_dir: Directory containing PDF files.
-        engine: Extraction engine — "marker" (default) or "pymupdf".
-        output_dir: Where to write markdown. Defaults to ../markdown/.
-        pages_per_file: (pymupdf only) Pages per output file.
-        use_llm: (marker only) Enable LLM enhancement.
-        llm_service: (marker only) LLM backend.
-
-    Returns:
-        List of all generated markdown file paths.
-    """
+    """Extract all PDFs in a directory to markdown."""
     if output_dir is None:
         output_dir = originals_dir.parent / "markdown"
 
@@ -109,12 +83,9 @@ def extract_all_pdfs(
     for pdf_path in sorted(originals_dir.glob("*.pdf")):
         print(f"Extracting: {pdf_path.name} (engine={engine})")
         files = extract_pdf(
-            pdf_path,
-            engine=engine,
+            pdf_path, engine=engine,
             output_dir=output_dir,
             pages_per_file=pages_per_file,
-            use_llm=use_llm,
-            llm_service=llm_service,
         )
         print(f"  -> {len(files)} markdown files")
         all_files.extend(files)
@@ -123,151 +94,73 @@ def extract_all_pdfs(
 
 
 # ---------------------------------------------------------------------------
-# Engine: Marker
+# Engine: pymupdf4llm (default)
 # ---------------------------------------------------------------------------
 
-def _extract_with_marker(
+def _extract_with_pymupdf4llm(
     pdf_path: Path,
     *,
     output_dir: Path,
-    use_llm: bool = False,
-    llm_service: str = "gemini",
+    pages_per_file: int | None = None,
 ) -> list[Path]:
-    """Extract PDF using Marker — ML-based with optional LLM enhancement.
+    """Extract PDF using pymupdf4llm — LLM-optimised markdown.
 
-    Marker handles layout detection, table recognition, and section
-    splitting automatically. The --use_llm flag enables LLM-based
-    post-processing for better table accuracy (0.82 -> 0.91).
-
-    Supports OpenRouter via the OpenAI-compatible service by setting
-    llm_service="openrouter". Reads OPENROUTER_API_KEY from environment.
+    Produces clean markdown with:
+    - Tables preserved as markdown tables
+    - Headers detected and converted to # headings
+    - Page breaks annotated
+    - Images referenced (not embedded)
     """
-    try:
-        from marker.converters.pdf import PdfConverter
-        from marker.models import create_model_dict
-        from marker.config.parser import ConfigParser
-    except ImportError:
-        print("marker-pdf not installed. Install with: pip install marker-pdf")
-        print("Falling back to pymupdf engine.")
-        return _extract_with_pymupdf(pdf_path, output_dir=output_dir)
+    import pymupdf4llm
 
-    # Build config — lower DPI to avoid MemoryError on large PDFs
-    config_dict: dict = {
-        "output_format": "markdown",
-        "highres_image_dpi": 96,
-        "lowres_image_dpi": 72,
-    }
-    if use_llm:
-        config_dict["use_llm"] = True
-
-        if llm_service == "openrouter":
-            # OpenRouter is OpenAI-compatible — use the openai service
-            # with custom base_url and model
-            import os
-
-            config_dict["llm_service"] = "marker.services.openai"
-            config_dict["openai_base_url"] = "https://openrouter.ai/api/v1"
-            config_dict["openai_api_key"] = os.environ.get(
-                "OPENROUTER_API_KEY", "",
-            )
-            config_dict["openai_model"] = os.environ.get(
-                "OPENROUTER_MODEL",
-                "google/gemini-2.5-flash-preview",
-            )
-            if not config_dict["openai_api_key"]:
-                print("WARNING: OPENROUTER_API_KEY not set.")
-                print("Set it in your environment or .env file.")
-        else:
-            config_dict["llm_service"] = llm_service
-
-    config_parser = ConfigParser(config_dict)
-    artifact_dict = create_model_dict()
-
-    converter = PdfConverter(
-        config=config_parser.generate_config_dict(),
-        artifact_dict=artifact_dict,
+    # Extract full document as markdown with page chunks
+    md_pages = pymupdf4llm.to_markdown(
+        str(pdf_path),
+        page_chunks=True,
+        write_images=False,
     )
 
-    # Run conversion
-    print(f"  Marker processing {pdf_path.name} (DPI=96)...")
-    rendered = converter(str(pdf_path))
+    # md_pages is a list of dicts: {"metadata": {...}, "text": "..."}
+    # each dict is one page
+    pages = []
+    for item in md_pages:
+        meta = item.get("metadata", {})
+        page_num = meta.get("page", len(pages) + 1)
+        text = item.get("text", "").strip()
+        if text:
+            pages.append({
+                "page_number": page_num,
+                "text": text,
+            })
 
-    # Marker returns a single markdown string — split into files
-    # by top-level headings (# heading) with page annotations
-    markdown_text = rendered.markdown
+    if not pages:
+        return []
 
-    # Inject page annotations if Marker's metadata includes page info
-    if hasattr(rendered, "metadata") and rendered.metadata:
-        markdown_text = _inject_page_annotations_marker(
-            markdown_text, rendered.metadata,
-        )
+    # Group pages into sections
+    if pages_per_file:
+        sections = _group_by_count(pages, pages_per_file)
+    else:
+        sections = _group_by_headings(pages)
 
-    # Split into section files by top-level headings
-    sections = _split_markdown_by_headings(markdown_text, pdf_path.stem)
-
+    # Write each section as a markdown file
+    doc_name = pdf_path.stem
     written_files: list[Path] = []
     for i, section in enumerate(sections, 1):
         filename = f"{i:02d}-{section['slug']}.md"
         filepath = output_dir / filename
-        filepath.write_text(section["content"], encoding="utf-8")
+        content = _format_section_markdown(
+            title=section["title"],
+            pages=section["pages"],
+            document_name=doc_name,
+        )
+        filepath.write_text(content, encoding="utf-8")
         written_files.append(filepath)
 
     return written_files
 
 
-def _inject_page_annotations_marker(
-    markdown: str,
-    metadata: dict,
-) -> str:
-    """Inject <!-- Page N --> annotations using Marker metadata."""
-    # Marker metadata varies by version — handle gracefully
-    if not metadata:
-        return markdown
-    # If metadata has page-level info, inject comments
-    # This is a best-effort — exact API depends on Marker version
-    return markdown
-
-
-def _split_markdown_by_headings(
-    markdown: str,
-    doc_name: str,
-) -> list[dict]:
-    """Split a markdown string into sections by top-level headings."""
-    # Split on # headings (level 1)
-    parts = re.split(r"(?=^# [^#])", markdown, flags=re.MULTILINE)
-
-    sections = []
-    for part in parts:
-        part = part.strip()
-        if not part:
-            continue
-
-        # Extract heading
-        heading_match = re.match(r"^# (.+)$", part, re.MULTILINE)
-        if heading_match:
-            title = heading_match.group(1).strip()
-        else:
-            title = "Introduction"
-
-        sections.append({
-            "title": title,
-            "slug": _slugify(title),
-            "content": part,
-        })
-
-    # If no headings found, return as single file
-    if not sections:
-        sections.append({
-            "title": doc_name,
-            "slug": _slugify(doc_name),
-            "content": markdown,
-        })
-
-    return sections
-
-
 # ---------------------------------------------------------------------------
-# Engine: PyMuPDF
+# Engine: pymupdf (basic fallback)
 # ---------------------------------------------------------------------------
 
 def _extract_with_pymupdf(
@@ -276,11 +169,7 @@ def _extract_with_pymupdf(
     output_dir: Path,
     pages_per_file: int | None = None,
 ) -> list[Path]:
-    """Extract PDF using PyMuPDF — rule-based text extraction.
-
-    Fast and lightweight (no GPU), but lower quality on tables and
-    complex layouts. Good fallback when Marker isn't available.
-    """
+    """Extract PDF using PyMuPDF — basic text extraction."""
     import pymupdf
 
     doc = pymupdf.open(str(pdf_path))
@@ -301,18 +190,15 @@ def _extract_with_pymupdf(
     if not pages:
         return []
 
-    # Group pages into sections
     if pages_per_file:
         sections = _group_by_count(pages, pages_per_file)
     else:
         sections = _group_by_headings(pages)
 
-    # Write each section as a markdown file
     written_files: list[Path] = []
     for i, section in enumerate(sections, 1):
         filename = f"{i:02d}-{section['slug']}.md"
         filepath = output_dir / filename
-
         content = _format_section_markdown(
             title=section["title"],
             pages=section["pages"],
@@ -329,7 +215,6 @@ def _extract_with_pymupdf(
 # ---------------------------------------------------------------------------
 
 def _slugify(text: str) -> str:
-    """Convert a title to a URL-safe slug."""
     slug = text.lower().strip()
     slug = re.sub(r"[^a-z0-9]+", "-", slug)
     slug = slug.strip("-")
@@ -350,21 +235,25 @@ def _clean_page_text(text: str) -> str:
 
 def _detect_heading(text: str) -> str | None:
     """Detect if a page starts with a chapter/section heading."""
-    first_lines = text[:200].strip().split("\n")
-    for line in first_lines[:3]:
+    first_lines = text[:300].strip().split("\n")
+    for line in first_lines[:5]:
         line = line.strip()
+        # Markdown headings (pymupdf4llm produces these)
+        md_match = re.match(r"^#{1,2}\s+(.+)$", line)
+        if md_match:
+            return md_match.group(1).strip()
+        # All-caps headings
         if line and line == line.upper() and 3 < len(line) < 80:
             return line.title()
+        # Title-case headings
         if line and line == line.title() and 3 < len(line) < 80:
             return line
     return None
 
 
 def _group_by_count(
-    pages: list[dict],
-    per_file: int,
+    pages: list[dict], per_file: int,
 ) -> list[dict]:
-    """Group pages into fixed-size sections."""
     sections = []
     for i in range(0, len(pages), per_file):
         group = pages[i : i + per_file]
@@ -379,7 +268,6 @@ def _group_by_count(
 
 
 def _group_by_headings(pages: list[dict]) -> list[dict]:
-    """Group pages by detected section headings."""
     sections: list[dict] = []
     current_section: dict | None = None
 
@@ -421,7 +309,6 @@ def _format_section_markdown(
     pages: list[dict],
     document_name: str,
 ) -> str:
-    """Format a section as a markdown file with page annotations."""
     lines = [f"# {title}\n"]
     lines.append(f"*Source: {document_name}*\n")
 
@@ -445,26 +332,15 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--engine",
-        choices=["marker", "pymupdf"],
-        default="marker",
-        help="Extraction engine (default: marker)",
-    )
-    parser.add_argument(
-        "--use-llm",
-        action="store_true",
-        help="(marker only) Enable LLM enhancement for better tables",
-    )
-    parser.add_argument(
-        "--llm-service",
-        default="gemini",
-        choices=["gemini", "anthropic", "openai", "ollama", "openrouter"],
-        help="(marker only) LLM backend (default: gemini)",
+        choices=["pymupdf4llm", "pymupdf"],
+        default="pymupdf4llm",
+        help="Extraction engine (default: pymupdf4llm)",
     )
     parser.add_argument(
         "--pages-per-file",
         type=int,
         default=None,
-        help="(pymupdf only) Pages per output file",
+        help="Pages per output file (default: auto-detect sections)",
     )
     args = parser.parse_args()
 
@@ -479,15 +355,11 @@ if __name__ == "__main__":
         raise SystemExit(1)
 
     print(f"Engine: {args.engine}")
-    if args.engine == "marker" and args.use_llm:
-        print(f"LLM enhancement: ON (service: {args.llm_service})")
     print()
 
     files = extract_all_pdfs(
         originals,
         engine=args.engine,
-        use_llm=args.use_llm,
-        llm_service=args.llm_service,
         pages_per_file=args.pages_per_file,
     )
     print(

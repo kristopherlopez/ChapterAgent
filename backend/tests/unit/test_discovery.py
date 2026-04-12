@@ -14,12 +14,12 @@ class TestDiscovery:
         manifests = discover_solutions(SOLUTIONS_DIR)
         assert len(manifests) >= 1  # At least qa-agent
         ids = [m.id for m in manifests]
-        assert "rag-policy-qa" in ids
+        assert "cba-annual-report-qa" in ids
 
     def test_load_qa_agent_manifest(self):
         manifest = load_solution_manifest(SOLUTIONS_DIR / "qa-agent")
         assert manifest.name == "CBA Annual Report Q&A Agent"
-        assert manifest.id == "rag-policy-qa"
+        assert manifest.id == "cba-annual-report-qa"
         assert manifest.risk_tier == "production_customer_facing"
 
     def test_manifest_has_evaluation_config(self):
