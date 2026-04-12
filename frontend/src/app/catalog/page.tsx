@@ -147,13 +147,13 @@ export default function CatalogPage() {
             <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
               Component
             </p>
-            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider text-center">
               Type
             </p>
             <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
               Adoption
             </p>
-            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider text-center">
               Status
             </p>
             <span />
@@ -184,7 +184,9 @@ export default function CatalogPage() {
                       </p>
                     </div>
                   </div>
-                  <TypeBadge type={component.type} />
+                  <div className="flex justify-center">
+                    <TypeBadge type={component.type} />
+                  </div>
                   <div className="flex items-center gap-1">
                     <span className="text-sm text-zinc-600">
                       {component.adoption.length} solution{component.adoption.length !== 1 ? "s" : ""}
@@ -204,7 +206,9 @@ export default function CatalogPage() {
                       </div>
                     )}
                   </div>
-                  <StatusBadge status={component.status} />
+                  <div className="flex justify-center">
+                    <StatusBadge status={component.status} />
+                  </div>
                   {isExpanded ? (
                     <ChevronDown className="w-4 h-4 text-zinc-400" />
                   ) : (
