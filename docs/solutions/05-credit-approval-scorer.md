@@ -303,6 +303,103 @@ monitoring:
   note: "Small dataset limits production drift monitoring — PSI unreliable below 1000 records"
 ```
 
+## Ablation Study
+
+### Experiment Tracking
+
+The solution uses **MLflow** (local SQLite backend) to track experiments. Each training run logs parameters, metrics, model artifacts, feature importance plots, and SHAP summaries.
+
+```bash
+cd solutions/credit-approval-scorer
+python src/ablation.py                    # runs all 4 steps, logs to mlflow.db
+python -u run_mlflow_ui.py               # browse at http://127.0.0.1:5001
+```
+
+### Incremental Feature Group Ablation
+
+Features are added incrementally to isolate the contribution of each group. Same hyperparameters (LogisticRegression: C=1.0, solver=lbfgs, max_iter=1000) and same train/test split (70/30, seed 42) across all steps.
+
+| Step | Features Added | N | AUC | Gini | Brier | HL p-value | Proxy Var |
+|------|---------------|---|-----|------|-------|------------|-----------|
+| 1. Binary categoricals | A1, A8, A9, A11 | 4 | 0.892 | 0.783 | 0.120 | 0.098 | 1.000 FAIL |
+| 2. + Continuous primary | A2, A3, A7 | 7 | 0.891 | 0.782 | 0.123 | 0.480 | 0.939 FAIL |
+| 3. + Multi categoricals | A4, A5, A6, A12 | 11 | 0.914 | 0.827 | 0.116 | 0.072 | 0.904 FAIL |
+| 4. All features | A10, A13, A14 | 14 | 0.925 | 0.849 | 0.108 | 0.084 | 0.896 FAIL |
+
+### Key Findings
+
+1. **Binary categoricals alone achieve 0.892 AUC** — A8 and A9 are extremely predictive. With just 4 features, the model already discriminates well between approved and denied applications. This is also the step with the highest proxy discrimination risk: A8 has near-perfect separation (100% proxy variance).
+
+2. **Continuous features add calibration, not discrimination** — Step 2 barely moves AUC (-0.001) but dramatically improves the Hosmer-Lemeshow p-value from 0.098 to 0.480. The continuous features help the model produce better-calibrated probabilities without improving rank-ordering.
+
+3. **Multi-value categoricals provide the main AUC lift** — Step 3 adds +0.023 AUC. A6 (14 categories) adds the most segment granularity. Proxy variance drops slightly as more features dilute the influence of individual binary flags.
+
+4. **All 14 features: best performance, persistent proxy risk** — Step 4 achieves AUC 0.925 with good calibration (HL p=0.084). But proxy variance remains at 0.896 — feature A8 still drives an 89.6% approval rate disparity between its two values. **The platform correctly flags this for human review at every step.**
+
+5. **The governance question this dataset surfaces** — With anonymised features, we can't determine whether A8 is a legitimate credit factor or a demographic proxy. The ablation shows the model's best performance requires A8, but deploying with that level of disparity requires a human decision. This is proxy discrimination governance in action.
+
+## Model Selection Analysis
+
+### The Anonymisation Challenge
+
+Unlike the Taiwan dataset (Solution #4) where we could directly test for gender and age discrimination, the Australian dataset's anonymised features prevent direct fairness testing. The model selection must account for this:
+
+- We **cannot** exclude a feature because it's "demographic" — we don't know which features are demographic
+- We **can** measure approval rate disparity across feature values and flag features that behave like proxies
+- The decision to deploy requires **human review** of flagged features, not an automated gate
+
+### Two Candidate Models
+
+Based on the ablation, two candidates were evaluated:
+
+| Candidate | Features | AUC | Brier | HL p-value | Max Proxy Var | Bootstrap CI Width |
+|-----------|----------|-----|-------|------------|---------------|-------------------|
+| **A: All features** | 14 (all A1-A14) | 0.925 | 0.108 | 0.084 | 0.896 (A8) | 0.072 |
+| B: Exclude A8 | 13 (A1-A7, A9-A14) | 0.857 | 0.145 | 0.043 | 0.493 (A9) | 0.105 |
+
+### Decision: Candidate A — All 14 Features, with Proxy Flag
+
+**Selected configuration:**
+- **Model:** LogisticRegression
+- **Hyperparameters:** `C=1.0, solver=lbfgs, max_iter=1000`
+- **Features (14):** A1-A14 (all features, including proxy candidates)
+- **Threshold:** 0.50
+
+**Why this model:**
+
+1. **Removing A8 costs 0.068 AUC — a meaningful drop.** Unlike the Taiwan dataset where demographics added only 0.003 AUC, A8 is a genuinely informative feature. Excluding it materially degrades model performance and pushes Hosmer-Lemeshow below the threshold (p=0.043 < 0.05).
+
+2. **We don't know if A8 is demographic.** The feature is anonymised. It could be a credit bureau flag, an account type indicator, or a demographic attribute. Excluding it based on statistical proxy detection alone would be premature — and potentially wrong.
+
+3. **The platform flags, doesn't block.** The proxy discrimination guardrail is configured with `human_review_required: true`. The model deploys with a governance flag: "Feature A8 shows 89.6% approval rate disparity. Human review required before production use." This is the appropriate response when the model can't prove the feature is safe but can't prove it's unsafe either.
+
+4. **Bootstrap CI confirms reliability.** The 95% confidence interval width of 0.072 is well below the 0.20 warning threshold. Despite only 690 records, the model's performance estimate is precise enough for production use.
+
+5. **Logistic regression is the right model for this dataset.** With 690 records and 14 features, gradient boosting would overfit. Logistic regression's implicit regularisation and linear decision boundary are appropriate for the data volume. The model trains in milliseconds, SHAP values are exact (LinearExplainer), and the coefficients are directly interpretable.
+
+### What Was Ruled Out and Why
+
+| Option | Ruled Out Because |
+|--------|-------------------|
+| Excluding A8 | -0.068 AUC, fails Hosmer-Lemeshow. Can't justify removing an unknown feature based on proxy suspicion alone. |
+| Excluding all binary categoricals | AUC drops to ~0.75. Throws away the most informative features without knowing if any are actually demographic. |
+| Gradient boosting | Overfitting risk with 690 records. LR achieves 0.925 AUC — no headroom justifies the complexity. |
+| Random forest | Same overfitting concern. Would also lose exact SHAP values (TreeExplainer approximates). |
+| Feature interaction terms | 14 features × 690 records already risks overfitting. Adding interactions would make it worse. |
+| Threshold 0.70 | Too aggressive — would approve only 44% of applicants vs 56% at 0.50. Not appropriate for `production_internal` where a human makes the final decision. |
+
+### Production Metrics
+
+| Metric | Value | Threshold | Status |
+|--------|-------|-----------|--------|
+| AUC-ROC | 0.925 (CI: 0.889-0.961) | >= 0.70 | PASS |
+| Gini | 0.849 | >= 0.40 | PASS |
+| Brier Score | 0.108 | <= 0.25 | PASS |
+| Hosmer-Lemeshow p | 0.084 | >= 0.05 | PASS |
+| Bootstrap CI Width (AUC) | 0.072 | <= 0.20 (warning) | PASS |
+| Max Proxy Variance | 0.896 (A8) | <= 0.15 | FAIL — human review required |
+| SHAP Coverage | 100% | 100% | PASS |
+
 ## What It Demonstrates
 
 ### To Alex
