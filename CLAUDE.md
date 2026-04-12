@@ -1,3 +1,9 @@
+## Git Workflow
+
+After every change (feature, fix, refactor, docs update), **commit and push to `main`** immediately. Do not batch changes or wait to be asked.
+
+---
+
 You are extremely disciplined about keeping documentation in perfect sync with the code. For **every single task, feature, refactor, or plan** you create or suggest:
 
 1. **Discovery Phase** (always do this first)
