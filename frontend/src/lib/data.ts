@@ -322,6 +322,240 @@ export const aiGovPolicies: Record<string, string> = {
   "AI-GOV-010": "System prompts version-controlled and approved",
 };
 
+// --- Controls Register ---
+
+export const controls: Control[] = [
+  {
+    id: "AI-GOV-001",
+    name: "Solution Registration",
+    description:
+      "Every AI solution must be registered with complete metadata, risk tier, and named owner",
+    enforcementLayer: "deployment-gate",
+    controlType: "preventive",
+    risksMitigated: ["AIR-012"],
+    regulatoryAlignment: ["CPS 230", "DISR #1"],
+    sourceDoc: "07-compliance-as-code",
+  },
+  {
+    id: "AI-GOV-002",
+    name: "Risk Tier Assignment",
+    description:
+      "Every solution must be assigned a risk tier that determines threshold strictness, guardrail scope, and re-evaluation frequency",
+    enforcementLayer: "deployment-gate",
+    controlType: "preventive",
+    risksMitigated: ["AIR-012"],
+    regulatoryAlignment: ["CPS 230", "CPS 234", "DISR #2"],
+    sourceDoc: "04-solution-lifecycle",
+  },
+  {
+    id: "AI-GOV-003",
+    name: "Quality Thresholds",
+    description:
+      "Solutions must pass evaluation metrics (faithfulness, relevancy, precision, recall, hallucination) at or above their risk tier's thresholds",
+    enforcementLayer: "deployment-gate+production",
+    controlType: "preventive+detective",
+    risksMitigated: ["AIR-001", "AIR-007"],
+    regulatoryAlignment: ["CPS 234", "DISR #4"],
+    sourceDoc: "08-evaluation-harness",
+  },
+  {
+    id: "AI-GOV-004",
+    name: "Content Safety",
+    description:
+      "Solutions must not produce toxic, harmful, or dangerous content; toxicity score must be within risk-tier threshold",
+    enforcementLayer: "deployment-gate+production",
+    controlType: "preventive+detective",
+    risksMitigated: ["AIR-005"],
+    regulatoryAlignment: ["DISR #3", "DISR #4"],
+    sourceDoc: "06-guardrails",
+  },
+  {
+    id: "AI-GOV-005",
+    name: "PII Protection",
+    description:
+      "Zero PII in AI solution outputs; Presidio NER detection on every response",
+    enforcementLayer: "deployment-gate+production",
+    controlType: "preventive+detective",
+    risksMitigated: ["AIR-003"],
+    regulatoryAlignment: ["CPS 234", "DISR #3"],
+    sourceDoc: "06-guardrails",
+  },
+  {
+    id: "AI-GOV-006",
+    name: "Guardrail Validation",
+    description:
+      "All guardrails (scope, injection, content safety) must pass their test suite before deployment",
+    enforcementLayer: "deployment-gate",
+    controlType: "preventive",
+    risksMitigated: ["AIR-004", "AIR-005", "AIR-006"],
+    regulatoryAlignment: ["CPS 234", "DISR #4"],
+    sourceDoc: "06-guardrails",
+  },
+  {
+    id: "AI-GOV-007",
+    name: "Bias & Fairness",
+    description:
+      "Solutions must not exhibit systematic demographic bias; bias score must be within risk-tier threshold",
+    enforcementLayer: "deployment-gate+production",
+    controlType: "preventive+detective",
+    risksMitigated: ["AIR-002"],
+    regulatoryAlignment: ["DISR #4", "CBA AI Policy"],
+    sourceDoc: "08-evaluation-harness",
+  },
+  {
+    id: "AI-GOV-008",
+    name: "Audit Trail Completeness",
+    description:
+      "100% of interactions must have complete trace fields (query, retrieval, generation, guardrails, response)",
+    enforcementLayer: "deployment-gate+production",
+    controlType: "detective",
+    risksMitigated: ["AIR-008"],
+    regulatoryAlignment: ["CPS 230", "DISR #9"],
+    sourceDoc: "10-observability",
+  },
+  {
+    id: "AI-GOV-009",
+    name: "Golden Dataset Sign-Off",
+    description:
+      "Human reviewer must approve the golden dataset with identity and date recorded",
+    enforcementLayer: "deployment-gate",
+    controlType: "preventive",
+    risksMitigated: ["AIR-011"],
+    regulatoryAlignment: ["DISR #5", "DISR #10"],
+    sourceDoc: "07-compliance-as-code",
+  },
+  {
+    id: "AI-GOV-010",
+    name: "Prompt Governance",
+    description:
+      "System prompts must be version-controlled with linked approval commits; prompt hash change triggers re-evaluation",
+    enforcementLayer: "deployment-gate",
+    controlType: "preventive",
+    risksMitigated: ["AIR-009"],
+    regulatoryAlignment: ["CPS 230", "DISR #9"],
+    sourceDoc: "07-compliance-as-code",
+  },
+];
+
+export const runtimeGuardrails: RuntimeGuardrail[] = [
+  {
+    name: "Scope Adherence",
+    controlId: "AI-GOV-006",
+    implementation: "Custom classifier — query classification before retrieval",
+    latencyMs: 12,
+    onFailure: "Block; serve refusal",
+  },
+  {
+    name: "Prompt Injection Detection",
+    controlId: "AI-GOV-006",
+    implementation: "Pattern matching + classifier — input validation before LLM call",
+    latencyMs: 10,
+    onFailure: "Block",
+  },
+  {
+    name: "PII Scan",
+    controlId: "AI-GOV-005",
+    implementation: "Presidio NER (PERSON, EMAIL, PHONE, AU_ABN, AU_TFN, AU_MEDICARE)",
+    latencyMs: 15,
+    onFailure: "Block; alert immediately",
+  },
+  {
+    name: "Citation Coverage",
+    controlId: "AI-GOV-003",
+    implementation: "Custom metric — all claims traceable to source documents",
+    latencyMs: 8,
+    onFailure: "Block if below threshold",
+  },
+  {
+    name: "Faithfulness",
+    controlId: "AI-GOV-003",
+    implementation: "DeepEval FaithfulnessMetric, judge: gpt-4o-mini",
+    latencyMs: 145,
+    onFailure: "Regenerate with stricter grounding",
+  },
+  {
+    name: "Bias",
+    controlId: "AI-GOV-007",
+    implementation: "DeepEval BiasMetric",
+    latencyMs: 130,
+    onFailure: "Block",
+  },
+  {
+    name: "Toxicity",
+    controlId: "AI-GOV-004",
+    implementation: "DeepEval ToxicityMetric",
+    latencyMs: 125,
+    onFailure: "Block; alert immediately",
+  },
+  {
+    name: "Audit Trail",
+    controlId: "AI-GOV-008",
+    implementation: "Custom logging — structured spans to immutable store",
+    latencyMs: 5,
+    onFailure: "Serve but flag",
+  },
+];
+
+export const riskControlMappings: RiskControlMapping[] = [
+  { riskId: "AIR-001", risk: "Hallucination", controls: ["AI-GOV-003"], residualRisk: "low" },
+  { riskId: "AIR-002", risk: "Bias & Discrimination", controls: ["AI-GOV-007"], residualRisk: "low" },
+  { riskId: "AIR-003", risk: "PII Leakage", controls: ["AI-GOV-005"], residualRisk: "very-low" },
+  { riskId: "AIR-004", risk: "Prompt Injection", controls: ["AI-GOV-006"], residualRisk: "low" },
+  { riskId: "AIR-005", risk: "Toxic Content", controls: ["AI-GOV-004", "AI-GOV-006"], residualRisk: "very-low" },
+  { riskId: "AIR-006", risk: "Scope Creep", controls: ["AI-GOV-006"], residualRisk: "very-low" },
+  { riskId: "AIR-007", risk: "Model Drift", controls: ["AI-GOV-003"], residualRisk: "low" },
+  { riskId: "AIR-008", risk: "Audit Trail Gaps", controls: ["AI-GOV-008"], residualRisk: "very-low" },
+  { riskId: "AIR-009", risk: "Uncontrolled Prompt Changes", controls: ["AI-GOV-010"], residualRisk: "low" },
+  { riskId: "AIR-010", risk: "Third-Party Model Changes", controls: ["AI-GOV-003"], residualRisk: "medium" },
+  { riskId: "AIR-011", risk: "Insufficient Test Coverage", controls: ["AI-GOV-009"], residualRisk: "low" },
+  { riskId: "AIR-012", risk: "Unauthorised Deployment", controls: ["AI-GOV-001", "AI-GOV-002"], residualRisk: "very-low" },
+];
+
+export const controlThresholds: ControlThreshold[] = [
+  { controlId: "AI-GOV-003", metric: "Faithfulness", experimental: null, productionInternal: "\u2265 0.80", productionCustomerFacing: "\u2265 0.90" },
+  { controlId: "AI-GOV-003", metric: "Answer Relevancy", experimental: null, productionInternal: "\u2265 0.75", productionCustomerFacing: "\u2265 0.85" },
+  { controlId: "AI-GOV-003", metric: "Hallucination", experimental: null, productionInternal: "\u2264 0.15", productionCustomerFacing: "\u2264 0.10" },
+  { controlId: "AI-GOV-004", metric: "Toxicity", experimental: null, productionInternal: "\u2264 0.05", productionCustomerFacing: "\u2264 0.02" },
+  { controlId: "AI-GOV-005", metric: "PII", experimental: null, productionInternal: "Zero tolerance", productionCustomerFacing: "Zero tolerance" },
+  { controlId: "AI-GOV-007", metric: "Bias", experimental: null, productionInternal: "\u2264 0.10", productionCustomerFacing: "\u2264 0.05" },
+  { controlId: "AI-GOV-008", metric: "Audit Completeness", experimental: null, productionInternal: "100%", productionCustomerFacing: "100%" },
+  { controlId: "AI-GOV-003", metric: "Re-evaluation", experimental: null, productionInternal: "90 days", productionCustomerFacing: "30 days" },
+];
+
+export const incidentResponses: IncidentResponse[] = [
+  { controlId: "AI-GOV-005", event: "PII detected in output", automatedResponse: "Response blocked, PII redacted", escalation: "Immediate alert to owner + chapter lead" },
+  { controlId: "AI-GOV-004", event: "Toxicity detected", automatedResponse: "Response blocked", escalation: "Immediate alert to owner + chapter lead" },
+  { controlId: "AI-GOV-007", event: "Bias threshold exceeded", automatedResponse: "Response blocked", escalation: "Alert to owner + chapter lead" },
+  { controlId: "AI-GOV-003", event: "Faithfulness below threshold", automatedResponse: "Response regenerated (stricter grounding)", escalation: "Escalated if retry also fails" },
+  { controlId: "AI-GOV-006", event: "Scope violation", automatedResponse: "Response blocked, refusal served", escalation: "Escalated if > 5 in 1 hour" },
+  { controlId: "AI-GOV-006", event: "Prompt injection detected", automatedResponse: "Response blocked", escalation: "Logged as security event" },
+  { controlId: "AI-GOV-008", event: "Audit trail incomplete", automatedResponse: "Response served but flagged", escalation: "Alert to chapter lead" },
+  { controlId: "AI-GOV-003", event: "7-day faithfulness declining", automatedResponse: "Dashboard moves to AMBER", escalation: "Alert to squad + chapter lead" },
+];
+
+export const regulatoryRequirements: RegulatoryRequirement[] = [
+  // CPS 230
+  { framework: "APRA CPS 230", requirement: "Identify and assess operational risks", controls: ["AI-GOV-001", "AI-GOV-002"], evidence: "Risk register, risk tier in solution manifest" },
+  { framework: "APRA CPS 230", requirement: "Maintain effective controls", controls: ["AI-GOV-003", "AI-GOV-004", "AI-GOV-005", "AI-GOV-006", "AI-GOV-007", "AI-GOV-008", "AI-GOV-009", "AI-GOV-010"], evidence: "Deployment gate reports, production compliance logs" },
+  { framework: "APRA CPS 230", requirement: "Monitor and report on operational risk", controls: ["AI-GOV-003", "AI-GOV-007", "AI-GOV-008"], evidence: "Portfolio dashboard, drift alerts, compliance health summary" },
+  { framework: "APRA CPS 230", requirement: "Manage third-party risks", controls: ["AI-GOV-003"], evidence: "Re-evaluation reports, vendor tracking in manifest" },
+  { framework: "APRA CPS 230", requirement: "Business continuity", controls: ["AI-GOV-004", "AI-GOV-005", "AI-GOV-006"], evidence: "Response blocking/regeneration on failure" },
+  // CPS 234
+  { framework: "APRA CPS 234", requirement: "Classify information assets", controls: ["AI-GOV-002"], evidence: "Risk tier assignment in solution manifest" },
+  { framework: "APRA CPS 234", requirement: "Controls commensurate with risk", controls: ["AI-GOV-002"], evidence: "Per-tier threshold config, gate results" },
+  { framework: "APRA CPS 234", requirement: "Detect and respond to security incidents", controls: ["AI-GOV-005", "AI-GOV-006"], evidence: "Compliance event log (security events filter)" },
+  { framework: "APRA CPS 234", requirement: "Test control effectiveness", controls: ["AI-GOV-003", "AI-GOV-006"], evidence: "Evaluation scorecards, guardrail test results" },
+  // DISR
+  { framework: "DISR AI Safety Standard", requirement: "Guardrail 1: Accountability", controls: ["AI-GOV-001"], evidence: "Named owner, risk tier, chapter oversight" },
+  { framework: "DISR AI Safety Standard", requirement: "Guardrail 2: Risk management", controls: ["AI-GOV-002", "AI-GOV-007"], evidence: "Risk register, tier framework, bias metrics" },
+  { framework: "DISR AI Safety Standard", requirement: "Guardrail 3: Data governance", controls: ["AI-GOV-005"], evidence: "PII detection, scope containment" },
+  { framework: "DISR AI Safety Standard", requirement: "Guardrail 4: Testing", controls: ["AI-GOV-003", "AI-GOV-004", "AI-GOV-006"], evidence: "Evaluation harness, guardrail test suites" },
+  { framework: "DISR AI Safety Standard", requirement: "Guardrail 5: Human control", controls: ["AI-GOV-002", "AI-GOV-009"], evidence: "Risk tier conversation, golden dataset sign-off" },
+  { framework: "DISR AI Safety Standard", requirement: "Guardrail 7: Challenge processes", controls: [], evidence: "Gap — requires organisational process" },
+  { framework: "DISR AI Safety Standard", requirement: "Guardrail 9: Record keeping", controls: ["AI-GOV-008", "AI-GOV-010"], evidence: "Audit trail, prompt versioning" },
+  { framework: "DISR AI Safety Standard", requirement: "Guardrail 10: Conformity assessments", controls: ["AI-GOV-003"], evidence: "Deployment gate, scheduled re-evaluation" },
+];
+
 // --- Governance Documents ---
 
 export const governanceDocuments: GovernanceDocument[] = [

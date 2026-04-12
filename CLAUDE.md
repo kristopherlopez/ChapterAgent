@@ -53,6 +53,7 @@ The backend serves the REST API at `http://localhost:8000`. Key routes:
 - `GET  /api/compliance/dashboard` — compliance summary
 - `GET  /api/evidence/{id}/download` — evidence export
 - `GET  /api/traces/{id}` — trace steps
+- `GET  /api/controls` — controls register (AI-GOV controls, risk mappings)
 - `GET  /api/scorecard` — framework scorecard
 
 ### Frontend (Next.js 16 — port 3000)

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Shield,
+  ShieldCheck,
   BarChart3,
   LayoutDashboard,
   ClipboardList,
@@ -81,6 +82,18 @@ export default function Sidebar() {
         >
           <ClipboardList className="w-4 h-4" />
           Solution Registry
+        </Link>
+
+        <Link
+          href="/controls"
+          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+            pathname === "/controls"
+              ? "bg-zinc-900 text-white"
+              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4" />
+          Controls Register
         </Link>
 
         <Link

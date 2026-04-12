@@ -140,7 +140,22 @@ An explainer card describes how documents connect to automated controls: each do
 
 **What Alex sees:** "Every automated check traces back to a policy document. This isn't governance invented from scratch — it's CBA's existing policies, APRA standards, and the Australian AI Safety Standard, operationalised into automated controls."
 
-### 6. Observability / Trace View
+### 6. Controls Register
+
+Dedicated page at `/controls` showing every automated control in the platform — the auditor's cross-reference view. While the Documents page is document-centric ("this policy requires these controls"), the Controls Register is control-centric ("this control mitigates these risks and satisfies these regulations").
+
+Four tabbed views:
+
+- **Controls** — all 10 AI-GOV controls with enforcement layer (Gate / Runtime / Gate + Runtime), control type (Preventive / Detective), and risks mitigated. Each row is expandable to show runtime guardrails (with latency targets) and incident response actions for that control.
+- **Risk Mapping** — all 12 risks from the AI Risk Register, each linked to mitigating controls with residual risk level. One view that answers "every risk has a control."
+- **Regulatory** — CPS 230, CPS 234, and DISR AI Safety Standard requirements, each mapped to the platform controls and evidence that satisfy them. Gaps are flagged explicitly (e.g. DISR Guardrail 7: Challenge processes).
+- **Thresholds** — per-metric threshold table showing how controls scale across Experimental, Production Internal, and Production Customer-Facing risk tiers.
+
+Summary cards show: 10 automated controls, 8 runtime guardrails, < 200ms total runtime latency budget.
+
+**What Alex sees:** "Here's every automated control in the platform. Pick any one — I can show you where it runs, what risk it covers, which regulation it maps to, and where the evidence lives. This is the page a 2nd-line reviewer or APRA auditor would use."
+
+### 7. Observability / Trace View
 
 Pre-recorded trace data showing step-level execution for a given solution run.
 
@@ -163,7 +178,7 @@ Pre-recorded trace data showing step-level execution for a given solution run.
 
 **What Alex sees:** Even though this is pre-recorded, it shows the level of observability the platform provides. Every step, every cost, every check — traced and auditable.
 
-### 7. Solution Type Comparison
+### 8. Solution Type Comparison
 
 Comparison table across all three demo solutions — showing how the same platform evaluates different solution types.
 
@@ -204,7 +219,8 @@ When Alex opens the portal:
 5. **Clicks "Export Evidence"** — gets a structured report. No meeting, no form.
 6. **Navigates to the scorecard** — sees the framework comparison. Strategic value beyond governance.
 7. **Opens Solution Registry** — sees manifest-driven self-registration model. Squads onboard themselves.
-8. **Opens Documents** — sees governance documents mapped to automated controls. Every AI-GOV check traces to a policy.
+8. **Opens Controls Register** — sees every automated control mapped to risks and regulations. The auditor's view. "Pick any control — I can show you where it runs and what regulation it satisfies."
+9. **Opens Documents** — sees governance documents mapped to automated controls. Every AI-GOV check traces to a policy.
 
 The story in 60 seconds: "This is what governance on autopilot looks like. Every solution, every check, every decision — tracked, scored, and exportable."
 
