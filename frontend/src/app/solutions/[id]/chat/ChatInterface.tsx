@@ -8,6 +8,7 @@ import {
   BookOpen,
   Clock,
   Loader2,
+  Activity,
 } from "lucide-react";
 
 interface Citation {
@@ -185,45 +186,25 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
 function matchResponse(question: string): AgentResponse {
   const q = question.toLowerCase();
 
-  // Injection patterns
   const injectionWords = [
-    "ignore",
-    "pretend",
-    "system prompt",
-    "jailbreak",
-    "dan mode",
-    "forget your instructions",
+    "ignore", "pretend", "system prompt", "jailbreak",
+    "dan mode", "forget your instructions",
   ];
   if (injectionWords.some((w) => q.includes(w))) return DEMO_RESPONSES.injection_fail;
 
-  // Scope violations — competitor comparisons
   const scopeWords = ["compare", "westpac", "anz", "nab", "macquarie", "versus", "vs"];
   if (scopeWords.some((w) => q.includes(w))) return DEMO_RESPONSES.scope_fail;
 
-  // Financial advice
   const adviceWords = ["should i buy", "should i invest", "recommend", "good investment"];
   if (adviceWords.some((w) => q.includes(w))) return DEMO_RESPONSES.advice_fail;
 
-  // Topic matching
   if (q.includes("interest margin") || q.includes("nim")) return DEMO_RESPONSES.nim;
   if (q.includes("dividend") || q.includes("payout")) return DEMO_RESPONSES.dividend;
-  if (
-    q.includes("sustain") ||
-    q.includes("climate") ||
-    q.includes("emission") ||
-    q.includes("esg") ||
-    q.includes("net zero")
-  )
+  if (q.includes("sustain") || q.includes("climate") || q.includes("emission") || q.includes("esg") || q.includes("net zero"))
     return DEMO_RESPONSES.sustainability;
-  if (
-    q.includes("digital") ||
-    q.includes("app") ||
-    q.includes("technology") ||
-    q.includes("innovation")
-  )
+  if (q.includes("digital") || q.includes("app") || q.includes("technology") || q.includes("innovation"))
     return DEMO_RESPONSES.digital;
 
-  // Default — return NIM as a sensible default for financial questions
   return DEMO_RESPONSES.nim;
 }
 
@@ -234,24 +215,165 @@ const SUGGESTED_QUESTIONS = [
   "How does CBA's performance compare to Westpac?",
 ];
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+
+type Framework = "openai" | "claude" | "langchain";
+
+const FRAMEWORKS: { value: Framework; label: string; description: string }[] = [
+  { value: "openai", label: "OpenAI SDK", description: "GPT-4o via OpenAI" },
+  { value: "claude", label: "Claude SDK", description: "Claude Sonnet via Anthropic" },
+  { value: "langchain", label: "LangChain", description: "Gemini Flash via OpenRouter" },
+];
 
 async function fetchAgentResponse(
   solutionId: string,
   question: string,
+  framework: Framework = "openai",
 ): Promise<AgentResponse | null> {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
     const res = await fetch(`${API_BASE}/api/chat/${solutionId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, framework }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
     if (!res.ok) return null;
     return await res.json();
   } catch {
     return null;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/*  Side Panel                                                         */
+/* ------------------------------------------------------------------ */
+
+function SidePanel({ response }: { response: AgentResponse | null }) {
+  if (!response) {
+    return (
+      <div className="flex items-center justify-center h-full text-sm text-zinc-400">
+        <p className="text-center px-6">
+          Guardrail results and source citations will appear here after each response.
+        </p>
+      </div>
+    );
+  }
+
+  const passCount = response.guardrails.filter((g) => g.status === "pass").length;
+  const failCount = response.guardrails.filter((g) => g.status === "fail").length;
+
+  return (
+    <div className="overflow-y-auto p-5 space-y-6">
+      {/* Summary bar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Activity className="w-4 h-4 text-zinc-500" />
+          <span className="text-sm font-medium text-zinc-900">Response Audit</span>
+        </div>
+        <span className="inline-flex items-center gap-1 text-xs text-zinc-400">
+          <Clock className="w-3 h-3" />
+          {response.latencyMs}ms
+        </span>
+      </div>
+
+      {/* Blocked banner */}
+      {response.blocked && (
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+          <p className="text-sm font-medium text-red-800">Response Blocked</p>
+          <p className="text-xs text-red-600 mt-1">
+            One or more guardrails failed. This response would not be served in production.
+          </p>
+        </div>
+      )}
+
+      {/* Guardrails */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+            Guardrails
+          </h4>
+          <span className="text-xs text-zinc-400">
+            {passCount}/{response.guardrails.length} pass
+            {failCount > 0 && (
+              <span className="text-red-500 ml-1">&middot; {failCount} fail</span>
+            )}
+          </span>
+        </div>
+        <div className="space-y-2">
+          {response.guardrails.map((g, i) => (
+            <div
+              key={i}
+              className={`flex items-start gap-3 px-3 py-2.5 rounded-lg border ${
+                g.status === "pass"
+                  ? "bg-emerald-50/50 border-emerald-100"
+                  : "bg-red-50/50 border-red-100"
+              }`}
+            >
+              {g.status === "pass" ? (
+                <ShieldCheck className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+              ) : (
+                <ShieldAlert className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+              )}
+              <div className="min-w-0">
+                <p
+                  className={`text-sm font-medium ${
+                    g.status === "pass" ? "text-emerald-900" : "text-red-900"
+                  }`}
+                >
+                  {g.name}
+                </p>
+                {g.detail && (
+                  <p
+                    className={`text-xs mt-0.5 ${
+                      g.status === "pass" ? "text-emerald-600" : "text-red-600"
+                    }`}
+                  >
+                    {g.detail}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Citations */}
+      {response.citations.length > 0 && (
+        <div>
+          <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">
+            Sources ({response.citations.length})
+          </h4>
+          <div className="space-y-2">
+            {response.citations.map((cite, i) => (
+              <div
+                key={i}
+                className="bg-blue-50/50 border border-blue-100 rounded-lg px-3 py-2.5"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <BookOpen className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                  <span className="text-xs font-medium text-blue-800">
+                    p.{cite.page}
+                  </span>
+                  <span className="text-xs text-blue-600">&middot; {cite.section}</span>
+                </div>
+                <p className="text-xs text-blue-500 italic leading-relaxed">
+                  &ldquo;{cite.quote.length > 150 ? cite.quote.slice(0, 150) + "..." : cite.quote}&rdquo;
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Main Chat Interface                                                */
+/* ------------------------------------------------------------------ */
 
 export default function ChatInterface({
   solutionId,
@@ -261,6 +383,8 @@ export default function ChatInterface({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedResponse, setSelectedResponse] = useState<AgentResponse | null>(null);
+  const [framework, setFramework] = useState<Framework>("openai");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -279,12 +403,11 @@ export default function ChatInterface({
     ]);
 
     setIsTyping(true);
+    setSelectedResponse(null);
 
-    // Try backend API first, fall back to demo responses
-    let response = await fetchAgentResponse(solutionId, text);
+    let response = await fetchAgentResponse(solutionId, text, framework);
     if (!response) {
       response = matchResponse(text);
-      // Simulate latency for demo mode
       const delay = Math.min(response.latencyMs, 2000);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
@@ -298,6 +421,7 @@ export default function ChatInterface({
         timestamp: new Date(),
       },
     ]);
+    setSelectedResponse(response);
     setIsTyping(false);
     inputRef.current?.focus();
   }
@@ -305,144 +429,149 @@ export default function ChatInterface({
   const showWelcome = messages.length === 0;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-8 py-6">
-        {showWelcome && (
-          <div className="max-w-2xl mx-auto text-center py-16">
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-              <BookOpen className="w-6 h-6 text-emerald-600" />
+    <div className="flex-1 flex min-h-0">
+      {/* Left: Chat */}
+      <div className="flex-1 flex flex-col min-h-0 min-w-0">
+        {/* Messages area */}
+        <div className="flex-1 overflow-y-auto px-8 py-6">
+          {showWelcome && (
+            <div className="max-w-xl mx-auto text-center py-16">
+              <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="w-6 h-6 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-zinc-900 mb-2">
+                CBA Annual Report Q&A
+              </h3>
+              <p className="text-sm text-zinc-500 mb-8 max-w-md mx-auto">
+                Ask questions about CBA&apos;s 2025 Annual Report. All responses
+                are grounded in the source document with citations, and validated
+                by 8 guardrails in real time.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
+                {SUGGESTED_QUESTIONS.map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => handleSend(q)}
+                    className="text-left text-sm px-4 py-3 rounded-lg border border-zinc-200 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 transition-colors"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
-            <h3 className="text-lg font-semibold text-zinc-900 mb-2">
-              CBA Annual Report Q&A
-            </h3>
-            <p className="text-sm text-zinc-500 mb-8 max-w-md mx-auto">
-              Ask questions about CBA&apos;s 2025 Annual Report. All responses are
-              grounded in the source document with citations, and validated by 8
-              guardrails in real time.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
-              {SUGGESTED_QUESTIONS.map((q) => (
+          )}
+
+          <div className="max-w-xl mx-auto space-y-4">
+            {messages.map((msg, i) => (
+              <div key={i}>
+                {msg.role === "user" ? (
+                  <div className="flex justify-end">
+                    <div className="bg-zinc-900 text-white px-4 py-3 rounded-2xl rounded-br-md max-w-md text-sm">
+                      {msg.content}
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`group cursor-pointer rounded-2xl rounded-bl-md transition-colors ${
+                      selectedResponse === msg.response
+                        ? "bg-white border-2 border-emerald-200"
+                        : "bg-white border border-zinc-200 hover:border-zinc-300"
+                    }`}
+                    onClick={() => msg.response && setSelectedResponse(msg.response)}
+                  >
+                    <div className="px-5 py-4 text-sm text-zinc-800 leading-relaxed">
+                      {msg.content}
+                    </div>
+                    {msg.response && (
+                      <div className="px-5 pb-3 flex items-center gap-3">
+                        {msg.response.blocked ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-red-600">
+                            <ShieldAlert className="w-3 h-3" />
+                            Blocked
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-xs text-emerald-600">
+                            <ShieldCheck className="w-3 h-3" />
+                            {msg.response.guardrails.filter((g) => g.status === "pass").length}/{msg.response.guardrails.length} guardrails pass
+                          </span>
+                        )}
+                        {msg.response.citations.length > 0 && (
+                          <span className="inline-flex items-center gap-1 text-xs text-blue-500">
+                            <BookOpen className="w-3 h-3" />
+                            {msg.response.citations.length} source{msg.response.citations.length !== 1 ? "s" : ""}
+                          </span>
+                        )}
+                        <span className="inline-flex items-center gap-1 text-xs text-zinc-400 ml-auto">
+                          <Clock className="w-3 h-3" />
+                          {(msg.response.latencyMs / 1000).toFixed(1)}s
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {isTyping && (
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Agent is thinking...
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* Input bar */}
+        <div className="border-t border-zinc-200 bg-white px-8 py-4">
+          <div className="max-w-xl mx-auto space-y-2">
+            <div className="flex gap-3">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSend();
+                }}
+                placeholder="Ask about CBA's 2025 Annual Report..."
+                className="flex-1 px-4 py-2.5 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent placeholder:text-zinc-400"
+                disabled={isTyping}
+              />
+              <button
+                onClick={() => handleSend()}
+                disabled={!input.trim() || isTyping}
+                className="px-4 py-2.5 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-zinc-400 mr-1">Framework:</span>
+              {FRAMEWORKS.map((fw) => (
                 <button
-                  key={q}
-                  onClick={() => handleSend(q)}
-                  className="text-left text-sm px-4 py-3 rounded-lg border border-zinc-200 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 transition-colors"
+                  key={fw.value}
+                  onClick={() => setFramework(fw.value)}
+                  disabled={isTyping}
+                  className={`text-xs px-2.5 py-1 rounded-md transition-colors ${
+                    framework === fw.value
+                      ? "bg-zinc-900 text-white"
+                      : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+                  } disabled:opacity-50`}
+                  title={fw.description}
                 >
-                  {q}
+                  {fw.label}
                 </button>
               ))}
             </div>
           </div>
-        )}
-
-        <div className="max-w-2xl mx-auto space-y-6">
-          {messages.map((msg, i) => (
-            <div key={i}>
-              {msg.role === "user" ? (
-                <div className="flex justify-end">
-                  <div className="bg-zinc-900 text-white px-4 py-3 rounded-2xl rounded-br-md max-w-md text-sm">
-                    {msg.content}
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {/* Answer */}
-                  <div className="bg-white border border-zinc-200 px-5 py-4 rounded-2xl rounded-bl-md text-sm text-zinc-800 leading-relaxed">
-                    {msg.content}
-                  </div>
-
-                  {/* Citations */}
-                  {msg.response && msg.response.citations.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pl-1">
-                      {msg.response.citations.map((cite, j) => (
-                        <div
-                          key={j}
-                          className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs max-w-xs"
-                        >
-                          <BookOpen className="w-3.5 h-3.5 text-blue-500 mt-0.5 shrink-0" />
-                          <div>
-                            <span className="font-medium text-blue-800">
-                              p.{cite.page}
-                            </span>
-                            <span className="text-blue-600">
-                              {" "}&middot; {cite.section}
-                            </span>
-                            <p className="text-blue-500 mt-0.5 italic">
-                              &ldquo;{cite.quote}&rdquo;
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Guardrails + latency */}
-                  {msg.response && (
-                    <div className="flex items-center gap-3 pl-1 flex-wrap">
-                      {msg.response.guardrails.map((g, j) => (
-                        <span
-                          key={j}
-                          className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
-                            g.status === "pass"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-red-50 text-red-700"
-                          }`}
-                          title={g.detail || g.name}
-                        >
-                          {g.status === "pass" ? (
-                            <ShieldCheck className="w-3 h-3" />
-                          ) : (
-                            <ShieldAlert className="w-3 h-3" />
-                          )}
-                          {g.name}
-                        </span>
-                      ))}
-                      <span className="inline-flex items-center gap-1 text-xs text-zinc-400">
-                        <Clock className="w-3 h-3" />
-                        {msg.response.latencyMs}ms
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* Typing indicator */}
-          {isTyping && (
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Agent is thinking...
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Input bar */}
-      <div className="border-t border-zinc-200 bg-white px-8 py-4">
-        <div className="max-w-2xl mx-auto flex gap-3">
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSend();
-            }}
-            placeholder="Ask about CBA's 2025 Annual Report..."
-            className="flex-1 px-4 py-2.5 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent placeholder:text-zinc-400"
-            disabled={isTyping}
-          />
-          <button
-            onClick={() => handleSend()}
-            disabled={!input.trim() || isTyping}
-            className="px-4 py-2.5 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Right: Side Panel */}
+      <div className="w-80 border-l border-zinc-200 bg-zinc-50/50 flex flex-col min-h-0 shrink-0">
+        <SidePanel response={selectedResponse} />
       </div>
     </div>
   );

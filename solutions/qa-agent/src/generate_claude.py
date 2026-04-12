@@ -112,36 +112,38 @@ RULES:
 
 
 class ClaudeAgentGenerator:
-    """Agentic Q&A using Claude with full page access.
+    """Agentic Q&A using the Claude Agent SDK.
 
-    Gives Claude three tools:
+    Gives the agent three tools via @tool decorator:
         - list_pages: table of contents of the Annual Report
         - read_page: read a full markdown page
         - cite_source: record a citation for a claim
 
-    Claude decides which pages to read, reads them in full (not
+    The agent decides which pages to read, reads them in full (not
     truncated chunks), and answers with precise citations.
+
+    Usage:
+        from claude_agent_sdk import query, ClaudeAgentOptions
+        generator = ClaudeAgentGenerator(pages_dir=Path("knowledge_base/markdown"))
+        response = generator.generate("What was CBA's NIM?", chunks)
     """
 
     def __init__(
         self,
         *,
         model: str = "claude-sonnet-4-20250514",
-        temperature: float = 0.1,
-        max_tokens: int = 2048,
+        max_turns: int = 10,
         pages_dir: Path | None = None,
     ):
         self.model = model
-        self.temperature = temperature
-        self.max_tokens = max_tokens
+        self.max_turns = max_turns
         self._pages_dir = pages_dir
         self._page_index: list[dict] | None = None
 
-    def _get_pages_dir(self, chunks: list[RetrievedChunk] | None = None) -> Path:
+    def _get_pages_dir(self) -> Path:
         """Resolve the pages directory."""
         if self._pages_dir:
             return self._pages_dir
-        # Default: infer from project structure
         return (
             Path(__file__).parent.parent / "knowledge_base" / "markdown"
         )
@@ -152,6 +154,84 @@ class ClaudeAgentGenerator:
             self._page_index = _build_page_index(self._get_pages_dir())
         return self._page_index
 
+    def _build_tools(self, citations: list[Citation]) -> list:
+        """Build SDK tools with closures over pages_dir and citations."""
+        from claude_agent_sdk import tool
+        from pydantic import BaseModel as PydanticBaseModel
+
+        pages_dir = self._get_pages_dir()
+        page_index = self._get_page_index()
+
+        class EmptyInput(PydanticBaseModel):
+            pass
+
+        @tool(
+            name="list_pages",
+            description=(
+                "List all pages in the CBA Annual Report with page "
+                "numbers and section titles. Use this first to find "
+                "which pages are relevant to the question."
+            ),
+            input_schema=EmptyInput,
+        )
+        async def list_pages(input: EmptyInput) -> dict:
+            toc_lines = [
+                f"p.{entry['page']:>3}  {entry['title']:<60}  [{entry['file']}]"
+                for entry in page_index
+            ]
+            return {"content": "\n".join(toc_lines)}
+
+        class ReadPageInput(PydanticBaseModel):
+            filename: str
+
+        @tool(
+            name="read_page",
+            description=(
+                "Read a full page from the CBA Annual Report. "
+                "Returns the complete markdown content of that page. "
+                "Use the filename from list_pages."
+            ),
+            input_schema=ReadPageInput,
+        )
+        async def read_page(input: ReadPageInput) -> dict:
+            page_path = pages_dir / input.filename
+            if not page_path.exists():
+                return {"error": f"Page not found: {input.filename}"}
+            try:
+                content = page_path.read_text(
+                    encoding="utf-8", errors="replace",
+                )
+                if len(content) > 15000:
+                    content = content[:15000] + "\n\n[... page truncated]"
+                return {"content": content}
+            except Exception as e:
+                return {"error": str(e)}
+
+        class CiteSourceInput(PydanticBaseModel):
+            page: int
+            section: str
+            quote: str
+
+        @tool(
+            name="cite_source",
+            description=(
+                "Record a citation for a factual claim in your "
+                "answer. Call this for every fact you cite."
+            ),
+            input_schema=CiteSourceInput,
+        )
+        async def cite_source(input: CiteSourceInput) -> dict:
+            citations.append(
+                Citation(
+                    page=input.page,
+                    section=input.section,
+                    quote=input.quote,
+                )
+            )
+            return {"status": "citation recorded"}
+
+        return [list_pages, read_page, cite_source]
+
     def generate(
         self,
         question: str,
@@ -160,45 +240,31 @@ class ClaudeAgentGenerator:
         scope_level: int = 1,
         query_id: str = "",
     ) -> QAResponse:
-        """Generate answer using Claude with full page access.
+        """Generate answer using the Claude Agent SDK.
 
         The chunks parameter is accepted for interface compatibility but
         the agent reads full pages instead of using pre-retrieved chunks.
         """
+        import anyio
+
         pages_dir = self._get_pages_dir()
 
         if not pages_dir.exists() or not any(pages_dir.glob("*.md")):
-            return QAResponse(
-                query_id=query_id,
-                question=question,
-                answer=AnswerPayload(
-                    text="Knowledge base pages not found.",
-                    scope_level_used=scope_level,
-                    grounding="none",
-                ),
-            )
+            # Fall back to chunk-based answer if no pages available
+            return self._chunk_fallback(question, chunks, scope_level, query_id)
 
-        tools = self._build_tools()
+        citations: list[Citation] = []
+        sdk_tools = self._build_tools(citations)
 
         try:
-            import anthropic
-
-            client = anthropic.Anthropic(
-                api_key=os.getenv("ANTHROPIC_API_KEY"),
+            answer_text, token_usage = anyio.from_thread.run(
+                self._run_agent, question, sdk_tools,
             )
-
-            answer_text, citations, token_usage, pages_read = (
-                self._run_agent_loop(
-                    client, question, tools, pages_dir,
-                )
-            )
-
         except Exception as e:
             # Fallback to chunk-based answer
             answer_text = self._fallback_answer(chunks)
             citations = self._extract_citations(chunks)
             token_usage = {"error": str(e)}
-            pages_read = 0
 
         return QAResponse(
             query_id=query_id,
@@ -214,199 +280,96 @@ class ClaudeAgentGenerator:
                 "model": self.model,
                 "retrieval_strategy": "agentic_full_page",
                 "pages_available": len(self._get_page_index()),
-                "pages_read": pages_read,
                 "chunks_retrieved": len(chunks),
                 "token_usage": token_usage,
             },
         )
 
-    def _build_tools(self) -> list[dict]:
-        """Build tool definitions for Claude."""
-        return [
-            {
-                "name": "list_pages",
-                "description": (
-                    "List all pages in the CBA Annual Report with page "
-                    "numbers and section titles. Use this first to find "
-                    "which pages are relevant to the question."
-                ),
-                "input_schema": {
-                    "type": "object",
-                    "properties": {},
-                },
-            },
-            {
-                "name": "read_page",
-                "description": (
-                    "Read a full page from the CBA Annual Report. "
-                    "Returns the complete markdown content of that page. "
-                    "Use the filename from list_pages."
-                ),
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "filename": {
-                            "type": "string",
-                            "description": (
-                                "The filename of the page to read "
-                                "(e.g. '13-delivering-financial-performance.md')"
-                            ),
-                        },
-                    },
-                    "required": ["filename"],
-                },
-            },
-            {
-                "name": "cite_source",
-                "description": (
-                    "Record a citation for a factual claim in your "
-                    "answer. Call this for every fact you cite."
-                ),
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "page": {
-                            "type": "integer",
-                            "description": "Page number in the report",
-                        },
-                        "section": {
-                            "type": "string",
-                            "description": "Section title",
-                        },
-                        "quote": {
-                            "type": "string",
-                            "description": (
-                                "The relevant quote or fact being cited"
-                            ),
-                        },
-                    },
-                    "required": ["page", "section", "quote"],
-                },
-            },
-        ]
+    async def _run_agent(
+        self, question: str, sdk_tools: list,
+    ) -> tuple[str, dict]:
+        """Run the Claude Agent SDK query loop."""
+        from claude_agent_sdk import query, ClaudeAgentOptions
 
-    def _run_agent_loop(
+        options = ClaudeAgentOptions(
+            model=self.model,
+            max_turns=self.max_turns,
+            system_prompt=AGENT_SYSTEM_PROMPT,
+            tools=sdk_tools,
+            permission_mode="auto",
+        )
+
+        answer_text = ""
+        token_usage: dict = {}
+
+        async for message in query(prompt=question, options=options):
+            if hasattr(message, "result") and message.result:
+                answer_text = message.result
+            if hasattr(message, "usage") and message.usage:
+                token_usage = {
+                    "input_tokens": getattr(message.usage, "input_tokens", 0),
+                    "output_tokens": getattr(message.usage, "output_tokens", 0),
+                }
+            if hasattr(message, "total_cost_usd"):
+                token_usage["cost_usd"] = message.total_cost_usd
+            if hasattr(message, "num_turns"):
+                token_usage["agent_turns"] = message.num_turns
+
+        return answer_text, token_usage
+
+    def _chunk_fallback(
         self,
-        client,
         question: str,
-        tools: list[dict],
-        pages_dir: Path,
-    ) -> tuple[str, list[Citation], dict, int]:
-        """Run the Claude agent loop with tool use."""
-        messages = [{"role": "user", "content": question}]
-        citations: list[Citation] = []
-        total_input = 0
-        total_output = 0
-        pages_read = 0
-        max_iterations = 10
+        chunks: list[RetrievedChunk],
+        scope_level: int,
+        query_id: str,
+    ) -> QAResponse:
+        """Fall back to chunk-based direct call when pages aren't available."""
+        if not chunks:
+            return QAResponse(
+                query_id=query_id,
+                question=question,
+                answer=AnswerPayload(
+                    text="Knowledge base pages not found.",
+                    scope_level_used=scope_level,
+                    grounding="none",
+                ),
+            )
 
-        for iteration in range(max_iterations):
+        context = "\n\n".join(
+            f"[Context {i}] (p.{c.page}, {c.section})\n{c.text}"
+            for i, c in enumerate(chunks, 1)
+        )
+        system_message = SYSTEM_PROMPT.format(context=context)
+
+        try:
+            import anthropic
+
+            client = anthropic.Anthropic(
+                api_key=os.getenv("ANTHROPIC_API_KEY"),
+            )
             response = client.messages.create(
                 model=self.model,
-                max_tokens=self.max_tokens,
-                temperature=self.temperature,
-                system=AGENT_SYSTEM_PROMPT,
-                tools=tools,
-                messages=messages,
+                max_tokens=1024,
+                temperature=0.1,
+                system=system_message,
+                messages=[{"role": "user", "content": question}],
             )
+            answer_text = response.content[0].text
+        except Exception:
+            answer_text = self._fallback_answer(chunks)
 
-            if response.usage:
-                total_input += response.usage.input_tokens
-                total_output += response.usage.output_tokens
-
-            if response.stop_reason == "tool_use":
-                tool_results = []
-                for block in response.content:
-                    if block.type == "tool_use":
-                        result, did_read = self._handle_tool_call(
-                            block.name,
-                            block.input,
-                            pages_dir,
-                            citations,
-                        )
-                        if did_read:
-                            pages_read += 1
-                        tool_results.append({
-                            "type": "tool_result",
-                            "tool_use_id": block.id,
-                            "content": result,
-                        })
-
-                messages.append({
-                    "role": "assistant",
-                    "content": response.content,
-                })
-                messages.append({
-                    "role": "user",
-                    "content": tool_results,
-                })
-            else:
-                # Claude is done — extract final answer
-                answer_text = ""
-                for block in response.content:
-                    if hasattr(block, "text"):
-                        answer_text += block.text
-                break
-        else:
-            answer_text = (
-                "I was unable to complete the search within the "
-                "iteration limit."
-            )
-
-        token_usage = {
-            "input_tokens": total_input,
-            "output_tokens": total_output,
-            "agent_iterations": iteration + 1,
-            "pages_read": pages_read,
-        }
-
-        return answer_text, citations, token_usage, pages_read
-
-    def _handle_tool_call(
-        self,
-        tool_name: str,
-        tool_input: dict,
-        pages_dir: Path,
-        citations: list[Citation],
-    ) -> tuple[str, bool]:
-        """Handle a tool call from Claude. Returns (result, did_read_page)."""
-        if tool_name == "list_pages":
-            index = self._get_page_index()
-            # Format as a concise table of contents
-            toc_lines = [
-                f"p.{entry['page']:>3}  {entry['title']:<60}  [{entry['file']}]"
-                for entry in index
-            ]
-            return "\n".join(toc_lines), False
-
-        elif tool_name == "read_page":
-            filename = tool_input.get("filename", "")
-            page_path = pages_dir / filename
-            if not page_path.exists():
-                return json.dumps({
-                    "error": f"Page not found: {filename}",
-                }), False
-            try:
-                content = page_path.read_text(
-                    encoding="utf-8", errors="replace",
-                )
-                # Truncate very large pages to stay within context
-                if len(content) > 15000:
-                    content = content[:15000] + "\n\n[... page truncated]"
-                return content, True
-            except Exception as e:
-                return json.dumps({"error": str(e)}), False
-
-        elif tool_name == "cite_source":
-            citation = Citation(
-                page=tool_input.get("page", 0),
-                section=tool_input.get("section", ""),
-                quote=tool_input.get("quote", ""),
-            )
-            citations.append(citation)
-            return json.dumps({"status": "citation recorded"}), False
-
-        return json.dumps({"error": f"Unknown tool: {tool_name}"}), False
+        return QAResponse(
+            query_id=query_id,
+            question=question,
+            answer=AnswerPayload(
+                text=answer_text,
+                scope_level_used=scope_level,
+                grounding="corpus",
+            ),
+            citations=self._extract_citations(chunks),
+            metadata={"framework": "claude-agent-sdk", "model": self.model},
+        )
 
     @staticmethod
     def _extract_citations(
@@ -423,143 +386,6 @@ class ClaudeAgentGenerator:
                         page=chunk.page,
                         section=chunk.section,
                         quote=chunk.text[:200],
-                    )
-                )
-        return citations
-
-    @staticmethod
-    def _fallback_answer(chunks: list[RetrievedChunk]) -> str:
-        if not chunks:
-            return (
-                "I cannot find this information "
-                "in the Annual Report."
-            )
-        top = chunks[0]
-        return (
-            f"{top.text}\n\n"
-            f"*Source: CBA Annual Report 2025, "
-            f"p.{top.page} — {top.section}*"
-        )
-
-
-# ---------------------------------------------------------------------------
-# Direct Anthropic SDK — simple call, no tool use
-# ---------------------------------------------------------------------------
-
-class ClaudeDirectGenerator:
-    """Simple Claude generation without tool use.
-
-    Same as the OpenAI generator pattern — sends context in the
-    system prompt and gets back an answer. No agent loop.
-    """
-
-    def __init__(
-        self,
-        *,
-        model: str = "claude-sonnet-4-20250514",
-        temperature: float = 0.1,
-        max_tokens: int = 1024,
-    ):
-        self.model = model
-        self.temperature = temperature
-        self.max_tokens = max_tokens
-
-    def generate(
-        self,
-        question: str,
-        chunks: list[RetrievedChunk],
-        *,
-        scope_level: int = 1,
-        query_id: str = "",
-    ) -> QAResponse:
-        """Generate answer with a direct Claude call."""
-        if not chunks:
-            return QAResponse(
-                query_id=query_id,
-                question=question,
-                answer=AnswerPayload(
-                    text="I cannot find this information "
-                    "in the Annual Report.",
-                    scope_level_used=scope_level,
-                    grounding="none",
-                ),
-            )
-
-        context = self._build_context(chunks)
-        system_message = SYSTEM_PROMPT.format(context=context)
-
-        try:
-            import anthropic
-
-            client = anthropic.Anthropic(
-                api_key=os.getenv("ANTHROPIC_API_KEY"),
-            )
-            response = client.messages.create(
-                model=self.model,
-                max_tokens=self.max_tokens,
-                temperature=self.temperature,
-                system=system_message,
-                messages=[
-                    {"role": "user", "content": question},
-                ],
-            )
-            answer_text = response.content[0].text
-            token_usage = {
-                "input_tokens": response.usage.input_tokens,
-                "output_tokens": response.usage.output_tokens,
-            }
-        except Exception as e:
-            answer_text = self._fallback_answer(chunks)
-            token_usage = {"error": str(e)}
-
-        citations = self._extract_citations(chunks)
-
-        return QAResponse(
-            query_id=query_id,
-            question=question,
-            answer=AnswerPayload(
-                text=answer_text,
-                scope_level_used=scope_level,
-                grounding="corpus",
-            ),
-            citations=citations,
-            metadata={
-                "framework": "claude-direct",
-                "model": self.model,
-                "retrieval_strategy": "hybrid",
-                "chunks_retrieved": len(chunks),
-                "chunks_used": len(citations),
-                "token_usage": token_usage,
-            },
-        )
-
-    @staticmethod
-    def _build_context(chunks: list[RetrievedChunk]) -> str:
-        blocks = []
-        for i, chunk in enumerate(chunks, 1):
-            blocks.append(
-                f"[Context {i}] (p.{chunk.page}, {chunk.section})\n"
-                f"{chunk.text}"
-            )
-        return "\n\n".join(blocks)
-
-    @staticmethod
-    def _extract_citations(
-        chunks: list[RetrievedChunk],
-    ) -> list[Citation]:
-        seen = set()
-        citations = []
-        for chunk in chunks:
-            key = (chunk.page, chunk.section)
-            if key not in seen:
-                seen.add(key)
-                citations.append(
-                    Citation(
-                        page=chunk.page,
-                        section=chunk.section,
-                        quote=chunk.text[:200] + (
-                            "..." if len(chunk.text) > 200 else ""
-                        ),
                     )
                 )
         return citations

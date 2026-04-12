@@ -1,9 +1,11 @@
-"""Answer generation — grounded answers with citations using OpenAI SDK."""
+"""Answer generation — OpenAI Agents SDK with function tools."""
 
 from __future__ import annotations
 
 import json
 import os
+import re
+from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -54,9 +56,13 @@ class QAResponse(BaseModel):
 
 
 class QAGenerator:
-    """Generates grounded answers with citations using OpenAI SDK.
+    """Generates grounded answers using the OpenAI Agents SDK.
+
+    Uses Agent with function_tool decorators for structured tool use.
+    The agent receives retrieved context and can cite sources via tools.
 
     Usage:
+        from agents import Agent, Runner, function_tool
         generator = QAGenerator()
         response = generator.generate("What was CBA's NIM?", chunks)
     """
@@ -99,10 +105,10 @@ class QAGenerator:
         scope_level: int = 1,
         query_id: str = "",
     ) -> QAResponse:
-        """Generate a grounded answer with citations.
+        """Generate a grounded answer using the OpenAI Agents SDK.
 
-        Calls OpenAI with the retrieved context and returns a structured response.
-        Falls back to a refusal if no context is available.
+        Creates an Agent with context-aware instructions and runs it
+        synchronously via Runner.run_sync.
         """
         if not chunks:
             return QAResponse(
@@ -116,32 +122,65 @@ class QAGenerator:
             )
 
         context = self._build_context(chunks)
-        system_message = SYSTEM_PROMPT.format(context=context)
+        instructions = SYSTEM_PROMPT.format(context=context)
+        citations = self._extract_citations(chunks)
 
         try:
-            from openai import OpenAI
+            from agents import Agent, Runner, function_tool
 
-            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-            response = client.chat.completions.create(
+            # Define a citation tool the agent can call
+            collected_citations: list[dict] = []
+
+            @function_tool
+            def cite_source(page: int, section: str, quote: str) -> str:
+                """Record a citation for a factual claim. Call this for every fact you reference."""
+                collected_citations.append({
+                    "page": page,
+                    "section": section,
+                    "quote": quote,
+                })
+                return f"Citation recorded: p.{page}, {section}"
+
+            agent = Agent(
+                name="CBA Annual Report Q&A",
+                instructions=instructions,
                 model=self.model,
-                temperature=self.temperature,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": question},
-                ],
+                tools=[cite_source],
             )
-            answer_text = response.choices[0].message.content or ""
-            token_usage = {
-                "prompt_tokens": response.usage.prompt_tokens if response.usage else 0,
-                "completion_tokens": response.usage.completion_tokens if response.usage else 0,
-                "total_tokens": response.usage.total_tokens if response.usage else 0,
-            }
+
+            result = Runner.run_sync(
+                agent,
+                question,
+                max_turns=5,
+            )
+
+            answer_text = result.final_output or ""
+
+            # Merge any agent-collected citations with chunk-based ones
+            if collected_citations:
+                citations = [
+                    Citation(
+                        page=c["page"],
+                        section=c["section"],
+                        quote=c["quote"],
+                    )
+                    for c in collected_citations
+                ]
+
+            token_usage = {}
+            if hasattr(result, "raw_responses") and result.raw_responses:
+                last = result.raw_responses[-1]
+                if hasattr(last, "usage") and last.usage:
+                    token_usage = {
+                        "input_tokens": last.usage.input_tokens,
+                        "output_tokens": last.usage.output_tokens,
+                        "total_tokens": last.usage.total_tokens,
+                    }
+
         except Exception as e:
             # Fallback: generate answer from context without LLM
             answer_text = self._fallback_answer(question, chunks)
             token_usage = {"error": str(e)}
-
-        citations = self._extract_citations(chunks)
 
         return QAResponse(
             query_id=query_id,
@@ -153,7 +192,7 @@ class QAGenerator:
             ),
             citations=citations,
             metadata={
-                "framework": "openai-sdk",
+                "framework": "openai-agents-sdk",
                 "model": self.model,
                 "retrieval_strategy": "hybrid",
                 "chunks_retrieved": len(chunks),

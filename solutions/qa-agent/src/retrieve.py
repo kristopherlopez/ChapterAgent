@@ -37,12 +37,24 @@ class HybridRetriever:
         collection_name: str = "cba_annual_report",
     ) -> HybridRetriever:
         """Create retriever from a knowledge base directory, ingesting if needed."""
+        persist_dir = str(knowledge_base_dir / ".chromadb")
+
+        # Fast path: reuse persisted collection if it exists and has data
+        try:
+            client = chromadb.PersistentClient(path=persist_dir)
+            existing = client.get_collection(collection_name)
+            if existing.count() > 0:
+                print(f"Loaded persisted ChromaDB collection ({existing.count()} chunks)")
+                return cls(existing)
+        except Exception:
+            pass
+
+        # Slow path: full ingestion
         try:
             from solutions.qa_agent.src.ingest import ingest_knowledge_base
         except ImportError:
             from ingest import ingest_knowledge_base  # type: ignore[no-redef]
 
-        persist_dir = str(knowledge_base_dir / ".chromadb")
         collection = ingest_knowledge_base(
             knowledge_base_dir,
             collection_name=collection_name,

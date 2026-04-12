@@ -20,10 +20,9 @@ def _create_generator(framework: str = "openai") -> QAGenerator:
     """Factory: create the right generator for the chosen framework.
 
     Frameworks:
-        openai:        OpenAI SDK (gpt-4o)
-        claude:        Claude Agent SDK with tool use (agentic)
-        claude-direct: Anthropic SDK direct call (no tool use)
-        langchain:     LangChain/LangGraph
+        openai:    OpenAI SDK (gpt-4o)
+        claude:    Claude Agent SDK with tool use (agentic)
+        langchain: LangChain via OpenRouter
     """
     if framework == "openai":
         return QAGenerator()
@@ -35,14 +34,6 @@ def _create_generator(framework: str = "openai") -> QAGenerator:
         except ImportError:
             from generate_claude import ClaudeAgentGenerator  # type: ignore[no-redef]
         return ClaudeAgentGenerator()
-    elif framework == "claude-direct":
-        try:
-            from solutions.qa_agent.src.generate_claude import (
-                ClaudeDirectGenerator,
-            )
-        except ImportError:
-            from generate_claude import ClaudeDirectGenerator  # type: ignore[no-redef]
-        return ClaudeDirectGenerator()
     elif framework == "langchain":
         try:
             from solutions.qa_agent.src.generate_langchain import (
@@ -54,7 +45,7 @@ def _create_generator(framework: str = "openai") -> QAGenerator:
     else:
         raise ValueError(
             f"Unknown framework: {framework!r}. "
-            "Use 'openai', 'claude', 'claude-direct', "
+            "Use 'openai', 'claude', "
             "or 'langchain'."
         )
 
@@ -278,7 +269,7 @@ async def main():
     )
     parser.add_argument(
         "--framework",
-        choices=["openai", "claude", "claude-direct", "langchain"],
+        choices=["openai", "claude", "langchain"],
         default="openai",
         help="LLM framework (default: openai)",
     )

@@ -37,9 +37,9 @@ class LangChainQAGenerator:
     def __init__(
         self,
         *,
-        model: str = "gpt-4o",
+        model: str | None = None,
         temperature: float = 0.1,
-        provider: str = "openai",
+        provider: str = "openrouter",
     ):
         self.model = model
         self.temperature = temperature
@@ -75,7 +75,11 @@ class LangChainQAGenerator:
         return citations
 
     def _get_llm(self):
-        """Create the LangChain LLM based on provider."""
+        """Create the LangChain LLM based on provider.
+
+        Default provider is OpenRouter, which supports any model via
+        the OpenAI-compatible API at openrouter.ai.
+        """
         if self.provider == "anthropic":
             from langchain_anthropic import ChatAnthropic
 
@@ -84,11 +88,21 @@ class LangChainQAGenerator:
                 temperature=self.temperature,
                 api_key=os.getenv("ANTHROPIC_API_KEY"),
             )
+        elif self.provider == "openrouter":
+            from langchain_openai import ChatOpenAI
+
+            model = self.model or os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash-preview")
+            return ChatOpenAI(
+                model=model,
+                temperature=self.temperature,
+                api_key=os.getenv("OPENROUTER_API_KEY"),
+                base_url="https://openrouter.ai/api/v1",
+            )
         else:
             from langchain_openai import ChatOpenAI
 
             return ChatOpenAI(
-                model=self.model,
+                model=self.model or "gpt-4o",
                 temperature=self.temperature,
                 api_key=os.getenv("OPENAI_API_KEY"),
             )
@@ -153,7 +167,7 @@ class LangChainQAGenerator:
             citations=citations,
             metadata={
                 "framework": "langchain-langgraph",
-                "model": self.model,
+                "model": self.model or os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash-preview"),
                 "provider": self.provider,
                 "retrieval_strategy": "hybrid",
                 "chunks_retrieved": len(chunks),
