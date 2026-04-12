@@ -1,0 +1,90 @@
+name: Compliance Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "solutions/**"
+      - "backend/src/platform/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "solutions/**"
+      - "backend/src/platform/**"
+  workflow_dispatch:
+    inputs:
+      solution_dir:
+        description: "Path to solution directory"
+        required: false
+        default: "solutions/qa-agent"
+
+jobs:
+  compliance-gate:
+    name: "Compliance Gate — AI Solution Deployment Check"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync
+
+      # ──────────────────────────────────────────────
+      # Run all 8 compliance gate checks
+      # ──────────────────────────────────────────────
+
+      - name: Run compliance gate
+        id: gate
+        run: |
+          SOLUTION_DIR="${{ github.event.inputs.solution_dir || 'solutions/qa-agent' }}"
+          uv run python -m src.platform.compliance.runner \
+            --solution-dir "../${SOLUTION_DIR}" \
+            --output ../results/compliance-gate-report.json \
+            --verbose
+
+      # ──────────────────────────────────────────────
+      # Upload evidence as artifact
+      # ──────────────────────────────────────────────
+
+      - name: Upload compliance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-evidence
+          path: results/compliance-gate-report.json
+          retention-days: 90
+
+      - name: Upload evaluation scorecard
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-scorecard
+          path: results/*/evaluation.json
+          retention-days: 90
+
+      # ──────────────────────────────────────────────
+      # Gate decision — block or promote
+      # ──────────────────────────────────────────────
+
+      - name: Gate decision
+        if: success()
+        run: echo "ALL GATES PASSED — approved for deployment"
+
+      - name: Gate blocked
+        if: failure()
+        run: |
+          echo "::error::COMPLIANCE GATE BLOCKED — one or more checks failed."
+          echo "Review the compliance evidence artifact for details."
+          echo "Fix the failing checks and re-submit."

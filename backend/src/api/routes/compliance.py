@@ -7,6 +7,8 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
+from src.platform.compliance.logger import ComplianceLogger
+
 router = APIRouter(tags=["compliance"])
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -50,3 +52,10 @@ def compliance_dashboard() -> dict:
         "total": passing + failing + warning,
         "solutions": solutions,
     }
+
+
+@router.get("/compliance/health/{solution_id}")
+def compliance_health(solution_id: str) -> dict:
+    """Get real-time compliance health for a solution from the event log."""
+    logger = ComplianceLogger(solution_id=solution_id)
+    return logger.get_health_summary(last_n=100)

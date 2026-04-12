@@ -54,6 +54,7 @@ The backend serves the REST API at `http://localhost:8000`. Key routes:
 - `GET  /api/evidence/{id}/download` — evidence export
 - `GET  /api/traces/{id}` — trace steps
 - `GET  /api/controls` — controls register (AI-GOV controls, risk mappings)
+- `GET  /api/compliance/health/{id}` — real-time compliance health from event log
 - `GET  /api/scorecard` — framework scorecard
 
 ### Frontend (Next.js 16 — port 3000)
@@ -77,6 +78,17 @@ cd backend && uv run uvicorn src.api.app:app --reload --port 8000
 # Terminal 2 — frontend
 cd frontend && npm run dev
 ```
+
+### Compliance Gate
+
+```bash
+# Run the full 8-check compliance gate for the QA agent
+cd backend
+uv run python -m src.platform.compliance.runner \
+  --solution-dir ../solutions/qa-agent --verbose
+```
+
+The runner loads `solution.yaml`, runs all 8 AI-GOV checks (registration, evaluation, PII, guardrails, bias/toxicity, audit trail, golden dataset sign-off, prompt governance), and outputs APPROVED or BLOCKED. Exit code 1 on BLOCKED.
 
 ### Tests
 

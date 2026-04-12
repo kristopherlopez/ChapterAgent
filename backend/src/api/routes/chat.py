@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from src.platform.compliance.logger import ComplianceLogger
 from src.platform.guardrails.runner import GuardrailRunner
 
 router = APIRouter()
@@ -42,6 +43,7 @@ class ChatResponse(BaseModel):
     guardrails: list[GuardrailOut]
     latencyMs: int
     blocked: bool
+    regenerated: bool = False
 
 
 def _get_agent(framework: str):
@@ -99,6 +101,19 @@ def _get_guardrail_runner() -> GuardrailRunner:
     )
 
 
+_compliance_logger = ComplianceLogger(solution_id="cba-annual-report-qa")
+
+
+def _get_context(agent, question, response):
+    """Extract context texts for guardrail evaluation."""
+    if hasattr(agent, 'retriever'):
+        chunks = agent.retriever.retrieve(question, top_k=5)
+        return [c.text for c in chunks]
+    if response.citations:
+        return [c.quote for c in response.citations]
+    return None
+
+
 @router.post("/chat/{solution_id}", response_model=ChatResponse)
 async def chat(solution_id: str, req: ChatRequest):
     if solution_id != "cba-annual-report-qa":
@@ -109,15 +124,7 @@ async def chat(solution_id: str, req: ChatRequest):
     # Run the agent
     agent = _get_agent(req.framework)
     response = await agent.answer(req.question)
-
-    # Build context for guardrails from the full citation quotes
-    # For QAAgent, also retrieve the raw chunks for better faithfulness scoring
-    context_texts = None
-    if hasattr(agent, 'retriever'):
-        chunks = agent.retriever.retrieve(req.question, top_k=5)
-        context_texts = [c.text for c in chunks]
-    elif response.citations:
-        context_texts = [c.quote for c in response.citations]
+    context_texts = _get_context(agent, req.question, response)
 
     # Run guardrails
     runner = _get_guardrail_runner()
@@ -127,9 +134,46 @@ async def chat(solution_id: str, req: ChatRequest):
         context=context_texts,
     )
 
+    blocked = any(g.result == "fail" for g in guardrail_results)
+    regenerated = False
+
+    # Regeneration: if only faithfulness failed, retry with stricter grounding
+    if blocked:
+        faithfulness_failed = any(
+            g.result == "fail" and "Faithfulness" in g.name
+            for g in guardrail_results
+        )
+        only_faithfulness = faithfulness_failed and sum(
+            1 for g in guardrail_results if g.result == "fail"
+        ) == 1
+
+        if only_faithfulness:
+            # Retry with stricter grounding prompt
+            response = await agent.answer(
+                req.question,
+                strict_grounding=True,
+            ) if hasattr(agent.answer, '__code__') and 'strict_grounding' in agent.answer.__code__.co_varnames else await agent.answer(req.question)
+
+            context_texts = _get_context(agent, req.question, response)
+            guardrail_results = await runner.run_all(
+                input=req.question,
+                output=response.answer.text,
+                context=context_texts,
+            )
+            blocked = any(g.result == "fail" for g in guardrail_results)
+            regenerated = True
+
     total_ms = int((time.perf_counter() - start) * 1000)
 
-    blocked = any(g.result == "fail" for g in guardrail_results)
+    # Log compliance event (Layer 2)
+    _compliance_logger.log_response(
+        query=req.question,
+        guardrail_results=guardrail_results,
+        latency_ms=total_ms,
+        blocked=blocked,
+        regenerated=regenerated,
+        regeneration_passed=not blocked if regenerated else None,
+    )
 
     return ChatResponse(
         text=response.answer.text,
@@ -152,4 +196,5 @@ async def chat(solution_id: str, req: ChatRequest):
         ],
         latencyMs=total_ms,
         blocked=blocked,
+        regenerated=regenerated,
     )
