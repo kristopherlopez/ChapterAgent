@@ -27,12 +27,12 @@ export const solutions: SolutionSummary[] = [
     category: "ai",
     owner: "Chapter Platform Team",
     riskTier: "Customer-Facing",
-    guardrailsSummary: "8/8 PASS",
-    evalScore: 0.91,
-    gateResult: "pass",
-    health: "pass",
-    lastRun: "2026-04-10 14:32 AEST",
-    lastTested: "2026-04-12 08:15 AEST",
+    guardrailsSummary: "Not evaluated",
+    evalScore: 0,
+    gateResult: "warn",
+    health: "warn",
+    lastRun: "",
+    lastTested: "",
     healthHistory: [
       { date: "2026-03-29", status: "pass" },
       { date: "2026-03-30", status: "pass" },
@@ -143,38 +143,47 @@ export const solutions: SolutionSummary[] = [
       { date: "2026-03-28", status: "pass" },
     ],
   },
+  {
+    id: "credit-approval-scorer",
+    name: "Credit Approval Scorer (AU)",
+    description:
+      "Predicts credit approval probability using anonymised Australian credit data with proxy discrimination detection",
+    category: "ml",
+    owner: "Chapter Platform Team",
+    riskTier: "Internal",
+    guardrailsSummary: "3/4 PASS (proxy flag)",
+    evalScore: 0.92,
+    gateResult: "warn",
+    health: "warn",
+    lastRun: "2026-04-12 15:30 AEST",
+    lastTested: "2026-04-12 15:30 AEST",
+    healthHistory: [
+      { date: "2026-04-01", status: "pass" },
+      { date: "2026-04-02", status: "pass" },
+      { date: "2026-04-03", status: "pass" },
+      { date: "2026-04-04", status: "warn" },
+      { date: "2026-04-05", status: "warn" },
+      { date: "2026-04-06", status: "warn" },
+      { date: "2026-04-07", status: "warn" },
+      { date: "2026-04-08", status: "warn" },
+      { date: "2026-04-09", status: "warn" },
+      { date: "2026-04-10", status: "warn" },
+      { date: "2026-04-11", status: "warn" },
+      { date: "2026-04-12", status: "warn" },
+    ],
+  },
 ];
 
 export const solutionDetails: Record<string, SolutionDetail> = {
   "cba-annual-report-qa": {
     ...solutions[0],
-    guardrails: [
-      { name: "Prompt Injection", result: "pass", detail: "0 injections detected" },
-      { name: "Scope Containment", result: "pass", detail: "Query mapped to topic: financial_performance" },
-      { name: "PII Detection", result: "pass", detail: "0 PII instances found" },
-      { name: "Faithfulness Check", result: "pass", detail: "Score: 0.94 (threshold: 0.90)" },
-      { name: "Bias Scan", result: "pass", detail: "Score: 0.02 (threshold: 0.05)" },
-      { name: "Toxicity Scan", result: "pass", detail: "Score: 0.00 (threshold: 0.05)" },
-      { name: "Citation Coverage", result: "pass", detail: "98% claims cited (threshold: 95%)" },
-      { name: "Temporal Accuracy", result: "pass", detail: "Score: 0.96" },
-    ],
-    evaluation: [
-      { metric: "Faithfulness", score: 0.94, threshold: 0.90, status: "pass" },
-      { metric: "Answer Relevancy", score: 0.91, threshold: 0.85, status: "pass" },
-      { metric: "Context Precision", score: 0.85, threshold: 0.80, status: "pass" },
-      { metric: "Context Recall", score: 0.79, threshold: 0.75, status: "pass" },
-      { metric: "Hallucination", score: 0.06, threshold: 0.10, status: "pass" },
-      { metric: "Citation Coverage", score: 0.98, threshold: 0.95, status: "pass" },
-      { metric: "Boundary Adherence", score: 0.98, threshold: 0.95, status: "pass" },
-      { metric: "Temporal Accuracy", score: 0.92, threshold: 0.90, status: "pass" },
-      { metric: "Bias", score: 0.02, threshold: 0.05, status: "pass" },
-      { metric: "Toxicity", score: 0.01, threshold: 0.05, status: "pass" },
-    ],
+    guardrails: [],
+    evaluation: [],
     complianceGate: {
       gate: "Deployment Gate",
-      result: "pass",
-      reason: "All 8 guardrails passed. All 10 evaluation metrics above production_customer_facing thresholds. Evidence report generated.",
-      timestamp: "2026-04-10 14:32 AEST",
+      result: "pending" as HealthStatus,
+      reason: "No evaluation has been run yet.",
+      timestamp: "",
     },
   },
   "agentic-model-validation": {
@@ -243,6 +252,30 @@ export const solutionDetails: Record<string, SolutionDetail> = {
       timestamp: "2026-04-10 15:10 AEST",
     },
   },
+  "credit-approval-scorer": {
+    ...solutions[4],
+    guardrails: [
+      { name: "Proxy Discrimination Check", result: "fail", detail: "Feature A8 approval rate disparity: 89.6% (threshold: 15%). Human review required." },
+      { name: "Calibration Check", result: "pass", detail: "Hosmer-Lemeshow p: 0.08 (threshold: 0.05)" },
+      { name: "Stability Check", result: "pass", detail: "Small sample — PSI unreliable below 1000 records" },
+      { name: "Explainability Check", result: "pass", detail: "SHAP coverage: 100%" },
+    ],
+    evaluation: [
+      { metric: "AUC-ROC", score: 0.92, threshold: 0.70, status: "pass" },
+      { metric: "Gini", score: 0.85, threshold: 0.40, status: "pass" },
+      { metric: "Brier Score", score: 0.11, threshold: 0.25, status: "pass" },
+      { metric: "Hosmer-Lemeshow p", score: 0.08, threshold: 0.05, status: "pass" },
+      { metric: "Bootstrap CI Width (AUC)", score: 0.07, threshold: 0.20, status: "pass" },
+      { metric: "Subgroup Approval Variance", score: 0.90, threshold: 0.15, status: "fail" },
+      { metric: "SHAP Coverage", score: 1.0, threshold: 1.0, status: "pass" },
+    ],
+    complianceGate: {
+      gate: "Deployment Gate",
+      result: "warn",
+      reason: "Proxy discrimination flag on feature A8 (89.6% approval rate disparity). Human review required before production deployment. All other metrics pass.",
+      timestamp: "2026-04-12 15:30 AEST",
+    },
+  },
 };
 
 export const frameworkScores: FrameworkScore[] = [
@@ -307,6 +340,15 @@ export const solutionTraces: Record<string, TraceStep[]> = {
     { step: 4, label: "SHAP explanation generated", durationMs: 45, detail: "Top factors: PAY_0, BILL_AMT1, PAY_AMT1" },
     { step: 5, label: "Fairness guardrails", durationMs: 32, detail: "4/4 passed | Demographic parity: 0.03 | Disparate impact: 0.87" },
     { step: 6, label: "Score returned", durationMs: 100, detail: "Total end-to-end latency" },
+  ],
+  "credit-approval-scorer": [
+    { step: 1, label: "Scoring request received", durationMs: 0 },
+    { step: 2, label: "Feature preparation", durationMs: 3, detail: "14 anonymised features (A1-A14), all numeric. No protected attributes known." },
+    { step: 3, label: "Model inference (LogisticRegression)", durationMs: 2, detail: "Approval probability: 0.73" },
+    { step: 4, label: "SHAP explanation (LinearExplainer)", durationMs: 8, detail: "Top factors: A8 (+1.44), A10 (+0.97), A5 (-0.65)" },
+    { step: 5, label: "Proxy discrimination check", durationMs: 5, detail: "3/4 passed | A8 flagged: 89.6% approval rate disparity. Human review required." },
+    { step: 6, label: "Bootstrap CI computation", durationMs: 120, detail: "AUC 95% CI: [0.889, 0.961] — width 0.072, within 0.20 threshold" },
+    { step: 7, label: "Score returned", durationMs: 138, detail: "Total end-to-end latency" },
   ],
 };
 
@@ -932,7 +974,7 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
 
 // --- Component Catalog ---
 
-const allSolutionIds = ["cba-annual-report-qa", "agentic-model-validation", "risk-classification-agent", "credit-default-scorer"];
+const allSolutionIds = ["cba-annual-report-qa", "agentic-model-validation", "risk-classification-agent", "credit-default-scorer", "credit-approval-scorer"];
 const aiSolutionIds = ["cba-annual-report-qa", "agentic-model-validation", "risk-classification-agent"];
 
 export const catalogComponents: CatalogComponent[] = [

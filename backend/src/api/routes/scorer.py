@@ -1,4 +1,4 @@
-"""Scorer API — interactive credit default scoring endpoint."""
+"""Scorer API — interactive credit scoring endpoints for ML solutions."""
 
 from __future__ import annotations
 
@@ -14,7 +14,9 @@ router = APIRouter()
 
 SOLUTIONS_DIR = Path(__file__).resolve().parents[4] / "solutions"
 
-# Cached scorer instance (trained once on first request)
+SUPPORTED_SCORERS = {"credit-default-scorer", "credit-approval-scorer"}
+
+# Cached scorer instances (trained once on first request per solution)
 _scorer_cache: dict[str, Any] = {}
 
 
@@ -70,7 +72,9 @@ class ProbeResult(BaseModel):
 # Demo fallback responses (used when scorer/dataset unavailable)
 # ---------------------------------------------------------------------------
 
-DEMO_PROFILES: dict[str, dict[str, Any]] = {
+# --- Credit Default Scorer demos ---
+
+_DEFAULT_DEMO_PROFILES: dict[str, dict[str, Any]] = {
     "low_risk": {
         "LIMIT_BAL": 300000, "PAY_0": 0, "PAY_2": 0, "PAY_3": 0,
         "PAY_4": 0, "PAY_5": 0, "PAY_6": 0,
@@ -91,7 +95,7 @@ DEMO_PROFILES: dict[str, dict[str, Any]] = {
     },
 }
 
-DEMO_RESPONSES: dict[str, ScoreResult] = {
+_DEFAULT_DEMO_RESPONSES: dict[str, ScoreResult] = {
     "low_risk": ScoreResult(
         scoring_id="SCR-DEMO-001", applicant_id="DEMO-001",
         default_probability=0.08, risk_band="LOW",
@@ -151,44 +155,136 @@ DEMO_RESPONSES: dict[str, ScoreResult] = {
     ),
 }
 
+# --- Credit Approval Scorer demos ---
+
+_APPROVAL_DEMO_RESPONSES: dict[str, ScoreResult] = {
+    "approve": ScoreResult(
+        scoring_id="SCR-AU-DEMO-001", applicant_id="APP-DEMO-001",
+        default_probability=0.73, risk_band="LOW",
+        recommendation="APPROVE",
+        shap_contributors=[
+            SHAPContributorOut(feature="A8", direction="supports_approval", shap_value=1.44),
+            SHAPContributorOut(feature="A10", direction="supports_approval", shap_value=0.97),
+            SHAPContributorOut(feature="A5", direction="supports_denial", shap_value=-0.65),
+            SHAPContributorOut(feature="A4", direction="supports_denial", shap_value=-0.48),
+        ],
+        baseline_probability=0.44,
+        guardrails=[
+            GuardrailOut(name="Proxy Discrimination Check", status="pass", detail="Max proxy variance: 0.03 (A1)"),
+            GuardrailOut(name="Calibration Check", status="pass", detail="Hosmer-Lemeshow p: 0.08"),
+            GuardrailOut(name="Stability Check", status="pass", detail="Small sample — PSI not reliable"),
+            GuardrailOut(name="Explainability Check", status="pass", detail="SHAP coverage: 100%"),
+        ],
+        latency_ms=12, blocked=False,
+    ),
+    "deny": ScoreResult(
+        scoring_id="SCR-AU-DEMO-002", applicant_id="APP-DEMO-002",
+        default_probability=0.15, risk_band="VERY_HIGH",
+        recommendation="DENY",
+        shap_contributors=[
+            SHAPContributorOut(feature="A8", direction="supports_denial", shap_value=-1.69),
+            SHAPContributorOut(feature="A7", direction="supports_denial", shap_value=-0.47),
+            SHAPContributorOut(feature="A14", direction="supports_denial", shap_value=-0.44),
+            SHAPContributorOut(feature="A3", direction="supports_denial", shap_value=-0.32),
+        ],
+        baseline_probability=0.44,
+        guardrails=[
+            GuardrailOut(name="Proxy Discrimination Check", status="pass", detail="Max proxy variance: 0.03 (A1)"),
+            GuardrailOut(name="Calibration Check", status="pass", detail="Hosmer-Lemeshow p: 0.08"),
+            GuardrailOut(name="Stability Check", status="pass", detail="Small sample — PSI not reliable"),
+            GuardrailOut(name="Explainability Check", status="pass", detail="SHAP coverage: 100%"),
+        ],
+        latency_ms=10, blocked=False,
+    ),
+    "refer": ScoreResult(
+        scoring_id="SCR-AU-DEMO-003", applicant_id="APP-DEMO-003",
+        default_probability=0.50, risk_band="MEDIUM",
+        recommendation="REFER",
+        shap_contributors=[
+            SHAPContributorOut(feature="A8", direction="supports_approval", shap_value=1.44),
+            SHAPContributorOut(feature="A5", direction="supports_denial", shap_value=-0.65),
+            SHAPContributorOut(feature="A12", direction="supports_denial", shap_value=-0.57),
+            SHAPContributorOut(feature="A14", direction="supports_denial", shap_value=-0.22),
+        ],
+        baseline_probability=0.44,
+        guardrails=[
+            GuardrailOut(name="Proxy Discrimination Check", status="pass", detail="Max proxy variance: 0.03 (A1)"),
+            GuardrailOut(name="Calibration Check", status="pass", detail="Hosmer-Lemeshow p: 0.08"),
+            GuardrailOut(name="Stability Check", status="pass", detail="Small sample — PSI not reliable"),
+            GuardrailOut(name="Explainability Check", status="pass", detail="SHAP coverage: 100%"),
+        ],
+        latency_ms=11, blocked=False,
+    ),
+}
+
 
 # ---------------------------------------------------------------------------
-# Scorer loader
+# Scorer loaders
 # ---------------------------------------------------------------------------
 
 
-def _get_scorer():
-    """Lazily import and train the credit default scorer."""
-    if "scorer" in _scorer_cache:
-        return _scorer_cache["scorer"]
+def _get_scorer(solution_id: str):
+    """Lazily import and train a scorer by solution ID."""
+    if solution_id in _scorer_cache:
+        return _scorer_cache[solution_id]
 
-    solution_dir = SOLUTIONS_DIR / "credit-default-scorer"
+    solution_dir = SOLUTIONS_DIR / solution_id
     src_dir = solution_dir / "src"
 
     if str(src_dir) not in sys.path:
         sys.path.insert(0, str(src_dir))
 
     try:
-        from scorer import CreditDefaultScorer
+        if solution_id == "credit-default-scorer":
+            from scorer import CreditDefaultScorer
+            dataset_path = solution_dir / "data" / "UCI_Credit_Card.csv"
+            if not dataset_path.exists():
+                return None
+            instance = CreditDefaultScorer()
+            instance.train(str(dataset_path))
 
-        dataset_path = solution_dir / "data" / "UCI_Credit_Card.csv"
-        if not dataset_path.exists():
+        elif solution_id == "credit-approval-scorer":
+            from scorer import CreditApprovalScorer
+            dataset_path = solution_dir / "data" / "australian.dat"
+            if not dataset_path.exists():
+                return None
+            instance = CreditApprovalScorer()
+            instance.train(str(dataset_path))
+
+        else:
             return None
 
-        instance = CreditDefaultScorer()
-        instance.train(str(dataset_path))
-        _scorer_cache["scorer"] = instance
+        _scorer_cache[solution_id] = instance
         return instance
     except Exception:
         return None
 
 
-def _scoring_response_to_result(response, latency_ms: int) -> ScoreResult:
+def _scoring_response_to_result(response, solution_id: str, latency_ms: int) -> ScoreResult:
     """Convert a ScoringResponse to a ScoreResult for the API."""
+    if solution_id == "credit-approval-scorer":
+        probability = response.output.approval_probability
+        guardrails = [
+            GuardrailOut(name="Proxy Discrimination Check", status=response.guardrail_results.proxy_discrimination_check),
+            GuardrailOut(name="Calibration Check", status=response.guardrail_results.calibration_check),
+            GuardrailOut(name="Stability Check", status=response.guardrail_results.stability_check),
+            GuardrailOut(name="Explainability Check", status=response.guardrail_results.explainability_check),
+        ]
+        applicant_id = response.application_id
+    else:
+        probability = response.output.default_probability
+        guardrails = [
+            GuardrailOut(name="Discrimination Check", status=response.guardrail_results.discrimination_check),
+            GuardrailOut(name="Calibration Check", status=response.guardrail_results.calibration_check),
+            GuardrailOut(name="Stability Check", status=response.guardrail_results.stability_check),
+            GuardrailOut(name="Explainability Check", status=response.guardrail_results.explainability_check),
+        ]
+        applicant_id = response.applicant_id
+
     return ScoreResult(
         scoring_id=response.scoring_id,
-        applicant_id=response.applicant_id,
-        default_probability=response.output.default_probability,
+        applicant_id=applicant_id,
+        default_probability=probability,
         risk_band=response.output.risk_band,
         recommendation=response.output.decision_recommendation,
         shap_contributors=[
@@ -200,38 +296,50 @@ def _scoring_response_to_result(response, latency_ms: int) -> ScoreResult:
             for c in response.explainability.top_contributors
         ],
         baseline_probability=response.explainability.baseline_probability,
-        guardrails=[
-            GuardrailOut(name="Discrimination Check", status=response.guardrail_results.discrimination_check),
-            GuardrailOut(name="Calibration Check", status=response.guardrail_results.calibration_check),
-            GuardrailOut(name="Stability Check", status=response.guardrail_results.stability_check),
-            GuardrailOut(name="Explainability Check", status=response.guardrail_results.explainability_check),
-        ],
+        guardrails=guardrails,
         latency_ms=latency_ms,
         blocked=any(
-            g in ("FAIL", "fail")
-            for g in [
-                response.guardrail_results.discrimination_check,
-                response.guardrail_results.calibration_check,
-                response.guardrail_results.stability_check,
-                response.guardrail_results.explainability_check,
-            ]
+            g.status in ("FAIL", "fail")
+            for g in guardrails
         ),
     )
 
 
-def _demo_score(features: dict[str, Any]) -> ScoreResult:
-    """Return a demo response based on feature patterns."""
+def _demo_score_default(features: dict[str, Any]) -> ScoreResult:
+    """Return a demo response for credit-default-scorer based on feature patterns."""
     pay_0 = features.get("PAY_0", 0)
     limit = features.get("LIMIT_BAL", 100000)
 
     if pay_0 >= 3:
-        base = DEMO_RESPONSES["high_risk"].model_copy()
+        base = _DEFAULT_DEMO_RESPONSES["high_risk"].model_copy()
     elif pay_0 >= 1 or limit < 80000:
-        base = DEMO_RESPONSES["deteriorating"].model_copy()
+        base = _DEFAULT_DEMO_RESPONSES["deteriorating"].model_copy()
     else:
-        base = DEMO_RESPONSES["low_risk"].model_copy()
+        base = _DEFAULT_DEMO_RESPONSES["low_risk"].model_copy()
 
     return base
+
+
+def _demo_score_approval(features: dict[str, Any]) -> ScoreResult:
+    """Return a demo response for credit-approval-scorer based on feature patterns."""
+    a8 = features.get("A8", 0)
+    a9 = features.get("A9", 0)
+
+    if a8 == 1 and a9 == 1:
+        base = _APPROVAL_DEMO_RESPONSES["approve"].model_copy()
+    elif a8 == 0 and a9 == 0:
+        base = _APPROVAL_DEMO_RESPONSES["deny"].model_copy()
+    else:
+        base = _APPROVAL_DEMO_RESPONSES["refer"].model_copy()
+
+    return base
+
+
+def _demo_score(solution_id: str, features: dict[str, Any]) -> ScoreResult:
+    """Route to the right demo scorer."""
+    if solution_id == "credit-approval-scorer":
+        return _demo_score_approval(features)
+    return _demo_score_default(features)
 
 
 # ---------------------------------------------------------------------------
@@ -241,31 +349,35 @@ def _demo_score(features: dict[str, Any]) -> ScoreResult:
 
 @router.post("/score/{solution_id}", response_model=ScoreResult)
 async def score(solution_id: str, req: ScoreRequest):
-    if solution_id != "credit-default-scorer":
+    if solution_id not in SUPPORTED_SCORERS:
         raise HTTPException(status_code=404, detail="Solution not found")
 
     start = time.perf_counter()
-    scorer = _get_scorer()
+    scorer = _get_scorer(solution_id)
 
     if scorer is None:
         # Demo fallback
         await _simulate_latency()
-        result = _demo_score(req.features)
+        result = _demo_score(solution_id, req.features)
         result.applicant_id = req.applicant_id or result.applicant_id
         return result
 
-    response = scorer.score(req.features, applicant_id=req.applicant_id)
+    if solution_id == "credit-approval-scorer":
+        response = scorer.score(req.features, application_id=req.applicant_id)
+    else:
+        response = scorer.score(req.features, applicant_id=req.applicant_id)
+
     latency_ms = int((time.perf_counter() - start) * 1000)
-    return _scoring_response_to_result(response, latency_ms)
+    return _scoring_response_to_result(response, solution_id, latency_ms)
 
 
 @router.post("/score/{solution_id}/probe", response_model=ProbeResult)
 async def probe(solution_id: str, req: ProbeRequest):
-    if solution_id != "credit-default-scorer":
+    if solution_id not in SUPPORTED_SCORERS:
         raise HTTPException(status_code=404, detail="Solution not found")
 
     start = time.perf_counter()
-    scorer = _get_scorer()
+    scorer = _get_scorer(solution_id)
 
     results: list[ScoreResult] = []
 
@@ -273,15 +385,18 @@ async def probe(solution_id: str, req: ProbeRequest):
         profile = {**req.base_profile, **variant}
 
         if scorer is None:
-            result = _demo_score(profile)
+            result = _demo_score(solution_id, profile)
             result.applicant_id = variant.get("label", f"PROBE-{i+1}")
             # Simulate slight score difference for demo
             if i == 1:
                 result.default_probability = round(result.default_probability + 0.09, 4)
         else:
-            response = scorer.score(profile, applicant_id=variant.get("label", f"PROBE-{i+1}"))
+            if solution_id == "credit-approval-scorer":
+                response = scorer.score(profile, application_id=variant.get("label", f"PROBE-{i+1}"))
+            else:
+                response = scorer.score(profile, applicant_id=variant.get("label", f"PROBE-{i+1}"))
             latency_ms = int((time.perf_counter() - start) * 1000)
-            result = _scoring_response_to_result(response, latency_ms)
+            result = _scoring_response_to_result(response, solution_id, latency_ms)
 
         results.append(result)
 
