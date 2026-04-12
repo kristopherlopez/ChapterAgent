@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -13,6 +14,8 @@ from src.platform.evaluation.metrics import (
     MetricResult,
 )
 from src.platform.evaluation.thresholds import THRESHOLDS
+
+logger = logging.getLogger(__name__)
 
 
 class EvaluationReport(BaseModel):
@@ -105,6 +108,115 @@ class EvaluationHarness:
             solution_id=solution_id,
             risk_tier=self.risk_tier,
             total_test_cases=total_test_cases,
+            metrics=results,
+            overall_score=round(overall, 4),
+            passed=all_passed,
+            summary=self._build_summary(results, all_passed),
+        )
+
+    def run_live(
+        self,
+        test_cases: list[dict],
+        *,
+        solution_id: str = "",
+        model: str = "gpt-4o",
+    ) -> EvaluationReport:
+        """Run evaluation using real DeepEval metrics (LLM-as-judge).
+
+        Args:
+            test_cases: List of dicts with keys: input, actual_output,
+                expected_output (optional), retrieval_context (optional).
+            solution_id: ID of the solution being evaluated.
+            model: Judge model for LLM-as-judge metrics.
+
+        Returns:
+            EvaluationReport with real DeepEval scores.
+        """
+        from deepeval import evaluate
+        from deepeval.metrics import (
+            FaithfulnessMetric,
+            AnswerRelevancyMetric,
+            ContextualPrecisionMetric,
+            ContextualRecallMetric,
+            HallucinationMetric,
+            BiasMetric,
+            ToxicityMetric,
+        )
+        from deepeval.test_case import LLMTestCase
+
+        # Build DeepEval test cases
+        deepeval_cases = []
+        for tc in test_cases:
+            deepeval_cases.append(
+                LLMTestCase(
+                    input=tc["input"],
+                    actual_output=tc["actual_output"],
+                    expected_output=tc.get("expected_output"),
+                    retrieval_context=tc.get("retrieval_context"),
+                    context=tc.get("context"),
+                )
+            )
+
+        # Map metric names to DeepEval metric classes
+        metric_map = {
+            "faithfulness": lambda t: FaithfulnessMetric(threshold=t, model=model, include_reason=True),
+            "answer_relevancy": lambda t: AnswerRelevancyMetric(threshold=t, model=model, include_reason=True),
+            "contextual_precision": lambda t: ContextualPrecisionMetric(threshold=t, model=model, include_reason=True),
+            "contextual_recall": lambda t: ContextualRecallMetric(threshold=t, model=model, include_reason=True),
+            "hallucination": lambda t: HallucinationMetric(threshold=t, model=model, include_reason=True),
+            "bias": lambda t: BiasMetric(threshold=t, model=model, include_reason=True),
+            "toxicity": lambda t: ToxicityMetric(threshold=t, model=model, include_reason=True),
+        }
+
+        # Build metrics from config
+        deepeval_metrics = []
+        for config in self._metrics:
+            factory = metric_map.get(config.name)
+            if factory:
+                deepeval_metrics.append(factory(config.threshold))
+
+        if not deepeval_metrics:
+            logger.warning("No DeepEval metrics configured for live evaluation")
+            return self.run_prerecorded({}, solution_id=solution_id)
+
+        # Run evaluation
+        logger.info(
+            "Running DeepEval evaluation: %d cases, %d metrics, judge=%s",
+            len(deepeval_cases), len(deepeval_metrics), model,
+        )
+        eval_results = evaluate(
+            test_cases=deepeval_cases,
+            metrics=deepeval_metrics,
+            print_results=False,
+        )
+
+        # Extract scores per metric (average across test cases)
+        metric_scores: dict[str, list[float]] = {}
+        for result in eval_results.test_results:
+            for metric_data in result.metrics_data:
+                name = metric_data.name.lower().replace(" ", "_")
+                if name not in metric_scores:
+                    metric_scores[name] = []
+                if metric_data.score is not None:
+                    metric_scores[name].append(metric_data.score)
+
+        # Build results using existing threshold configs
+        results = []
+        for config in self._metrics:
+            scores = metric_scores.get(config.name, [])
+            if scores:
+                avg_score = sum(scores) / len(scores)
+                result = MetricResult.from_config(config, avg_score)
+                result.metric = METRIC_DISPLAY_NAMES.get(config.name, config.name)
+                results.append(result)
+
+        all_passed = all(r.status == "pass" for r in results)
+        overall = sum(r.score for r in results) / len(results) if results else 0.0
+
+        return EvaluationReport(
+            solution_id=solution_id,
+            risk_tier=self.risk_tier,
+            total_test_cases=len(test_cases),
             metrics=results,
             overall_score=round(overall, 4),
             passed=all_passed,
