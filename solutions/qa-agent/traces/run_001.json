@@ -1,0 +1,8 @@
+[
+  { "step": 1, "label": "Query received", "durationMs": 0 },
+  { "step": 2, "label": "Scope check (topic graph)", "durationMs": 12, "detail": "Topic: financial_performance | Scope level: 1 | Result: in-scope" },
+  { "step": 3, "label": "Context retrieval (hybrid search)", "durationMs": 118, "detail": "4 chunks retrieved from ChromaDB, top score: 0.94" },
+  { "step": 4, "label": "LLM generation (OpenAI gpt-4o)", "durationMs": 1320, "detail": "Tokens: 1,852 | Cost: $0.0035 | Citations: 1" },
+  { "step": 5, "label": "Guardrail pipeline", "durationMs": 187, "detail": "8/8 passed | Faithfulness: 0.94" },
+  { "step": 6, "label": "Response returned", "durationMs": 1659, "detail": "Total end-to-end latency" }
+]

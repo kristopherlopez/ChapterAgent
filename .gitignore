@@ -29,5 +29,6 @@ solutions/*/mlruns/
 uv.lock
 
 # Runtime output
-results/
-traces/
+/results/
+/traces/
+test-results/

@@ -63,6 +63,7 @@ def run(
 
     # Source 1: Disk-based trace files
     candidates = [
+        solution_dir / "traces",
         project_root / "traces" / solution_id,
         project_root / "traces" / "rag-policy-qa",
         project_root / "results" / solution_id,

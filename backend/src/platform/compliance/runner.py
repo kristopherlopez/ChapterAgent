@@ -325,6 +325,8 @@ async def _main() -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
         output_path = output_dir / "compliance_gate.json"
 
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(report.model_dump(), f, indent=2)
 

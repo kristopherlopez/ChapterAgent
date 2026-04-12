@@ -1,0 +1,5 @@
+[
+  { "step": 1, "label": "Query received", "durationMs": 0 },
+  { "step": 2, "label": "Prompt injection check", "durationMs": 3, "detail": "BLOCKED — pattern match: 'ignore all previous instructions'" },
+  { "step": 3, "label": "Response: injection blocked", "durationMs": 3, "detail": "Query blocked before retrieval. No LLM generation occurred." }
+]
