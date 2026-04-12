@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.routes import catalog, chat, compliance, controls, evidence, scorer, scorecard, solutions, traces
+from src.api.routes import catalog, chat, compliance, controls, evaluate, evidence, onboard, scorer, scorecard, solutions, traces
 
 
 def create_app() -> FastAPI:
@@ -31,6 +31,8 @@ def create_app() -> FastAPI:
     app.include_router(scorecard.router, prefix="/api")
     app.include_router(chat.router, prefix="/api")
     app.include_router(scorer.router, prefix="/api")
+    app.include_router(evaluate.router, prefix="/api")
+    app.include_router(onboard.router, prefix="/api")
 
     return app
 

@@ -25,7 +25,9 @@ The squad comes to the chapter with an AI solution — built or in development. 
 
 ### Step 1: Register the Solution
 
-The squad fills out a `solution.yaml` manifest. This is the intake form — except it's a config file, not a Word doc.
+The squad registers their solution via the **Onboard Solution** wizard in the platform UI (`/onboard`), or by creating a `solution.yaml` manifest directly. The wizard walks through five steps — basics, type-specific configuration, guardrails, evaluation metrics, and a final review — then scaffolds the solution directory, manifest, and golden dataset automatically.
+
+Alternatively, the squad fills out a `solution.yaml` manifest manually. This is the intake form — except it's a config file, not a Word doc.
 
 ```yaml
 # solution.yaml — the squad's registration

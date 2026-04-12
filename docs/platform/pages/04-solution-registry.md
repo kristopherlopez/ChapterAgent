@@ -37,13 +37,25 @@ Gives at-a-glance visibility into solution stability over time — a solution th
 
 Solutions not tested in 7+ days show an amber warning badge next to the "Last Tested" timestamp. This surfaces solutions that may have drifted out of compliance without anyone noticing.
 
+### Onboard Solution
+
+An **Onboard Solution** link in the sidebar (and discoverable from the registry page) opens a five-step wizard at `/onboard`:
+
+1. **Basics** — name, ID, description, version, owner, risk tier, solution type
+2. **Configuration** — type-specific fields (endpoint URL, model/dataset config, or corpus/frameworks)
+3. **Guardrails** — type-specific thresholds and toggles
+4. **Evaluation & Compliance** — metric rows with thresholds, compliance gate selection
+5. **Review & Submit** — read-only summary, then submit
+
+On submit the platform creates the `solutions/{id}/` directory, writes `solution.yaml`, scaffolds the golden dataset, and registers initial results. The new solution appears in the registry immediately with a "pending" health status.
+
 ### How Registration Works
 
-An explanatory panel below the table describes the self-registration model:
-- Solutions declare themselves via a `solution.yaml` manifest
-- The platform discovers manifests automatically
-- Guardrail profiles are applied based on solution type and risk tier
-- No manual onboarding required
+The self-registration model supports two paths:
+- **UI wizard** — use the Onboard Solution flow described above
+- **File-based** — solutions declare themselves via a `solution.yaml` manifest; the platform discovers manifests automatically
+
+In both cases, guardrail profiles are applied based on solution type and risk tier.
 
 ### Legend
 

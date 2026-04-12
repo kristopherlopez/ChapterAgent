@@ -12,6 +12,7 @@ import {
   BrainCircuit,
   TrendingUp,
   Package,
+  Plus,
 } from "lucide-react";
 import { solutions } from "@/lib/data";
 
@@ -119,6 +120,18 @@ export default function Sidebar() {
         >
           <Package className="w-4 h-4" />
           Component Catalog
+        </Link>
+
+        <Link
+          href="/onboard"
+          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+            pathname.startsWith("/onboard")
+              ? "bg-zinc-900 text-white"
+              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+          }`}
+        >
+          <Plus className="w-4 h-4" />
+          Onboard Solution
         </Link>
 
         {/* AI Solutions */}

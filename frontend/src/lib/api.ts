@@ -3,7 +3,7 @@
  * Falls back to hardcoded data if the backend is unavailable.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function fetchJSON<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -114,4 +114,21 @@ export async function signOffDataset(
     },
   );
   if (!res.ok) throw new Error(`API error: ${res.status}`);
+}
+
+export async function onboardSolution(
+  data: Record<string, unknown>,
+): Promise<{ id: string; message: string }> {
+  const res = await fetch(`${API_BASE}/api/solutions/onboard`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res
+      .json()
+      .catch(() => ({ detail: `API error: ${res.status}` }));
+    throw new Error(err.detail || `API error: ${res.status}`);
+  }
+  return res.json();
 }

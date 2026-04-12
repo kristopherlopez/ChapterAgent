@@ -61,6 +61,7 @@ The backend serves the REST API at `http://localhost:8000`. Key routes:
 - `GET  /api/catalog/validation/{solution_id}` — golden dataset with review statuses
 - `PUT  /api/catalog/validation/{solution_id}/{case_id}` — update review status
 - `POST /api/catalog/validation/{solution_id}/sign-off` — dataset sign-off
+- `POST /api/solutions/onboard` — onboard a new solution (creates `solution.yaml`, golden dataset scaffold, and initial results)
 
 ### Frontend (Next.js 16 — port 3000)
 

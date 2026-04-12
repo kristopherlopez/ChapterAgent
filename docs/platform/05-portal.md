@@ -276,6 +276,7 @@ When Alex opens the portal:
 10. **Opens Component Catalog** — sees every reusable component the Chapter ships. Clicks into a guardrail to see the interface contract. Sees adoption across solutions. "This is the menu of what the Chapter provides."
 11. **Opens Generator** — sees the tool that bootstraps golden datasets. Selects a solution, generates test cases, sends to validation. "Squads don't start from scratch."
 12. **Opens Validation UI** — sees SME review interface. Approves/rejects cases, sees progress bar fill. Signs off. "This sign-off feeds directly into the compliance gate."
+13. **Opens Onboard Solution** — walks through the five-step wizard. Registers a new solution with manifest, guardrails, and evaluation config. "Squads can self-serve — no YAML editing required."
 
 The story in 60 seconds: "This is what governance on autopilot looks like. Every solution, every check, every decision — tracked, scored, and exportable. The Chapter builds reusable components; squads consume them and bring their domain expertise."
 
