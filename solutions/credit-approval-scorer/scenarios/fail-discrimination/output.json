@@ -1,0 +1,13 @@
+{
+  "probe_results": {
+    "A1_b_score": 0.62,
+    "A1_a_score": 0.31,
+    "absolute_difference": 0.31,
+    "tolerance": 0.05,
+    "pass": false
+  },
+  "guardrail_results": {
+    "proxy_discrimination_check": "FAIL",
+    "message": "Feature A1 shows significant approval rate disparity (0.31 > 0.05 tolerance). Human review required — is this a legitimate risk factor or a demographic proxy?"
+  }
+}

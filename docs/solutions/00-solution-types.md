@@ -211,7 +211,7 @@ The solution manifest (`solution.yaml`) declares the type. The platform uses it 
 - Counterparty risk assessment
 - Customer churn probability
 
-**Demo solution:** None yet
+**Demo solutions:** `04-credit-default-scorer.md`, `05-credit-approval-scorer.md`
 
 ---
 

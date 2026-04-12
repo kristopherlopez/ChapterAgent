@@ -1,0 +1,9 @@
+{
+  "description": "Population drift simulation — continuous features shifted to simulate changed applicant pool",
+  "drift_type": "population_shift",
+  "shifted_features": {
+    "A2": { "mean_delta": 10.0, "note": "Average A2 increased by 10" },
+    "A14": { "mean_delta": 200, "note": "Average A14 increased by 200" }
+  },
+  "note": "PSI unreliable below 1000 records — this scenario demonstrates the platform's awareness of small-sample limitations"
+}

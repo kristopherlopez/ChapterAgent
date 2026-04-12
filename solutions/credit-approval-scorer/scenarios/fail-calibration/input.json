@@ -1,0 +1,6 @@
+{
+  "description": "Calibration test — Hosmer-Lemeshow goodness-of-fit on holdout set",
+  "test_type": "hosmer_lemeshow",
+  "holdout_size": 207,
+  "note": "With only 207 test records, calibration tests have limited power"
+}

@@ -1,0 +1,48 @@
+{
+  "scoring_id": "SCR-AU-2026-0001",
+  "application_id": "APP-001",
+  "input_features": {
+    "A1": 1,
+    "A2": 30.83,
+    "A3": 0.0,
+    "A4": 0,
+    "A5": 0,
+    "A6": 9,
+    "A7": 1.25,
+    "A8": 1,
+    "A9": 1,
+    "A10": 1,
+    "A11": 0,
+    "A12": 1,
+    "A13": 202,
+    "A14": 0
+  },
+  "output": {
+    "approval_probability": 0.73,
+    "risk_band": "LOW",
+    "decision_recommendation": "APPROVE"
+  },
+  "explainability": {
+    "method": "SHAP",
+    "top_contributors": [
+      { "feature": "A9", "direction": "supports_approval", "shap_value": 0.18 },
+      { "feature": "A10", "direction": "supports_approval", "shap_value": 0.09 },
+      { "feature": "A14", "direction": "supports_denial", "shap_value": -0.06 },
+      { "feature": "A7", "direction": "supports_approval", "shap_value": 0.04 }
+    ],
+    "baseline_probability": 0.44
+  },
+  "guardrail_results": {
+    "proxy_discrimination_check": "pass",
+    "calibration_check": "pass",
+    "stability_check": "pass",
+    "explainability_check": "pass"
+  },
+  "metadata": {
+    "model_version": "1.0.0",
+    "model_type": "LogisticRegression",
+    "dataset_origin": "Australian (UCI Statlog)",
+    "training_date": "2026-04-01",
+    "inference_latency_ms": 2
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "hosmer_lemeshow": {
+    "statistic": 22.4,
+    "p_value": 0.004,
+    "threshold": 0.05,
+    "pass": false
+  },
+  "brier_score": {
+    "value": 0.28,
+    "threshold": 0.25,
+    "pass": false
+  },
+  "guardrail_results": {
+    "calibration_check": "FAIL",
+    "message": "Hosmer-Lemeshow p=0.004 (below 0.05 threshold). Predicted probabilities do not align with observed approval rates. Note: small sample (207 records) limits calibration precision."
+  }
+}
