@@ -335,7 +335,58 @@ All pass → auto-promoted. Any fail → blocked with a specific reason and reme
 
 ---
 
-## 8. Platform Implementation Status
+## 8. Trace Contract — Endpoint Observability
+
+Endpoint-type solutions (deployed as external services) present a unique observability challenge: the platform can measure latency and run guardrails against the response, but it's blind to what happened *inside* the pipeline. The trace contract solves this.
+
+### Two Patterns
+
+**Option 1 — Inline traces (demo / lightweight):**
+The endpoint includes a `trace` field in its JSON response body conforming to the platform's trace schema. The compliance runner validates traces at test time.
+
+```json
+{
+    "answer": "CBA's NPAT was $10,133M...",
+    "citations": [...],
+    "trace": {
+        "steps": [
+            {"step": 1, "label": "Query received", "durationMs": 0},
+            {"step": 2, "label": "Context retrieval", "durationMs": 120},
+            {"step": 3, "label": "LLM generation", "durationMs": 1340},
+            {"step": 4, "label": "Guardrail checks", "durationMs": 187},
+            {"step": 5, "label": "Response returned", "durationMs": 1647}
+        ]
+    }
+}
+```
+
+Simple to implement. The audit trail check (AI-GOV-008) validates: "I called your endpoint — did the response include a valid trace? If not, blocked."
+
+**Option 2 — OpenTelemetry sidecar (production / CBA-realistic):**
+The endpoint pushes spans to a platform-provided OTel collector (e.g. LangFuse, Jaeger). The Chapter doesn't control the response schema — it owns the collector.
+
+More realistic at CBA scale where the Chapter Area Lead may not have the influence to mandate response format changes across all squads. OTel is an industry standard squads may already use. The Chapter provides the collector; squads instrument at their own pace. Adoption is tracked via the dashboard — visibility, not enforcement.
+
+### Squad Responsibilities (Either Pattern)
+
+| What | Why |
+|---|---|
+| Trace-compliant endpoint | Response must include structured traces per the platform schema (Option 1) or push spans to the collector (Option 2) |
+| `tracing` config in `solution.yaml` | Declares contract version, format (inline/opentelemetry), and emitted event types |
+| Required trace labels: query, retrieval, generation, guardrail, response | Platform validates these exist to confirm full pipeline observability |
+
+### Chapter Responsibilities
+
+| What | Why |
+|---|---|
+| Trace schema definition | Platform defines what a valid trace looks like |
+| Trace contract validator | Automated validation of endpoint compliance |
+| OTel collector (Option 2) | Platform-provided infrastructure for span collection |
+| AI-GOV-008 integration | Audit trail check validates traces from both disk and inline sources |
+
+---
+
+## 9. Platform Implementation Status
 
 The following components are implemented in the Chapter AI Platform portal:
 
@@ -345,6 +396,7 @@ The following components are implemented in the Chapter AI Platform portal:
 | Guardrail Framework (8 guardrails) | Active | Solution Detail page (guardrail results section) |
 | Compliance-as-Code (8 gates) | Active | Compliance Health Dashboard, Solution Detail page |
 | Observability / Trace Logger | Active | Trace View page |
+| Trace Contract Validator | Active | Validates endpoint traces for AI-GOV-008 audit trail check |
 | Component Catalog | Active | `/catalog` — lists all 20 reusable components with adoption data |
 | Golden Dataset Generator | Beta | `/catalog/generator` — generates draft test triples from corpus |
 | Golden Dataset Validation UI | Beta | `/catalog/validation` — SME review, approve/reject/edit, sign-off |

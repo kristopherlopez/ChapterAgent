@@ -70,6 +70,33 @@ class FrameworkConfig(BaseModel):
     retrieval_strategies: list[str] = Field(default_factory=list)
 
 
+class EndpointConfig(BaseModel):
+    """External endpoint configuration for endpoint-type solutions."""
+    url: str = ""
+    method: str = "POST"
+    timeout_ms: int = 30000
+
+
+class TracingConfig(BaseModel):
+    """Tracing contract configuration.
+
+    Defines how a solution exposes execution traces. Two modes:
+
+    - **inline** (demo): The endpoint includes a ``trace`` field in its JSON
+      response body conforming to the platform trace schema.  The compliance
+      runner can validate traces without extra infrastructure.
+    - **opentelemetry** (production): The solution pushes spans to a
+      platform-provided OTel collector (e.g. LangFuse).  More realistic at
+      CBA scale where the Chapter may not control endpoint response schemas.
+    """
+    contract_version: str = "1.0"
+    format: str = "inline"  # "inline" | "opentelemetry"
+    emits: list[str] = Field(default_factory=list)
+    required_fields: list[str] = Field(
+        default_factory=lambda: ["query", "retrieval", "generation", "guardrails", "response"],
+    )
+
+
 class SolutionManifest(BaseModel):
     """Complete solution manifest — parsed from solution.yaml."""
     name: str
@@ -79,6 +106,8 @@ class SolutionManifest(BaseModel):
     owner: str = "Chapter Platform Team"
     type: str = "embedded"
     risk_tier: str = "production_internal"
+    endpoint: EndpointConfig | None = None
+    tracing: TracingConfig = Field(default_factory=TracingConfig)
     guardrails: GuardrailConfig | list[str] = Field(default_factory=list)
     evaluation: EvaluationConfig = Field(default_factory=EvaluationConfig)
     compliance: ComplianceConfig = Field(default_factory=ComplianceConfig)
