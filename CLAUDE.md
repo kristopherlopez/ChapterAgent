@@ -56,6 +56,11 @@ The backend serves the REST API at `http://localhost:8000`. Key routes:
 - `GET  /api/controls` — controls register (AI-GOV controls, risk mappings)
 - `GET  /api/compliance/health/{id}` — real-time compliance health from event log
 - `GET  /api/scorecard` — framework scorecard
+- `GET  /api/catalog` — reusable component catalog (guardrails, evaluation, compliance, observability, tooling)
+- `POST /api/catalog/generator/generate` — golden dataset test case generation (body: `{ "solution_id": "...", "num_cases": 10, "query_types": [...] }`)
+- `GET  /api/catalog/validation/{solution_id}` — golden dataset with review statuses
+- `PUT  /api/catalog/validation/{solution_id}/{case_id}` — update review status
+- `POST /api/catalog/validation/{solution_id}/sign-off` — dataset sign-off
 
 ### Frontend (Next.js 16 — port 3000)
 

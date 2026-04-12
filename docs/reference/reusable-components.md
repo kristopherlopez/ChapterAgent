@@ -335,6 +335,24 @@ All pass → auto-promoted. Any fail → blocked with a specific reason and reme
 
 ---
 
+## 8. Platform Implementation Status
+
+The following components are implemented in the Chapter AI Platform portal:
+
+| Component | Status | Portal Location |
+|---|---|---|
+| Evaluation Harness | Active | Solution Detail page (evaluation scores section) |
+| Guardrail Framework (8 guardrails) | Active | Solution Detail page (guardrail results section) |
+| Compliance-as-Code (8 gates) | Active | Compliance Health Dashboard, Solution Detail page |
+| Observability / Trace Logger | Active | Trace View page |
+| Component Catalog | Active | `/catalog` — lists all 20 reusable components with adoption data |
+| Golden Dataset Generator | Beta | `/catalog/generator` — generates draft test triples from corpus |
+| Golden Dataset Validation UI | Beta | `/catalog/validation` — SME review, approve/reject/edit, sign-off |
+
+The Component Catalog page demonstrates the Chapter's reusable component model: each component shows its interface contract (what the squad provides vs what the component returns) and adoption across registered solutions.
+
+---
+
 ## Interview Framing
 
 > "The chapter builds the evaluation harness and sets the standards. The squads consume it and own their domain-specific test data. That's the reusable component model — we build it once, every squad benefits, and quality is consistent across the organisation."

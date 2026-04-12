@@ -11,6 +11,7 @@ import {
   FileText,
   BrainCircuit,
   TrendingUp,
+  Package,
 } from "lucide-react";
 import { solutions } from "@/lib/data";
 
@@ -106,6 +107,18 @@ export default function Sidebar() {
         >
           <FileText className="w-4 h-4" />
           Documents
+        </Link>
+
+        <Link
+          href="/catalog"
+          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+            pathname.startsWith("/catalog")
+              ? "bg-zinc-900 text-white"
+              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+          }`}
+        >
+          <Package className="w-4 h-4" />
+          Component Catalog
         </Link>
 
         {/* AI Solutions */}

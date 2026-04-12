@@ -206,6 +206,58 @@ Comparison table across all three demo solutions — showing how the same platfo
 
 **What Alex sees:** Three different solution types, same governance platform. The metrics that matter shift by type — faithfulness for Q&A, accuracy and bias for classification. The platform adapts its evaluation to the solution, not the other way around.
 
+### 10. Component Catalog
+
+Dedicated page at `/catalog` listing every reusable platform component the Chapter ships to squads. This is the "menu" of Chapter-provided tooling.
+
+Components are organised by type with filter pills:
+- **Guardrail** (8) — scope adherence, PII, faithfulness, bias, toxicity, citation coverage, temporal accuracy, prompt injection
+- **Evaluation** (1) — the evaluation harness with risk-tier thresholds
+- **Compliance** (8) — the 8 AI-GOV compliance gate checks
+- **Observability** (1) — trace logger
+- **Tooling** (2) — golden dataset generator (beta) and validation UI (beta)
+
+Each component row expands to show:
+- **Interface contract** — what the squad provides vs what the component returns
+- **Adoption** — which solutions currently consume this component (with links)
+- **Open Tool** button for tooling components (links to generator or validation UI)
+
+Summary cards show total components, active count, and solutions consuming. An explainer card describes the "Chapter builds, squads consume" model.
+
+**What Alex sees:** "Here's every reusable component the Chapter ships. Squads don't build guardrails from scratch — they consume these. Adoption is tracked. Each component has a clear interface contract."
+
+### 11. Golden Dataset Generator
+
+Dedicated page at `/catalog/generator` providing the Chapter's tool for bootstrapping golden datasets. Squads bring their documents; the generator produces draft test triples.
+
+Configuration form:
+- **Solution selector** — pick from registered solutions
+- **Number of cases** — how many test triples to generate
+- **Query types** — checkboxes for 10 types (direct factual, comparative, temporal, aggregation, causal, boundary, multi-hop, out of scope, ambiguous, adversarial)
+
+Results table shows generated cases with expandable detail (question, expected answer, citations, behaviour, grounding, scope level, key metrics). A "Send to Validation" button forwards generated cases to the validation UI.
+
+**What Alex sees:** "The Chapter provides this tool so squads don't start from scratch. They bring their documents, the generator bootstraps draft test cases, and their SMEs review them in the validation UI."
+
+### 12. Golden Dataset Validation UI
+
+Dedicated page at `/catalog/validation` providing the SME review interface for golden dataset test cases.
+
+Progress section:
+- **Progress bar** — visual indicator of review completion
+- **Stats** — total, approved, rejected, pending counts
+- **Sign-off button** — disabled until all cases reviewed
+
+Test cases table with expandable review panels showing:
+- Full question and expected answer
+- Citations, behaviour, grounding, scope level, key metrics
+- Review notes from previous reviewers
+- **Approve / Reject / Edit** action buttons
+
+Sign-off produces the compliance artifact required by AI-GOV-009 (Golden Dataset Sign-off gate).
+
+**What Alex sees:** "This closes the loop. The generator creates volume, domain experts validate quality, and sign-off feeds directly into the compliance gate. Squads get a reviewed, auditable golden dataset."
+
 ---
 
 ## Demo Flow
@@ -221,8 +273,11 @@ When Alex opens the portal:
 7. **Opens Solution Registry** — sees manifest-driven self-registration model. Squads onboard themselves.
 8. **Opens Controls Register** — sees every automated control mapped to risks and regulations. The auditor's view. "Pick any control — I can show you where it runs and what regulation it satisfies."
 9. **Opens Documents** — sees governance documents mapped to automated controls. Every AI-GOV check traces to a policy.
+10. **Opens Component Catalog** — sees every reusable component the Chapter ships. Clicks into a guardrail to see the interface contract. Sees adoption across solutions. "This is the menu of what the Chapter provides."
+11. **Opens Generator** — sees the tool that bootstraps golden datasets. Selects a solution, generates test cases, sends to validation. "Squads don't start from scratch."
+12. **Opens Validation UI** — sees SME review interface. Approves/rejects cases, sees progress bar fill. Signs off. "This sign-off feeds directly into the compliance gate."
 
-The story in 60 seconds: "This is what governance on autopilot looks like. Every solution, every check, every decision — tracked, scored, and exportable."
+The story in 60 seconds: "This is what governance on autopilot looks like. Every solution, every check, every decision — tracked, scored, and exportable. The Chapter builds reusable components; squads consume them and bring their domain expertise."
 
 ---
 
