@@ -45,7 +45,7 @@ const TYPE_COLORS: Record<ComponentType, string> = {
 function TypeBadge({ type }: { type: ComponentType }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${TYPE_COLORS[type]}`}
+      className={`inline-flex items-center justify-center w-24 px-2 py-0.5 rounded-full text-xs font-medium border ${TYPE_COLORS[type]}`}
     >
       {type}
     </span>
@@ -55,13 +55,13 @@ function TypeBadge({ type }: { type: ComponentType }) {
 function StatusBadge({ status }: { status: string }) {
   if (status === "beta") {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+      <span className="inline-flex items-center justify-center w-16 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
         Beta
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+    <span className="inline-flex items-center justify-center w-16 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
       Active
     </span>
   );
