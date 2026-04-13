@@ -8,33 +8,28 @@ import time
 from pathlib import Path
 from typing import Any
 
-from generate_openai import QAGenerator
+from generate_claude import ClaudeGenerator
+from generate_langchain import LangChainGenerator
+from generate_openai import OpenAIGenerator
 from retrieve import HybridRetriever, RetrievedChunk
-from schema import QAResponse
+from schema import BaseGenerator, QAResponse
+
+GENERATORS: dict[str, type[BaseGenerator]] = {
+    "openai": OpenAIGenerator,
+    "claude": ClaudeGenerator,
+    "langchain": LangChainGenerator,
+}
 
 
-def _create_generator(framework: str = "openai") -> QAGenerator:
-    """Factory: create the right generator for the chosen framework.
-
-    Frameworks:
-        openai:    OpenAI SDK (gpt-4o)
-        claude:    Claude Agent SDK with tool use (agentic)
-        langchain: LangChain via OpenRouter
-    """
-    if framework == "openai":
-        return QAGenerator()
-    elif framework == "claude":
-        from generate_claude import ClaudeAgentGenerator
-        return ClaudeAgentGenerator()
-    elif framework == "langchain":
-        from generate_langchain import LangChainQAGenerator
-        return LangChainQAGenerator()
-    else:
+def _create_generator(framework: str = "openai") -> BaseGenerator:
+    """Factory: create the right generator for the chosen framework."""
+    cls = GENERATORS.get(framework)
+    if cls is None:
         raise ValueError(
             f"Unknown framework: {framework!r}. "
-            "Use 'openai', 'claude', "
-            "or 'langchain'."
+            f"Use one of: {', '.join(GENERATORS)}."
         )
+    return cls()
 
 
 class QAAgent:

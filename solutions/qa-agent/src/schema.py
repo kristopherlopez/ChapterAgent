@@ -1,12 +1,18 @@
-"""Shared types and constants for Q&A agent generators."""
+"""Shared types, constants, and base class for Q&A agent generators."""
 
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 from retrieve import RetrievedChunk
+
+
+# ---------------------------------------------------------------------------
+# System prompts
+# ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """You are a Q&A agent for CBA's 2025 Annual Report. You answer questions based ONLY on the provided document context.
 
@@ -22,6 +28,34 @@ CONTEXT:
 {context}
 """
 
+AGENT_SYSTEM_PROMPT = """You are a Q&A agent for CBA's 2025 Annual Report. You answer questions by reading the actual report pages.
+
+You have access to tools:
+- **list_pages**: shows the table of contents — page numbers and section titles.
+- **read_page**: reads a full page from the report by its filename.
+- **cite_source**: records a citation for a factual claim in your answer.
+
+WORKFLOW:
+1. Call list_pages to see what's available.
+2. Based on the question, decide which pages are likely relevant.
+3. Call read_page to read those pages in full.
+4. If you need more context, read additional pages.
+5. Answer the question based on what you've read.
+6. Call cite_source for EVERY factual claim.
+
+RULES:
+1. Answer ONLY from the pages you've read. Do not use prior knowledge.
+2. Cite EVERY factual claim with cite_source.
+3. If you can't find the information after reading relevant pages, say so.
+4. Never provide financial advice, opinions, or recommendations.
+5. Be precise with numbers — do not round or approximate.
+6. Include the reporting period (e.g., "FY2025") when referencing figures.
+"""
+
+
+# ---------------------------------------------------------------------------
+# Response models
+# ---------------------------------------------------------------------------
 
 class Citation(BaseModel):
     """A source citation for a claim in the answer."""
@@ -46,3 +80,104 @@ class QAResponse(BaseModel):
     citations: list[Citation] = Field(default_factory=list)
     guardrail_results: dict[str, str] = Field(default_factory=dict)
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+# ---------------------------------------------------------------------------
+# Base generator
+# ---------------------------------------------------------------------------
+
+class BaseGenerator(ABC):
+    """Abstract base for all Q&A generators.
+
+    Provides shared helpers for context formatting, citation extraction,
+    and fallback answers. Subclasses implement `generate()` with their
+    framework-specific logic.
+    """
+
+    framework: str = ""
+    model: str = ""
+
+    @abstractmethod
+    def generate(
+        self,
+        question: str,
+        chunks: list[RetrievedChunk],
+        *,
+        scope_level: int = 1,
+        query_id: str = "",
+    ) -> QAResponse:
+        """Generate a grounded answer with citations."""
+        ...
+
+    @staticmethod
+    def build_context(chunks: list[RetrievedChunk]) -> str:
+        """Format retrieved chunks as numbered context blocks."""
+        blocks = []
+        for i, chunk in enumerate(chunks, 1):
+            blocks.append(
+                f"[Context {i}] (p.{chunk.page}, {chunk.section})\n{chunk.text}"
+            )
+        return "\n\n".join(blocks)
+
+    @staticmethod
+    def extract_citations(chunks: list[RetrievedChunk]) -> list[Citation]:
+        """Build deduplicated citations from retrieved chunks."""
+        seen = set()
+        citations = []
+        for chunk in chunks:
+            key = (chunk.page, chunk.section)
+            if key not in seen:
+                seen.add(key)
+                citations.append(
+                    Citation(
+                        page=chunk.page,
+                        section=chunk.section,
+                        quote=chunk.text[:200] + ("..." if len(chunk.text) > 200 else ""),
+                    )
+                )
+        return citations
+
+    @staticmethod
+    def fallback_answer(chunks: list[RetrievedChunk]) -> str:
+        """Simple fallback: return the most relevant chunk text with citation."""
+        if not chunks:
+            return "I cannot find this information in the Annual Report."
+        top = chunks[0]
+        return (
+            f"{top.text}\n\n"
+            f"*Source: CBA Annual Report 2025, p.{top.page} — {top.section}*"
+        )
+
+    def empty_response(
+        self, question: str, scope_level: int, query_id: str,
+    ) -> QAResponse:
+        """Return a standard empty response when no chunks are available."""
+        return QAResponse(
+            query_id=query_id,
+            question=question,
+            answer=AnswerPayload(
+                text="I cannot find this information in the Annual Report.",
+                scope_level_used=scope_level,
+                grounding="none",
+            ),
+        )
+
+    def build_metadata(
+        self,
+        *,
+        chunks: list[RetrievedChunk],
+        citations: list[Citation],
+        token_usage: dict,
+        **extra: Any,
+    ) -> dict[str, Any]:
+        """Build a standardised metadata dict."""
+        meta: dict[str, Any] = {
+            "framework": self.framework,
+            "model": self.model,
+            "retrieval_strategy": extra.get("retrieval_strategy", "hybrid"),
+            "chunks_retrieved": len(chunks),
+            "chunks_used": len(citations),
+            "token_usage": token_usage,
+        }
+        meta.update({k: v for k, v in extra.items() if k != "retrieval_strategy"})
+        return meta
