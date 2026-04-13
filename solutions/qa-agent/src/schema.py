@@ -80,6 +80,7 @@ class QAResponse(BaseModel):
     question: str
     answer: AnswerPayload
     citations: list[Citation] = Field(default_factory=list)
+    thinking: list[str] = Field(default_factory=list)
     guardrail_results: dict[str, str] = Field(default_factory=dict)
     metadata: dict[str, Any] = Field(default_factory=dict)
 

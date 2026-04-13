@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
@@ -69,8 +70,21 @@ class LangChainGenerator(BaseGenerator):
             elif hasattr(response, "response_metadata"):
                 meta = response.response_metadata or {}
                 token_usage = meta.get("token_usage", {})
+
+            # Extract thinking from <think> tags (DeepSeek, Qwen, etc.)
+            thinking = re.findall(r"<think>(.*?)</think>", answer_text, re.DOTALL)
+            if thinking:
+                answer_text = re.sub(r"<think>.*?</think>", "", answer_text, flags=re.DOTALL).strip()
+
+            # Also check additional_kwargs for reasoning_content (some models)
+            if not thinking and hasattr(response, "additional_kwargs"):
+                reasoning = response.additional_kwargs.get("reasoning_content")
+                if reasoning:
+                    thinking = [reasoning]
+
         except Exception as e:
             answer_text = self.fallback_answer(chunks)
+            thinking = []
             token_usage = {"error": str(e)}
 
         citations = self.extract_citations(chunks)
@@ -84,6 +98,7 @@ class LangChainGenerator(BaseGenerator):
                 grounding="corpus",
             ),
             citations=citations,
+            thinking=thinking,
             metadata=self.build_metadata(
                 chunks=chunks, citations=citations, token_usage=token_usage,
             ),

@@ -9,6 +9,8 @@ import {
   Clock,
   Loader2,
   Activity,
+  Brain,
+  ChevronDown,
 } from "lucide-react";
 
 interface Citation {
@@ -28,6 +30,7 @@ interface AgentResponse {
   text: string;
   citations: Citation[];
   guardrails: GuardrailResult[];
+  thinking: string[];
   latencyMs: number;
   blocked: boolean;
 }
@@ -58,6 +61,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
       { name: "Citation Coverage", status: "pass", detail: "100%" },
       { name: "Temporal Accuracy", status: "pass" },
     ],
+    thinking: [],
     latencyMs: 1240,
     blocked: false,
   },
@@ -85,6 +89,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
       { name: "Citation Coverage", status: "pass", detail: "100%" },
       { name: "Temporal Accuracy", status: "pass" },
     ],
+    thinking: [],
     latencyMs: 1380,
     blocked: false,
   },
@@ -112,6 +117,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
       { name: "Citation Coverage", status: "pass", detail: "100%" },
       { name: "Temporal Accuracy", status: "pass" },
     ],
+    thinking: [],
     latencyMs: 1560,
     blocked: false,
   },
@@ -139,6 +145,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
       { name: "Citation Coverage", status: "pass", detail: "100%" },
       { name: "Temporal Accuracy", status: "pass" },
     ],
+    thinking: [],
     latencyMs: 1420,
     blocked: false,
   },
@@ -152,6 +159,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
         detail: "Entity not in corpus — comparative claim blocked",
       },
     ],
+    thinking: [],
     latencyMs: 8,
     blocked: true,
   },
@@ -165,6 +173,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
         detail: "Financial advice request — outside permitted domain",
       },
     ],
+    thinking: [],
     latencyMs: 12,
     blocked: true,
   },
@@ -178,6 +187,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
         detail: "Injection pattern detected — request blocked",
       },
     ],
+    thinking: [],
     latencyMs: 5,
     blocked: true,
   },
@@ -264,6 +274,41 @@ async function fetchAgentResponse(
 /*  Side Panel                                                         */
 /* ------------------------------------------------------------------ */
 
+function ThinkingTrace({ steps }: { steps: string[] }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-2 w-full text-left mb-2"
+      >
+        <Brain className="w-4 h-4 text-violet-500" />
+        <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider flex-1">
+          Thinking ({steps.length} step{steps.length !== 1 ? "s" : ""})
+        </h4>
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${
+            isExpanded ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {isExpanded && (
+        <div className="space-y-2">
+          {steps.map((step, i) => (
+            <div
+              key={i}
+              className="bg-violet-50/50 border border-violet-100 rounded-lg px-3 py-2.5 text-xs text-violet-800 leading-relaxed whitespace-pre-wrap"
+            >
+              {step}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SidePanel({ response }: { response: AgentResponse | null }) {
   if (!response) {
     return (
@@ -300,6 +345,11 @@ function SidePanel({ response }: { response: AgentResponse | null }) {
             One or more guardrails failed. This response would not be served in production.
           </p>
         </div>
+      )}
+
+      {/* Thinking trace */}
+      {response.thinking && response.thinking.length > 0 && (
+        <ThinkingTrace steps={response.thinking} />
       )}
 
       {/* Guardrails */}

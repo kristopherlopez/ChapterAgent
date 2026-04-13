@@ -8,7 +8,14 @@ from pathlib import Path
 
 import anthropic
 import anyio
-from claude_agent_sdk import ClaudeAgentOptions, query, tool
+from claude_agent_sdk import (
+    AssistantMessage,
+    ClaudeAgentOptions,
+    ThinkingBlock,
+    ThinkingConfigEnabled,
+    query,
+    tool,
+)
 from pydantic import BaseModel
 
 from retrieve import RetrievedChunk
@@ -136,10 +143,11 @@ class ClaudeGenerator(BaseGenerator):
             return self._direct_fallback(question, chunks, scope_level, query_id)
 
         citations: list[Citation] = []
+        thinking: list[str] = []
         sdk_tools = self._build_tools(citations)
 
         try:
-            answer_text, token_usage = anyio.from_thread.run(
+            answer_text, token_usage, thinking = anyio.from_thread.run(
                 self._run_agent, question, sdk_tools,
             )
         except Exception as e:
@@ -156,6 +164,7 @@ class ClaudeGenerator(BaseGenerator):
                 grounding="corpus",
             ),
             citations=citations,
+            thinking=thinking,
             metadata=self.build_metadata(
                 chunks=chunks,
                 citations=citations,
@@ -165,20 +174,27 @@ class ClaudeGenerator(BaseGenerator):
             ),
         )
 
-    async def _run_agent(self, question: str, sdk_tools: list) -> tuple[str, dict]:
-        """Run the Claude Agent SDK query loop."""
+    async def _run_agent(self, question: str, sdk_tools: list) -> tuple[str, dict, list[str]]:
+        """Run the Claude Agent SDK query loop. Returns (answer, token_usage, thinking)."""
         options = ClaudeAgentOptions(
             model=self.model,
             max_turns=self.max_turns,
             system_prompt=AGENT_SYSTEM_PROMPT,
             tools=sdk_tools,
             permission_mode="auto",
+            thinking=ThinkingConfigEnabled(type="enabled", budget_tokens=5000),
         )
 
         answer_text = ""
         token_usage: dict = {}
+        thinking: list[str] = []
 
         async for message in query(prompt=question, options=options):
+            # Capture thinking blocks from assistant messages
+            if isinstance(message, AssistantMessage) and message.content:
+                for block in message.content:
+                    if isinstance(block, ThinkingBlock) and block.thinking:
+                        thinking.append(block.thinking)
             if hasattr(message, "result") and message.result:
                 answer_text = message.result
             if hasattr(message, "usage") and message.usage:
@@ -191,7 +207,7 @@ class ClaudeGenerator(BaseGenerator):
             if hasattr(message, "num_turns"):
                 token_usage["agent_turns"] = message.num_turns
 
-        return answer_text, token_usage
+        return answer_text, token_usage, thinking
 
     def _direct_fallback(
         self, question: str, chunks: list[RetrievedChunk],

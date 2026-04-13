@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from agents import Agent, Runner, function_tool  # pip install openai-agents
+from agents.items import ReasoningItem
 from retrieve import RetrievedChunk
 from schema import (
     AGENT_SYSTEM_PROMPT,
@@ -134,6 +135,14 @@ class OpenAIGenerator(BaseGenerator):
             result = Runner.run_sync(agent, question, max_turns=self.max_turns)
             answer_text = result.final_output or ""
 
+            # Extract reasoning/thinking traces
+            thinking = []
+            for item in result.to_input_list():
+                if isinstance(item, dict) and item.get("type") == "reasoning":
+                    for s in item.get("summary", []):
+                        if isinstance(s, dict) and s.get("text"):
+                            thinking.append(s["text"])
+
             token_usage = {}
             if hasattr(result, "raw_responses") and result.raw_responses:
                 last = result.raw_responses[-1]
@@ -147,6 +156,7 @@ class OpenAIGenerator(BaseGenerator):
         except Exception as e:
             answer_text = self.fallback_answer(chunks)
             citations = self.extract_citations(chunks)
+            thinking = []
             token_usage = {"error": str(e)}
 
         return QAResponse(
@@ -158,6 +168,7 @@ class OpenAIGenerator(BaseGenerator):
                 grounding="corpus",
             ),
             citations=citations,
+            thinking=thinking,
             metadata=self.build_metadata(
                 chunks=chunks,
                 citations=citations,

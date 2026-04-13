@@ -42,6 +42,7 @@ class ChatResponse(BaseModel):
     text: str
     citations: list[CitationOut]
     guardrails: list[GuardrailOut]
+    thinking: list[str] = []
     latencyMs: int
     blocked: bool
     regenerated: bool = False
@@ -199,6 +200,7 @@ async def chat(solution_id: str, req: ChatRequest):
             )
             for g in guardrail_results
         ],
+        thinking=response.thinking,
         latencyMs=total_ms,
         blocked=blocked,
         regenerated=regenerated,
