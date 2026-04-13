@@ -22,6 +22,7 @@ _agent_cache: dict[str, object] = {}
 class ChatRequest(BaseModel):
     question: str
     framework: str = "openai"
+    model: str | None = None
 
 
 class CitationOut(BaseModel):
@@ -46,9 +47,9 @@ class ChatResponse(BaseModel):
     regenerated: bool = False
 
 
-def _get_agent(framework: str):
-    """Lazily import and build the QA agent (cached after first call)."""
-    cache_key = framework
+def _get_agent(framework: str, model: str | None = None):
+    """Lazily import and build the QA agent (cached by framework+model)."""
+    cache_key = f"{framework}:{model or 'default'}"
     if cache_key in _agent_cache:
         return _agent_cache[cache_key]
 
@@ -75,8 +76,12 @@ def _get_agent(framework: str):
     DemoQAAgent = mod.DemoQAAgent
     QAAgent = mod.QAAgent
 
+    kwargs = {}
+    if model:
+        kwargs["model"] = model
+
     try:
-        agent = QAAgent.from_solution_dir(solution_dir, framework=framework)
+        agent = QAAgent.from_solution_dir(solution_dir, framework=framework, **kwargs)
     except Exception:
         # Fall back to demo agent if ChromaDB / deps unavailable
         agent = DemoQAAgent.from_solution_dir(solution_dir)
@@ -122,7 +127,7 @@ async def chat(solution_id: str, req: ChatRequest):
     start = time.perf_counter()
 
     # Run the agent
-    agent = _get_agent(req.framework)
+    agent = _get_agent(req.framework, req.model)
     response = await agent.answer(req.question)
     context_texts = _get_context(agent, req.question, response)
 

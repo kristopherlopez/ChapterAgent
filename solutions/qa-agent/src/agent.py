@@ -21,7 +21,7 @@ GENERATORS: dict[str, type[BaseGenerator]] = {
 }
 
 
-def _create_generator(framework: str = "openai") -> BaseGenerator:
+def _create_generator(framework: str = "openai", **kwargs: Any) -> BaseGenerator:
     """Factory: create the right generator for the chosen framework."""
     cls = GENERATORS.get(framework)
     if cls is None:
@@ -29,7 +29,7 @@ def _create_generator(framework: str = "openai") -> BaseGenerator:
             f"Unknown framework: {framework!r}. "
             f"Use one of: {', '.join(GENERATORS)}."
         )
-    return cls()
+    return cls(**kwargs) if kwargs else cls()
 
 
 class QAAgent:
@@ -65,13 +65,14 @@ class QAAgent:
         solution_dir: Path,
         *,
         framework: str = "openai",
+        **generator_kwargs: Any,
     ) -> QAAgent:
         """Create agent from the solution directory structure.
 
         Args:
             solution_dir: Path to solutions/qa-agent.
-            framework: LLM framework — "openai" (default),
-                "claude", or "langchain".
+            framework: LLM framework — "openai", "claude", or "langchain".
+            **generator_kwargs: Passed to the generator constructor (e.g. model="...").
         """
         kb_dir = solution_dir / "knowledge_base"
         topic_graph_path = solution_dir / "topic_graph.json"
@@ -83,7 +84,7 @@ class QAAgent:
             with open(topic_graph_path) as f:
                 topic_graph = json.load(f)
 
-        generator = _create_generator(framework)
+        generator = _create_generator(framework, **generator_kwargs)
 
         return cls(
             retriever=retriever,

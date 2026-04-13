@@ -222,21 +222,34 @@ type Framework = "openai" | "claude" | "langchain";
 const FRAMEWORKS: { value: Framework; label: string; description: string }[] = [
   { value: "openai", label: "OpenAI Agent SDK", description: "GPT-4o via OpenAI" },
   { value: "claude", label: "Claude Agent SDK", description: "Claude Sonnet via Anthropic" },
-  { value: "langchain", label: "LangChain", description: "Gemini Flash via OpenRouter" },
+  { value: "langchain", label: "LangChain", description: "Via OpenRouter" },
+];
+
+const OPENROUTER_MODELS = [
+  { value: "google/gemini-2.5-flash-preview", label: "Gemini 2.5 Flash" },
+  { value: "google/gemini-2.5-pro-preview", label: "Gemini 2.5 Pro" },
+  { value: "meta-llama/llama-4-maverick", label: "Llama 4 Maverick" },
+  { value: "meta-llama/llama-4-scout", label: "Llama 4 Scout" },
+  { value: "mistralai/mistral-medium-3", label: "Mistral Medium 3" },
+  { value: "qwen/qwen3-235b-a22b", label: "Qwen3 235B" },
+  { value: "deepseek/deepseek-r1", label: "DeepSeek R1" },
 ];
 
 async function fetchAgentResponse(
   solutionId: string,
   question: string,
   framework: Framework = "openai",
+  model?: string,
 ): Promise<AgentResponse | null> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 60_000);
+    const body: Record<string, unknown> = { question, framework };
+    if (model) body.model = model;
     const res = await fetch(`${API_BASE}/api/chat/${solutionId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, framework }),
+      body: JSON.stringify(body),
       signal: controller.signal,
     });
     clearTimeout(timeout);
@@ -385,6 +398,7 @@ export default function ChatInterface({
   const [isTyping, setIsTyping] = useState(false);
   const [selectedResponse, setSelectedResponse] = useState<AgentResponse | null>(null);
   const [framework, setFramework] = useState<Framework>("openai");
+  const [langchainModel, setLangchainModel] = useState(OPENROUTER_MODELS[0].value);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -405,7 +419,8 @@ export default function ChatInterface({
     setIsTyping(true);
     setSelectedResponse(null);
 
-    let response = await fetchAgentResponse(solutionId, text, framework);
+    const model = framework === "langchain" ? langchainModel : undefined;
+    let response = await fetchAgentResponse(solutionId, text, framework, model);
     if (!response) {
       response = matchResponse(text);
       const delay = Math.min(response.latencyMs, 2000);
@@ -564,6 +579,24 @@ export default function ChatInterface({
                   {fw.label}
                 </button>
               ))}
+              {framework === "langchain" && (
+                <>
+                  <span className="text-xs text-zinc-300 mx-1">|</span>
+                  <span className="text-xs text-zinc-400 mr-1">Model:</span>
+                  <select
+                    value={langchainModel}
+                    onChange={(e) => setLangchainModel(e.target.value)}
+                    disabled={isTyping}
+                    className="text-xs border border-zinc-200 rounded-md px-1.5 py-0.5 text-zinc-700 bg-white disabled:opacity-50"
+                  >
+                    {OPENROUTER_MODELS.map((m) => (
+                      <option key={m.value} value={m.value}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
             </div>
           </div>
         </div>
