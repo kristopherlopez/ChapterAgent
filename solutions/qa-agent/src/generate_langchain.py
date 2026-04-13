@@ -1,10 +1,12 @@
-"""Answer generation — LangChain / LangGraph."""
+"""Answer generation — LangChain / LangGraph via OpenRouter."""
 
 from __future__ import annotations
 
 import os
 from typing import Any
 
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
 from retrieve import RetrievedChunk
 from schema import (
     SYSTEM_PROMPT,
@@ -30,11 +32,9 @@ class LangChainQAGenerator:
         *,
         model: str | None = None,
         temperature: float = 0.1,
-        provider: str = "openrouter",
     ):
         self.model = model
         self.temperature = temperature
-        self.provider = provider
 
     def _build_context(self, chunks: list[RetrievedChunk]) -> str:
         blocks = []
@@ -65,38 +65,19 @@ class LangChainQAGenerator:
                 )
         return citations
 
-    def _get_llm(self):
-        """Create the LangChain LLM based on provider.
+    def _get_llm(self) -> ChatOpenAI:
+        """Create the LangChain LLM via OpenRouter.
 
-        Default provider is OpenRouter, which supports any model via
-        the OpenAI-compatible API at openrouter.ai.
+        Uses the OpenAI-compatible API at openrouter.ai, which supports
+        any model (Gemini, Llama, Mistral, etc.) via a single endpoint.
         """
-        if self.provider == "anthropic":
-            from langchain_anthropic import ChatAnthropic
-
-            return ChatAnthropic(
-                model=self.model or "claude-sonnet-4-20250514",
-                temperature=self.temperature,
-                api_key=os.getenv("ANTHROPIC_API_KEY"),
-            )
-        elif self.provider == "openrouter":
-            from langchain_openai import ChatOpenAI
-
-            model = self.model or os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash-preview")
-            return ChatOpenAI(
-                model=model,
-                temperature=self.temperature,
-                api_key=os.getenv("OPENROUTER_API_KEY"),
-                base_url="https://openrouter.ai/api/v1",
-            )
-        else:
-            from langchain_openai import ChatOpenAI
-
-            return ChatOpenAI(
-                model=self.model or "gpt-4o",
-                temperature=self.temperature,
-                api_key=os.getenv("OPENAI_API_KEY"),
-            )
+        model = self.model or os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash-preview")
+        return ChatOpenAI(
+            model=model,
+            temperature=self.temperature,
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1",
+        )
 
     def generate(
         self,
@@ -123,11 +104,6 @@ class LangChainQAGenerator:
         system_message = SYSTEM_PROMPT.format(context=context)
 
         try:
-            from langchain_core.messages import (
-                HumanMessage,
-                SystemMessage,
-            )
-
             llm = self._get_llm()
             messages = [
                 SystemMessage(content=system_message),
@@ -159,7 +135,7 @@ class LangChainQAGenerator:
             metadata={
                 "framework": "langchain-langgraph",
                 "model": self.model or os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash-preview"),
-                "provider": self.provider,
+                "provider": "openrouter",
                 "retrieval_strategy": "hybrid",
                 "chunks_retrieved": len(chunks),
                 "chunks_used": len(citations),

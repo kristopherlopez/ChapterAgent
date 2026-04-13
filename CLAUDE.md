@@ -6,6 +6,10 @@ After every change (feature, fix, refactor, docs update), **commit and push to `
 
 ## Code Principles
 
+### Top-level imports
+
+All imports must be at the top of the file, never inline inside functions or methods. Inline imports hide dependencies, make it unclear what a module requires, and make errors surface at runtime instead of import time. The only exception is guarding an optional dependency that may not be installed — and even then, prefer failing fast at import.
+
 ### Separation of concerns
 
 Shared types, constants, and contracts must live in their own module — never inside a specific implementation file. If multiple implementations need the same interface (e.g. `QAResponse`, `Citation`, `SYSTEM_PROMPT`), extract it so each implementation depends on the shared contract, not on each other. A false dependency between siblings (e.g. `generate_claude` importing from `generate_openai`) makes the code fragile — changing one breaks the other for no good reason.

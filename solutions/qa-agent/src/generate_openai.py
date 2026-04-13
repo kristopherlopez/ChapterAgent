@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from agents import Agent, Runner, function_tool
 from retrieve import RetrievedChunk
 from schema import (
     SYSTEM_PROMPT,
@@ -21,7 +22,6 @@ class QAGenerator:
     The agent receives retrieved context and can cite sources via tools.
 
     Usage:
-        from agents import Agent, Runner, function_tool
         generator = QAGenerator()
         response = generator.generate("What was CBA's NIM?", chunks)
     """
@@ -85,9 +85,6 @@ class QAGenerator:
         citations = self._extract_citations(chunks)
 
         try:
-            from agents import Agent, Runner, function_tool
-
-            # Define a citation tool the agent can call
             collected_citations: list[dict] = []
 
             @function_tool
@@ -115,7 +112,6 @@ class QAGenerator:
 
             answer_text = result.final_output or ""
 
-            # Merge any agent-collected citations with chunk-based ones
             if collected_citations:
                 citations = [
                     Citation(
@@ -137,7 +133,6 @@ class QAGenerator:
                     }
 
         except Exception as e:
-            # Fallback: generate answer from context without LLM
             answer_text = self._fallback_answer(question, chunks)
             token_usage = {"error": str(e)}
 

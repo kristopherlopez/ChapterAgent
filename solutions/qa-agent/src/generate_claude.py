@@ -25,6 +25,9 @@ import re
 from pathlib import Path
 from typing import Any
 
+import anthropic
+import anyio
+from claude_agent_sdk import ClaudeAgentOptions, query, tool
 from pydantic import BaseModel
 
 from retrieve import RetrievedChunk
@@ -147,8 +150,7 @@ class ClaudeAgentGenerator:
 
     def _build_tools(self, citations: list[Citation]) -> list:
         """Build SDK tools with closures over pages_dir and citations."""
-        from claude_agent_sdk import tool
-        from pydantic import BaseModel as PydanticBaseModel
+        PydanticBaseModel = BaseModel
 
         pages_dir = self._get_pages_dir()
         page_index = self._get_page_index()
@@ -236,7 +238,6 @@ class ClaudeAgentGenerator:
         The chunks parameter is accepted for interface compatibility but
         the agent reads full pages instead of using pre-retrieved chunks.
         """
-        import anyio
 
         pages_dir = self._get_pages_dir()
 
@@ -280,7 +281,6 @@ class ClaudeAgentGenerator:
         self, question: str, sdk_tools: list,
     ) -> tuple[str, dict]:
         """Run the Claude Agent SDK query loop."""
-        from claude_agent_sdk import query, ClaudeAgentOptions
 
         options = ClaudeAgentOptions(
             model=self.model,
@@ -334,7 +334,6 @@ class ClaudeAgentGenerator:
         system_message = SYSTEM_PROMPT.format(context=context)
 
         try:
-            import anthropic
 
             client = anthropic.Anthropic(
                 api_key=os.getenv("ANTHROPIC_API_KEY"),
