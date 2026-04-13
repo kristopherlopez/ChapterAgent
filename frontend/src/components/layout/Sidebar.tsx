@@ -87,6 +87,18 @@ export default function Sidebar() {
         </Link>
 
         <Link
+          href="/onboard"
+          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+            pathname.startsWith("/onboard")
+              ? "bg-zinc-900 text-white"
+              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+          }`}
+        >
+          <Plus className="w-4 h-4" />
+          Onboard Solution
+        </Link>
+
+        <Link
           href="/controls"
           className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
             pathname === "/controls"
@@ -120,18 +132,6 @@ export default function Sidebar() {
         >
           <Package className="w-4 h-4" />
           Component Catalog
-        </Link>
-
-        <Link
-          href="/onboard"
-          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-            pathname.startsWith("/onboard")
-              ? "bg-zinc-900 text-white"
-              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-          }`}
-        >
-          <Plus className="w-4 h-4" />
-          Onboard Solution
         </Link>
 
         {/* AI Solutions */}
