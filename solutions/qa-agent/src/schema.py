@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -181,3 +183,34 @@ class BaseGenerator(ABC):
         }
         meta.update({k: v for k, v in extra.items() if k != "retrieval_strategy"})
         return meta
+
+    @staticmethod
+    def build_page_index(pages_dir: Path) -> list[dict[str, Any]]:
+        """Build a table of contents from the markdown pages directory.
+
+        Returns a list of {file, page, title} sorted by page number.
+        Used by agentic generators that give the LLM full page access.
+        """
+        index = []
+        for md_file in sorted(pages_dir.glob("*.md")):
+            name = md_file.stem
+            match = re.match(r"(\d+)", name)
+            page_num = int(match.group(1)) if match else 0
+            title_part = re.sub(r"^\d+-?", "", name).replace("-", " ").strip()
+            if not title_part:
+                try:
+                    text = md_file.read_text(encoding="utf-8", errors="replace")
+                    heading = next(
+                        (line.lstrip("#").strip() for line in text.split("\n")
+                         if line.startswith("#")),
+                        name,
+                    )
+                    title_part = heading[:80]
+                except Exception:
+                    title_part = name
+            index.append({
+                "file": md_file.name,
+                "page": page_num,
+                "title": title_part.title() if title_part else name,
+            })
+        return index

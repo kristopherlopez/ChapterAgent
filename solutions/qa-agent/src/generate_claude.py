@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-import re
 from pathlib import Path
-from typing import Any
 
 import anthropic
 import anyio
@@ -22,33 +20,6 @@ from schema import (
     Citation,
     QAResponse,
 )
-
-
-def _build_page_index(pages_dir: Path) -> list[dict[str, Any]]:
-    """Build a table of contents from the markdown pages directory."""
-    index = []
-    for md_file in sorted(pages_dir.glob("*.md")):
-        name = md_file.stem
-        match = re.match(r"(\d+)", name)
-        page_num = int(match.group(1)) if match else 0
-        title_part = re.sub(r"^\d+-?", "", name).replace("-", " ").strip()
-        if not title_part:
-            try:
-                text = md_file.read_text(encoding="utf-8", errors="replace")
-                heading = next(
-                    (line.lstrip("#").strip() for line in text.split("\n")
-                     if line.startswith("#")),
-                    name,
-                )
-                title_part = heading[:80]
-            except Exception:
-                title_part = name
-        index.append({
-            "file": md_file.name,
-            "page": page_num,
-            "title": title_part.title() if title_part else name,
-        })
-    return index
 
 
 class ClaudeGenerator(BaseGenerator):
@@ -88,7 +59,7 @@ class ClaudeGenerator(BaseGenerator):
 
     def _get_page_index(self) -> list[dict]:
         if self._page_index is None:
-            self._page_index = _build_page_index(self._get_pages_dir())
+            self._page_index = self.build_page_index(self._get_pages_dir())
         return self._page_index
 
     def _build_tools(self, citations: list[Citation]) -> list:
