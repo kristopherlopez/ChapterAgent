@@ -188,7 +188,7 @@ const DEMO_PROBE: ProbeResult = {
 // API helpers
 // ---------------------------------------------------------------------------
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
 
 async function fetchScore(solutionId: string, features: Record<string, number>): Promise<ScoreResult | null> {
   try {
