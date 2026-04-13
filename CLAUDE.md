@@ -2,6 +2,8 @@
 
 After every change (feature, fix, refactor, docs update), **commit and push to `main`** immediately. Do not batch changes or wait to be asked.
 
+**Session-scoped commits:** Multiple Claude sessions may be working on different parts of the project concurrently. Only `git add` files that **this session** created or modified — never use `git add -A`, `git add .`, or stage files you didn't touch. If a file you need to commit has been modified by another session (unexpected diff), flag it to the user before staging. This prevents one session's commit from accidentally including another session's in-progress work.
+
 ---
 
 ## Code Principles
