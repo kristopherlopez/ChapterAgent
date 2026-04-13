@@ -927,9 +927,9 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
   "cba-responsible-ai-principles": {
     ...governanceDocuments[1],
     purpose:
-      "Articulate CBA's commitment to developing and deploying AI systems that are fair, transparent, accountable, and safe, ensuring trust with customers, regulators, and the community.",
+      "Define the six Responsible AI Principles that govern the design, development, deployment, and operation of all AI systems across the Commonwealth Bank Group. These principles translate the values in GOV-AI-001 Section 4 into practical requirements, platform enforcement mechanisms, and measurable outcomes. For each principle, it defines what it means in practice, how the CBA AI governance platform enforces it, and how compliance is measured.",
     scope:
-      "All AI and ML systems across the CBA Group. Principles apply regardless of whether systems are developed internally, procured from vendors, or operated by third parties.",
+      "All AI solutions within the scope of GOV-AI-001, at all lifecycle stages and all risk tiers. While enforcement intensity varies by risk tier (proportionate governance), the principles themselves are universal. An experimental prototype is not exempt from fairness or safety — it is simply held to a proportionate standard. These principles also apply to third-party AI solutions procured by CBA; vendors must demonstrate alignment as a condition of procurement.",
     keyRequirements: [
       "AI systems must not produce systematically biased outputs across demographic groups including age, gender, ethnicity, or location",
       "Fairness definitions must be documented for each AI solution, appropriate to its use case and impact",
@@ -942,8 +942,107 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       { controlId: "AI-GOV-005", requirement: "Privacy and PII protection", platformEnforcement: "Presidio entity detection (PERSON, EMAIL, PHONE, AU_ABN, AU_TFN, AU_MEDICARE) on every response; zero-tolerance blocking" },
       { controlId: "AI-GOV-007", requirement: "Fairness and non-discrimination", platformEnforcement: "DeepEval BiasMetric runs at deployment and per-response; bias score thresholds enforced by risk tier (0.10 internal, 0.05 customer-facing)" },
     ],
+    sections: [
+      {
+        title: "Definitions",
+        table: {
+          headers: ["Term", "Definition"],
+          rows: [
+            ["Protected Attribute", "A characteristic that must not influence AI outputs in a discriminatory manner. Includes age, gender, race, ethnicity, disability, sexual orientation, religion, marital status, and postcode."],
+            ["Demographic Parity", "A fairness criterion requiring that the rate of a particular outcome is approximately equal across demographic groups."],
+            ["Equalised Odds", "A fairness criterion requiring that the true positive rate and false positive rate are approximately equal across demographic groups."],
+            ["Output Consistency", "A fairness criterion for generative AI requiring that semantically equivalent inputs produce substantively equivalent outputs regardless of demographic references."],
+            ["Explainability", "The degree to which an AI system's outputs can be understood and interpreted by its intended audience."],
+            ["Human-in-the-Loop", "A design pattern where a human reviews and approves AI outputs before they are acted upon or delivered to end users."],
+            ["Human-on-the-Loop", "A design pattern where AI outputs are delivered directly but a human monitors aggregate performance and can intervene when anomalies are detected."],
+          ],
+        },
+      },
+      {
+        title: "The Six Principles",
+        subsections: [
+          { title: "Fairness", content: "AI systems must not produce systematically biased outputs that disadvantage individuals or groups based on protected attributes. Every AI solution must declare its fairness definition in the solution manifest. The DeepEval bias metric is mandatory for all solutions at production_internal tier and above. Golden datasets must include bias-probing test cases (minimum 5 cases per GOV-AI-006)." },
+          { title: "Transparency", content: "AI systems must be explainable to the degree required by their impact. Customer-facing solutions must disclose AI involvement. Q&A agents must provide citations (citation_coverage metric). Scoring models must provide SHAP values. Agentic workflows must produce decision traces for after-the-fact reconstruction." },
+          { title: "Accountability", content: "Every AI system must have a named, accountable individual. Accountability cannot be delegated to the AI system itself. The solution owner is responsible for compliance, golden dataset maintenance, evaluation failures, and incident management. Ownership must be transferred within 10 business days when an owner leaves." },
+          { title: "Privacy", content: "AI systems must not collect, store, process, or expose personal information beyond what is explicitly required. PII detection guardrails are mandatory for all production-tier solutions. Customer-facing solutions operate under zero-tolerance: no PII in outputs unless explicitly authorised. Golden datasets must use synthetic or anonymised data." },
+          { title: "Safety", content: "AI systems must not produce harmful outputs. Toxicity detection is mandatory for production tier (thresholds: <= 0.10 internal, <= 0.05 customer-facing). Scope containment and prompt injection detection guardrails are mandatory at all tiers. The platform supports emergency kill switches for immediate takedown." },
+          { title: "Human Oversight", content: "AI systems must operate under appropriate human oversight proportionate to risk. Experimental requires developer oversight, production_internal requires human-on-the-loop, and production_customer_facing requires human-in-the-loop or human-on-the-loop depending on decision impact. All customer-facing solutions must provide a mechanism for human escalation." },
+        ],
+      },
+      {
+        title: "Fairness Definitions by Solution Type",
+        table: {
+          headers: ["Solution Type", "Primary Fairness Metric", "Threshold (Internal)", "Threshold (Customer-Facing)"],
+          rows: [
+            ["Scoring", "Demographic parity — approval/score band rates must not differ across groups", "Gap <= 0.10", "Gap <= 0.05"],
+            ["Scoring", "Equalised odds — TPR and FPR must not differ across groups", "Gap <= 0.10", "Gap <= 0.05"],
+            ["Classification", "Output consistency — semantically equivalent inputs must produce identical classification", "Consistency >= 0.90", "Consistency >= 0.95"],
+            ["Q&A", "Output consistency — response quality must be equivalent regardless of demographic references", "Consistency >= 0.90", "Consistency >= 0.95"],
+            ["Validation", "Severity consistency — findings and severity must not differ based on demographic characteristics", "Consistency >= 0.90", "Consistency >= 0.95"],
+            ["Conversational / Agentic", "Output consistency — tone, helpfulness, and quality must not vary based on demographics", "Consistency >= 0.90", "Consistency >= 0.95"],
+          ],
+        },
+      },
+      {
+        title: "Bias Testing Requirements",
+        content: "Bias testing is mandatory for all AI solutions at production_internal tier and above. Testing uses two complementary approaches: metric-based evaluation (DeepEval bias metric across the full golden dataset) and bias-probing test cases (matched pairs of semantically equivalent inputs differing only in demographic references).",
+        table: {
+          headers: ["Risk Tier", "Bias Testing Requirement", "Threshold"],
+          rows: [
+            ["experimental", "Not required (recommended)", "N/A"],
+            ["production_internal", "Required", "Bias score <= 0.10, fairness gap <= 0.10"],
+            ["production_customer_facing", "Required at strictest thresholds", "Bias score <= 0.05, fairness gap <= 0.05"],
+          ],
+        },
+      },
+      {
+        title: "Protected Attributes for Testing",
+        table: {
+          headers: ["Attribute", "Applicable Solution Types", "Testing Approach"],
+          rows: [
+            ["Age", "All", "Matched pairs with different age references"],
+            ["Gender", "All", "Matched pairs with different gender references"],
+            ["Ethnicity / Cultural background", "All", "Matched pairs with names associated with different ethnic groups"],
+            ["Location / Postcode", "Scoring, Classification", "Matched pairs with different postcodes (socio-economic proxy testing)"],
+            ["Disability", "Conversational, Q&A", "Matched pairs referencing different ability levels"],
+            ["Marital status", "Scoring", "Matched pairs with different marital statuses"],
+            ["Religion", "Conversational, Q&A", "Matched pairs with different religious references"],
+          ],
+        },
+      },
+      {
+        title: "Ethics Review Triggers",
+        content: "Certain AI solutions or changes require review by the Group AI Ethics Board before proceeding. The Board issues one of three determinations: Approved, Approved with conditions, or Referred back.",
+        table: {
+          headers: ["Trigger", "Description"],
+          rows: [
+            ["Customer-facing automated decisioning", "Any solution that makes or materially influences decisions about individual customers without human-in-the-loop review"],
+            ["Sensitive use cases", "Credit decisions, insurance underwriting, claims assessment, complaint handling, vulnerability detection, or collections"],
+            ["Novel AI capabilities", "First deployment of a new AI capability type within CBA (e.g., first agentic workflow, first voice AI)"],
+            ["Bias threshold exceedance", "A production solution exceeds bias or fairness thresholds during evaluation"],
+            ["Customer complaint", "A customer alleges unfair or discriminatory treatment by an AI system"],
+            ["Regulatory enquiry", "A regulator enquires about a specific AI solution or CBA AI practices"],
+          ],
+        },
+      },
+      {
+        title: "Human Oversight Models by Risk Tier",
+        table: {
+          headers: ["Risk Tier", "Oversight Model", "Description"],
+          rows: [
+            ["experimental", "Developer oversight", "The development team monitors outputs during experimentation. No formal oversight structure required."],
+            ["production_internal", "Human-on-the-loop", "AI outputs delivered to internal users directly. Solution owner reviews evaluation results and production metrics at least monthly."],
+            ["production_customer_facing", "Human-in-the-loop or human-on-the-loop", "Determined by decision impact. High-impact decisions (credit, claims, complaints) require human-in-the-loop. Lower-impact interactions may use human-on-the-loop with robust monitoring."],
+          ],
+        },
+      },
+      {
+        title: "Complaint and Review Mechanisms",
+        content: "Customers who believe they have been unfairly treated by an AI-assisted decision have the right to be informed that AI was involved, request an explanation, request a human review by a qualified person, and lodge a complaint through CBA's existing process. Internal staff may escalate concerns through line management, the Chapter Lead, or directly to the AI Ethics Board.",
+      },
+    ] as DocumentSection[],
     approvalAuthority: "Group AI Ethics Board",
-    relatedDocuments: ["cba-group-ai-policy", "cba-data-governance-standard"],
+    relatedDocuments: ["cba-group-ai-policy", "cba-data-governance-standard", "cba-ai-registration-standard", "cba-ai-testing-framework", "cba-prompt-governance-guideline", "apra-cps-230", "disr-ai-safety-standard"],
   },
   "cba-model-risk-framework": {
     ...governanceDocuments[2],
@@ -1198,9 +1297,9 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
   "cba-ai-registration-standard": {
     ...governanceDocuments[4],
     purpose:
-      "Define the mandatory registration requirements for all AI solutions, ensuring every AI system in CBA is inventoried, classified, and assigned appropriate governance.",
+      "Define the mandatory registration process for all AI solutions governed by the CBA Group AI Policy (GOV-AI-001). It specifies the solution manifest schema, risk tier assignment criteria, registration workflow, validation rules, change management requirements, and de-registration procedures. Registration is the foundation of AI governance at CBA — a solution that is not registered cannot be evaluated, monitored, or audited. The Registration compliance gate (AI-GOV-001) cannot be exempted under any circumstances.",
     scope:
-      "All AI and ML solutions deployed or in development across CBA, regardless of framework, hosting environment, or development team.",
+      "Every AI solution that falls within the scope of GOV-AI-001, including all AI and ML systems developed, procured, or operated by any CBA business unit, subsidiary, or third-party vendor. Applies to solutions at all lifecycle stages: development, testing, staging, production, and retirement. Registration is required regardless of risk tier; experimental solutions have reduced manifest requirements but must still be registered.",
     keyRequirements: [
       "Every AI solution must have a solution.yaml manifest file containing name, description, version, owner, contact, and endpoint details",
       "Solutions must be assigned a risk tier (experimental, production_internal, production_customer_facing) by the chapter during intake",
@@ -1208,18 +1307,119 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       "Solution registration must be completed before any evaluation, testing, or deployment activities begin",
       "Changes to solution scope, ownership, or risk tier must be reflected in the manifest and trigger re-assessment",
     ],
+    sections: [
+      {
+        title: "Definitions",
+        table: {
+          headers: ["Term", "Definition"],
+          rows: [
+            ["Solution Manifest", "A structured YAML file (solution.yaml) stored in the solution's repository root that declares identity, type, owner, risk tier, guardrail configuration, evaluation criteria, and compliance requirements."],
+            ["Solution ID", "A globally unique identifier assigned during registration. Format: {business-unit}-{solution-name} using lowercase alphanumeric and hyphens. Maximum 64 characters."],
+            ["Solution Type", "The functional category determining which evaluation metrics apply. Valid types: qa, classification, scoring, validation, conversational, agentic."],
+            ["Intake", "The initial assessment process where a squad presents a proposed AI solution to the Chapter for review, tier assignment, and registration."],
+            ["Chapter Review", "A structured review session where the Chapter assesses risk profile, assigns a risk tier, and validates the proposed manifest configuration."],
+            ["Manifest Validation", "Automated checks verifying the solution manifest conforms to the required schema and contains all mandatory fields for the solution's type and tier."],
+          ],
+        },
+      },
+      {
+        title: "Mandatory Manifest Fields",
+        table: {
+          headers: ["Field", "Type", "Description"],
+          rows: [
+            ["id", "string", "Globally unique identifier. Pattern: ^[a-z0-9]+(-[a-z0-9]+)*$. Immutable after registration."],
+            ["name", "string", "Human-readable display name. Maximum 128 characters."],
+            ["description", "string", "Concise description of purpose, audience, and key capabilities. Maximum 500 characters."],
+            ["version", "string", "Semantic version (e.g., 1.0.0). Must be incremented on material changes."],
+            ["type", "string", "One of: qa, classification, scoring, validation, conversational, agentic."],
+            ["risk_tier", "string", "One of: experimental, production_internal, production_customer_facing."],
+            ["owner.name / email / squad / chapter", "string", "Named accountable individual with valid CBA email, registered squad, and chapter."],
+            ["data.sources / pii_exposure / classification", "mixed", "Data sources accessed, PII exposure level (none/indirect/direct), and data classification."],
+            ["guardrails.enabled", "list", "Must include at least scope_containment and prompt_injection for all tiers."],
+          ],
+        },
+      },
+      {
+        title: "Risk Tier Assignment Criteria",
+        content: "Risk tier is assigned by the Chapter during intake based on five dimensions. The highest-risk dimension determines the floor for tier assignment. The Chapter may assign a higher tier but may not assign a lower tier without documented justification approved by the Head of Risk Management AI.",
+        table: {
+          headers: ["Dimension", "Experimental", "Production Internal", "Production Customer-Facing"],
+          rows: [
+            ["Audience", "Internal team only, limited users", "All internal CBA staff or a specific business unit", "External customers, investors, regulators, or public"],
+            ["Decision Impact", "No operational decisions depend on outputs", "Outputs inform internal decisions, human review standard", "Outputs directly influence customer outcomes or financial decisions"],
+            ["Data Sensitivity", "Synthetic or public data only", "Internal data, no direct customer PII", "Customer data, PII, financial records"],
+            ["Reversibility", "All outputs easily discarded", "Outputs correctable with moderate effort", "Outputs difficult or impossible to retract once delivered"],
+            ["Regulatory Exposure", "No regulatory obligations", "General operational risk obligations (CPS 230)", "Specific regulatory requirements (credit, consumer protection, anti-discrimination)"],
+          ],
+        },
+      },
+      {
+        title: "Registration Workflow",
+        table: {
+          headers: ["Stage", "Actor", "Activities"],
+          rows: [
+            ["1. Intake", "Squad", "Submit intake request via portal or API (POST /api/solutions/onboard) with solution details and proposed guardrail configuration."],
+            ["2. Chapter Review", "Chapter", "Review intake, assess risk dimensions, assign risk tier, validate proposed guardrails against tier requirements."],
+            ["3. Manifest Creation", "Squad", "Create solution.yaml incorporating assigned tier and any conditions from Chapter review."],
+            ["4. Manifest Validation", "Platform", "Automated schema validation, mandatory field checks, ID uniqueness verification, enumeration validation."],
+            ["5. Platform Registration", "Platform", "Solution registered, Registration gate (AI-GOV-001) marked passed, compliance tracking begins."],
+          ],
+        },
+      },
+      {
+        title: "Registration Timeline",
+        table: {
+          headers: ["Risk Tier", "Expected Time", "Maximum Allowed"],
+          rows: [
+            ["experimental", "1-2 business days", "5 business days"],
+            ["production_internal", "3-5 business days", "10 business days"],
+            ["production_customer_facing", "5-10 business days", "15 business days"],
+          ],
+        },
+      },
+      {
+        title: "Changes Requiring Re-registration",
+        table: {
+          headers: ["Change Type", "Required Action", "Approval"],
+          rows: [
+            ["Solution scope change", "Update description, data sources, and guardrail configuration", "Squad + Chapter (if material)"],
+            ["Risk tier change", "Update risk tier. All compliance gates re-run at new tier.", "Chapter Lead approval mandatory"],
+            ["Owner change", "Update owner fields. New owner must acknowledge accountability.", "Outgoing and incoming owner, Chapter Lead"],
+            ["Type change", "Update solution type. Triggers change in applicable evaluation metrics.", "Chapter review mandatory"],
+            ["Guardrail change", "Update guardrail configuration. Must continue to meet tier minimums.", "Squad (if adding), Chapter (if removing)"],
+            ["Data source change", "Update data sources. May require tier re-assessment if sensitivity changes.", "Squad + Chapter (if sensitivity changes)"],
+          ],
+        },
+      },
+      {
+        title: "De-registration and Retirement",
+        content: "A solution must be de-registered when permanently decommissioned, replaced by a successor, or registered in error. The process includes a retirement request, dependency check, data retention (7 years for customer-facing, 5 years for internal), de-registration with permanent ID reservation, and Chapter confirmation. Dormant solutions (no activity for 180 days) are flagged automatically.",
+      },
+      {
+        title: "Transitional Provisions",
+        content: "AI solutions operational before the effective date of this standard must be registered by the following deadlines.",
+        table: {
+          headers: ["Risk Tier", "Registration Deadline"],
+          rows: [
+            ["production_customer_facing", "1 July 2025"],
+            ["production_internal", "1 October 2025"],
+            ["experimental", "31 December 2025"],
+          ],
+        },
+      },
+    ] as DocumentSection[],
     controlMappings: [
       { controlId: "AI-GOV-001", requirement: "Solution registration and inventory", platformEnforcement: "CI/CD pipeline verifies manifest completeness: model registry entry, metadata, risk tier assignment, and owner — deployment blocked on any gap" },
     ],
     approvalAuthority: "Head of Risk Management AI",
-    relatedDocuments: ["cba-group-ai-policy", "cba-model-risk-framework"],
+    relatedDocuments: ["cba-group-ai-policy", "cba-responsible-ai-principles", "cba-data-governance-standard", "cba-ai-testing-framework", "cba-prompt-governance-guideline", "apra-cps-230"],
   },
   "cba-ai-testing-framework": {
     ...governanceDocuments[5],
     purpose:
-      "Define how AI solutions are evaluated for quality, safety, and fairness before deployment and throughout their production lifecycle.",
+      "Establish the mandatory testing and evaluation requirements for all AI solutions governed by the CBA Group AI Policy (GOV-AI-001). It defines golden dataset composition, quality, and coverage standards; evaluation metrics by solution type; metric thresholds by risk tier; re-evaluation cadence for production solutions; and the technical architecture of the evaluation harness. AI systems degrade silently — structured, repeatable evaluation is the primary defence against this failure mode.",
     scope:
-      "All AI and ML solutions subject to the CBA Group AI Policy. Covers pre-deployment evaluation, production monitoring, and scheduled re-evaluation.",
+      "All AI solutions registered on the CBA AI governance platform, including generative AI (Q&A agents, conversational AI, document generation, summarisation), classification (intent detection, sentiment analysis, document classification), scoring (credit risk, fraud probability, pricing models), and validation solutions (document verification, compliance checking). Applies from solution registration through to retirement. Experimental-tier solutions are encouraged but not required to follow the full framework; production-tier solutions must comply fully.",
     keyRequirements: [
       "Every AI solution must have a golden dataset covering expected scenarios, edge cases, and adversarial inputs, reviewed for coverage by the chapter",
       "Evaluation metrics must be appropriate to the solution type: faithfulness for Q&A, accuracy and calibration for classification, completeness for validation",
@@ -1228,6 +1428,110 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       "Bias and toxicity evaluations are mandatory for all solutions above experimental tier",
       "Solutions must be re-evaluated every 90 days (internal) or 30 days (customer-facing), and immediately after model or prompt changes",
     ],
+    sections: [
+      {
+        title: "Definitions",
+        table: {
+          headers: ["Term", "Definition"],
+          rows: [
+            ["Golden Dataset", "A curated, human-reviewed collection of test cases used to evaluate an AI solution's quality, safety, and compliance. Each case includes an input, expected behaviour or reference output, and metadata."],
+            ["Test Case", "A single entry in a golden dataset consisting of an input, expected output or acceptable range, case type tags, and guardrail expectations."],
+            ["Evaluation Harness", "The automated system that executes test cases against a solution, collects outputs, computes metrics, and produces a structured evaluation report. Built on DeepEval with CBA-specific extensions."],
+            ["Metric Threshold", "The minimum (or maximum, for inverse metrics) score a solution must achieve to pass a given metric at its assigned risk tier."],
+            ["Adversarial Test Case", "A test case designed to probe failure modes: prompt injection, scope violations, hallucination triggers, bias-eliciting inputs, or edge-case formatting."],
+            ["DeepEval", "The open-source evaluation framework used as the foundation for the CBA evaluation harness. Provides metric implementations for faithfulness, answer relevancy, contextual precision, contextual recall, hallucination, bias, and toxicity."],
+          ],
+        },
+      },
+      {
+        title: "Golden Dataset — Minimum Case Counts by Risk Tier",
+        table: {
+          headers: ["Risk Tier", "Minimum Cases", "Sign-off Required", "Notes"],
+          rows: [
+            ["experimental", "Recommended: 10+", "No", "Encouraged to establish evaluation baselines early. Not enforced by compliance gates."],
+            ["production_internal", "30 cases minimum", "Yes — independent reviewer", "Must include all case types (happy path, edge case, adversarial, guardrail-specific, bias-probing)."],
+            ["production_customer_facing", "50 cases minimum", "Yes — independent reviewer + Chapter Lead", "Must include all case types with expanded adversarial coverage."],
+          ],
+        },
+      },
+      {
+        title: "Test Case Types",
+        table: {
+          headers: ["Case Type", "Description", "Min Cases (Internal)", "Min Cases (Customer-Facing)"],
+          rows: [
+            ["happy_path", "Standard, well-formed inputs exercising the solution's primary function.", "10", "15"],
+            ["edge_case", "Unusual but valid inputs: ambiguous queries, partial information, uncommon formatting, multilingual input.", "5", "10"],
+            ["adversarial", "Inputs probing failure modes: prompt injection, jailbreak patterns, out-of-scope disguised as in-scope.", "5", "10"],
+            ["guardrail_specific", "Cases exercising each configured guardrail: scope refusal, PII handling, injection blocking. Minimum one case per active guardrail.", "5 (1 per guardrail)", "10 (2 per guardrail)"],
+            ["bias_probing", "Cases detecting differential treatment across demographic groups or protected attributes.", "5", "5"],
+          ],
+        },
+      },
+      {
+        title: "Q&A Solution Evaluation Metrics",
+        table: {
+          headers: ["Metric", "Source", "Description"],
+          rows: [
+            ["faithfulness", "DeepEval", "Whether the generated answer is factually consistent with the retrieved context."],
+            ["answer_relevancy", "DeepEval", "Whether the generated answer addresses the user's question directly and completely."],
+            ["contextual_precision", "DeepEval", "Whether the retrieval step ranks relevant documents higher than irrelevant ones."],
+            ["contextual_recall", "DeepEval", "Whether all relevant documents for a query are successfully retrieved."],
+            ["hallucination", "DeepEval", "Proportion of generated claims that are fabricated (not in any retrieved context). Lower is better."],
+            ["citation_coverage", "CBA Custom", "Whether the answer provides correct, traceable citations for factual claims."],
+            ["boundary_adherence", "CBA Custom", "Whether the solution correctly refuses out-of-scope queries and does not speculate beyond its knowledge base."],
+            ["temporal_accuracy", "CBA Custom", "Whether time-sensitive information (effective dates, version numbers) is correctly represented."],
+          ],
+        },
+      },
+      {
+        title: "Q&A Solution Thresholds by Risk Tier",
+        table: {
+          headers: ["Metric", "Experimental", "Production Internal", "Production Customer-Facing"],
+          rows: [
+            ["faithfulness", "N/A", ">= 0.85", ">= 0.90"],
+            ["answer_relevancy", "N/A", ">= 0.80", ">= 0.85"],
+            ["contextual_precision", "N/A", ">= 0.75", ">= 0.85"],
+            ["contextual_recall", "N/A", ">= 0.75", ">= 0.85"],
+            ["hallucination", "N/A", "<= 0.15", "<= 0.08"],
+            ["citation_coverage", "N/A", ">= 0.85", ">= 0.95"],
+            ["boundary_adherence", "N/A", ">= 0.90", ">= 0.95"],
+            ["temporal_accuracy", "N/A", ">= 0.85 (where applicable)", ">= 0.95 (where applicable)"],
+          ],
+        },
+      },
+      {
+        title: "Re-evaluation Cadence",
+        content: "Production solutions must be re-evaluated on a regular schedule. If the grace period expires without a passing re-evaluation, the solution is flagged as non-compliant and the squad has the remediation window defined in GOV-AI-001.",
+        table: {
+          headers: ["Risk Tier", "Cadence", "Grace Period"],
+          rows: [
+            ["experimental", "No scheduled re-evaluation required", "N/A"],
+            ["production_internal", "Every 90 calendar days", "14 days"],
+            ["production_customer_facing", "Every 30 calendar days", "7 days"],
+          ],
+        },
+      },
+      {
+        title: "Triggered Re-evaluation Events",
+        content: "In addition to scheduled re-evaluation, a full evaluation harness run must be triggered immediately when any of the following occur.",
+        table: {
+          headers: ["Trigger Event", "Rationale"],
+          rows: [
+            ["Model update or swap", "A new model version may produce different outputs across the entire test surface."],
+            ["System prompt change", "Prompt modifications can materially alter output quality, tone, and boundary adherence."],
+            ["Knowledge base update", "New or modified source documents change the ground truth the solution operates against."],
+            ["Guardrail configuration change", "Modified guardrails may alter behaviour on previously passing cases."],
+            ["Risk tier change", "A tier change introduces new thresholds; the solution must be verified against them."],
+            ["Post-incident remediation", "After an AI incident, the fix must be validated against the full golden dataset."],
+            ["Golden dataset update", "If the golden dataset is modified, the evaluation must be re-run to establish a new baseline."],
+          ],
+        },
+      },
+      {
+        title: "Evaluation Harness Architecture",
+        content: "The evaluation harness is built on DeepEval (Python) for standard metrics, CBA Platform Extensions for custom metrics (citation_coverage, boundary_adherence, temporal_accuracy, consistency, completeness, severity_calibration, fairness), and a configurable LLM Judge (GPT-4o / Claude Sonnet) for metrics requiring LLM-as-judge evaluation. The execution flow is: Load golden dataset, Execute test cases, Evaluate metrics in parallel, Aggregate scores, Gate against thresholds, and Report to evidence store. The judge model must not be the same model used by the solution under evaluation to avoid self-evaluation bias.",
+      },
+    ] as DocumentSection[],
     controlMappings: [
       { controlId: "AI-GOV-003", requirement: "Quality threshold compliance", platformEnforcement: "DeepEval harness runs full metric suite in CI/CD pipeline; results compared against risk-tier YAML thresholds" },
       { controlId: "AI-GOV-006", requirement: "Guardrail functional testing", platformEnforcement: "Guardrail test suite runs scope, injection, and content safety tests with 95% minimum pass rate gate" },
@@ -1235,7 +1539,7 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       { controlId: "AI-GOV-009", requirement: "Golden dataset governance", platformEnforcement: "Sign-off record with reviewer identity and date required; coverage analysis included in evidence package" },
     ],
     approvalAuthority: "Head of Risk Management AI",
-    relatedDocuments: ["cba-group-ai-policy", "cba-model-risk-framework", "cba-ai-registration-standard"],
+    relatedDocuments: ["cba-group-ai-policy", "cba-responsible-ai-principles", "cba-ai-registration-standard", "cba-prompt-governance-guideline", "cba-model-risk-framework", "apra-cps-230"],
   },
   "cba-prompt-governance-guideline": {
     ...governanceDocuments[6],
