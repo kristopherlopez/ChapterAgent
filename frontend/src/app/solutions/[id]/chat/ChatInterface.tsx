@@ -9,8 +9,11 @@ import {
   Clock,
   Loader2,
   Activity,
-  Brain,
+  Sparkles,
   ChevronDown,
+  FileText,
+  Search,
+  CheckCircle2,
 } from "lucide-react";
 
 interface Citation {
@@ -35,11 +38,18 @@ interface AgentResponse {
   blocked: boolean;
 }
 
+interface ThinkingStep {
+  type: "thinking" | "tool_call" | "tool_result" | "done";
+  text: string;
+  results?: string[];
+}
+
 interface ChatMessage {
   role: "user" | "agent";
   content: string;
   response?: AgentResponse;
-  thinking?: string[];
+  thinkingSteps?: ThinkingStep[];
+  thinkingSummary?: string;
   timestamp: Date;
 }
 
@@ -275,46 +285,104 @@ async function fetchAgentResponse(
 /*  Side Panel                                                         */
 /* ------------------------------------------------------------------ */
 
-function InlineThinking({
+function StepIcon({ type }: { type: ThinkingStep["type"] }) {
+  switch (type) {
+    case "thinking":
+      return <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />;
+    case "tool_call":
+      return <Search className="w-4 h-4 text-zinc-400 shrink-0" />;
+    case "tool_result":
+      return <FileText className="w-4 h-4 text-zinc-400 shrink-0" />;
+    case "done":
+      return <CheckCircle2 className="w-4 h-4 text-zinc-400 shrink-0" />;
+  }
+}
+
+function LiveThinkingSteps({ steps }: { steps: ThinkingStep[] }) {
+  return (
+    <div className="space-y-3 py-2">
+      {steps.map((step, i) => (
+        <div key={i} className="flex items-start gap-3">
+          <StepIcon type={step.type} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-zinc-500 leading-relaxed">{step.text}</p>
+            {step.results && step.results.length > 0 && (
+              <div className="mt-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg overflow-hidden">
+                {step.results.map((r, j) => (
+                  <div
+                    key={j}
+                    className="px-3 py-2 text-xs text-zinc-400 border-b border-zinc-700/30 last:border-b-0"
+                  >
+                    {r}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+      <div className="flex items-center gap-3">
+        <Loader2 className="w-4 h-4 text-zinc-400 animate-spin shrink-0" />
+        <p className="text-sm text-zinc-400">Working...</p>
+      </div>
+    </div>
+  );
+}
+
+function CollapsedThinking({
   steps,
-  isLive = false,
+  summary,
 }: {
-  steps: string[];
-  isLive?: boolean;
+  steps: ThinkingStep[];
+  summary?: string;
 }) {
-  const [isExpanded, setIsExpanded] = useState(isLive);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (steps.length === 0) return null;
 
+  const headerText = summary || `Analysed and cited ${steps.filter((s) => s.type === "tool_call").length} sources`;
+
   return (
-    <div className="border-b border-violet-100">
+    <div className="mb-3">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 w-full text-left px-5 py-2.5 hover:bg-violet-50/50 transition-colors"
+        className="flex items-center gap-2 text-left group"
       >
-        <Brain className="w-3.5 h-3.5 text-violet-500 shrink-0" />
-        <span className="text-xs font-medium text-violet-600 flex-1">
-          {isLive ? "Thinking..." : `Thinking (${steps.length} step${steps.length !== 1 ? "s" : ""})`}
+        <span className="text-sm text-amber-700/80 group-hover:text-amber-700 transition-colors">
+          {headerText}
         </span>
-        {isLive && <Loader2 className="w-3 h-3 text-violet-400 animate-spin" />}
-        {!isLive && (
-          <ChevronDown
-            className={`w-3.5 h-3.5 text-violet-400 transition-transform ${
-              isExpanded ? "rotate-180" : ""
-            }`}
-          />
-        )}
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${
+            isExpanded ? "rotate-180" : ""
+          }`}
+        />
       </button>
       {isExpanded && (
-        <div className="px-5 pb-3 space-y-1.5">
+        <div className="mt-3 space-y-2.5 pl-1">
           {steps.map((step, i) => (
-            <p
-              key={i}
-              className="text-xs text-violet-600 leading-relaxed pl-5"
-            >
-              {step}
-            </p>
+            <div key={i} className="flex items-start gap-2.5">
+              <StepIcon type={step.type} />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-zinc-500 leading-relaxed">{step.text}</p>
+                {step.results && step.results.length > 0 && (
+                  <div className="mt-1.5 bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden">
+                    {step.results.map((r, j) => (
+                      <div
+                        key={j}
+                        className="px-3 py-1.5 text-xs text-zinc-500 border-b border-zinc-100 last:border-b-0"
+                      >
+                        {r}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           ))}
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-zinc-400 shrink-0" />
+            <p className="text-xs text-zinc-500">Done</p>
+          </div>
         </div>
       )}
     </div>
@@ -453,9 +521,8 @@ export default function ChatInterface({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [liveThinking, setLiveThinking] = useState<string[]>([]);
-  const liveThinkingRef = useRef<string[]>([]);
-  const [liveToolCalls, setLiveToolCalls] = useState<string[]>([]);
+  const [liveSteps, setLiveSteps] = useState<ThinkingStep[]>([]);
+  const liveStepsRef = useRef<ThinkingStep[]>([]);
   const [selectedResponse, setSelectedResponse] = useState<AgentResponse | null>(null);
   const [framework, setFramework] = useState<Framework>("openai");
   const [langchainModel, setLangchainModel] = useState(OPENROUTER_MODELS[0].value);
@@ -478,9 +545,8 @@ export default function ChatInterface({
 
     setIsTyping(true);
     setSelectedResponse(null);
-    setLiveThinking([]);
-    liveThinkingRef.current = [];
-    setLiveToolCalls([]);
+    setLiveSteps([]);
+    liveStepsRef.current = [];
 
     const model = framework === "langchain" ? langchainModel : undefined;
 
@@ -498,13 +564,20 @@ export default function ChatInterface({
 
         es.addEventListener("thinking", (e) => {
           const data = JSON.parse(e.data);
-          liveThinkingRef.current = [...liveThinkingRef.current, data.text];
-          setLiveThinking(liveThinkingRef.current);
+          const step: ThinkingStep = { type: "thinking", text: data.text };
+          liveStepsRef.current = [...liveStepsRef.current, step];
+          setLiveSteps([...liveStepsRef.current]);
         });
 
         es.addEventListener("tool_call", (e) => {
           const data = JSON.parse(e.data);
-          setLiveToolCalls((prev) => [...prev, data.name]);
+          const step: ThinkingStep = {
+            type: "tool_call",
+            text: data.description || data.name,
+            results: data.results,
+          };
+          liveStepsRef.current = [...liveStepsRef.current, step];
+          setLiveSteps([...liveStepsRef.current]);
         });
 
         es.addEventListener("complete", (e) => {
@@ -534,19 +607,16 @@ export default function ChatInterface({
 
       if (response) {
         streamed = true;
-        // Use thinking from response, or from live stream if response didn't include it
-        const allThinking = response.thinking.length > 0
-          ? response.thinking
-          : liveThinkingRef.current.length > 0
-            ? [...liveThinkingRef.current]
-            : undefined;
+        const steps = liveStepsRef.current.length > 0
+          ? [...liveStepsRef.current]
+          : response.thinking.map((t) => ({ type: "thinking" as const, text: t }));
         setMessages((prev) => [
           ...prev,
           {
             role: "agent",
             content: response.text,
             response,
-            thinking: allThinking,
+            thinkingSteps: steps.length > 0 ? steps : undefined,
             timestamp: new Date(),
           },
         ]);
@@ -564,13 +634,16 @@ export default function ChatInterface({
         const delay = Math.min(response.latencyMs, 2000);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
+      const steps = response.thinking?.length
+        ? response.thinking.map((t) => ({ type: "thinking" as const, text: t }))
+        : undefined;
       setMessages((prev) => [
         ...prev,
         {
           role: "agent",
           content: response.text,
           response,
-          thinking: response.thinking?.length ? response.thinking : undefined,
+          thinkingSteps: steps,
           timestamp: new Date(),
         },
       ]);
@@ -578,8 +651,8 @@ export default function ChatInterface({
     }
 
     setIsTyping(false);
-    setLiveThinking([]);
-    setLiveToolCalls([]);
+    setLiveSteps([]);
+    liveStepsRef.current = [];
     inputRef.current?.focus();
   }
 
@@ -636,10 +709,12 @@ export default function ChatInterface({
                     }`}
                     onClick={() => msg.response && setSelectedResponse(msg.response)}
                   >
-                    {msg.thinking && msg.thinking.length > 0 && (
-                      <InlineThinking steps={msg.thinking} />
-                    )}
-                    <div className="px-5 py-4 text-sm text-zinc-800 leading-relaxed">
+                    <div className="px-5 pt-4 pb-0">
+                      {msg.thinkingSteps && msg.thinkingSteps.length > 0 && (
+                        <CollapsedThinking steps={msg.thinkingSteps} summary={msg.thinkingSummary} />
+                      )}
+                    </div>
+                    <div className="px-5 pb-4 text-sm text-zinc-800 leading-relaxed">
                       {msg.content}
                     </div>
                     {msg.response && (
@@ -673,31 +748,13 @@ export default function ChatInterface({
             ))}
 
             {isTyping && (
-              <div className="space-y-2">
-                {(liveThinking.length > 0 || liveToolCalls.length > 0) && (
-                  <div className="bg-white border border-zinc-200 rounded-2xl rounded-bl-md overflow-hidden">
-                    {liveThinking.length > 0 && (
-                      <InlineThinking steps={liveThinking} isLive />
-                    )}
-                    {liveToolCalls.length > 0 && (
-                      <div className="px-5 py-2 flex flex-wrap gap-1.5 border-b border-zinc-100">
-                        {liveToolCalls.map((name, i) => (
-                          <span key={i} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
-                            {name}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <div className="px-5 py-3 flex items-center gap-2 text-sm text-zinc-400">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Generating answer...
-                    </div>
-                  </div>
-                )}
-                {liveThinking.length === 0 && liveToolCalls.length === 0 && (
-                  <div className="flex items-center gap-2 text-sm text-zinc-400">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Agent is thinking...
+              <div>
+                {liveSteps.length > 0 ? (
+                  <LiveThinkingSteps steps={liveSteps} />
+                ) : (
+                  <div className="flex items-center gap-3 py-2">
+                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                    <p className="text-sm text-zinc-400">Thinking...</p>
                   </div>
                 )}
               </div>

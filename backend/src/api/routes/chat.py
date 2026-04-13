@@ -264,8 +264,22 @@ async def _stream_chat(
         citations = response.citations
         thinking = response.thinking
         token_usage = response.metadata.get("token_usage", {})
+        # Emit thinking steps
         for step in thinking:
             yield sse("thinking", {"text": step})
+        # Emit a tool_call event for the retrieval strategy
+        strategy = response.metadata.get("retrieval_strategy", "hybrid")
+        if strategy == "agentic_full_page":
+            pages = response.metadata.get("pages_available", 0)
+            yield sse("tool_call", {
+                "name": "read_page",
+                "description": f"Read {len(citations)} pages from the Annual Report",
+            })
+        elif citations:
+            yield sse("tool_call", {
+                "name": "retrieve",
+                "description": f"Retrieved {len(citations)} relevant passages",
+            })
 
     # Run guardrails
     runner = _get_guardrail_runner()
@@ -395,7 +409,38 @@ async def _run_openai_streamed(
                 tool_name = getattr(item, "name", "") or ""
                 if not tool_name and hasattr(item, "raw_item"):
                     tool_name = getattr(item.raw_item, "name", "tool")
-                events.append(sse("tool_call", {"name": tool_name}))
+                # Build a human-readable description
+                descriptions = {
+                    "list_pages": "Browsing Annual Report table of contents",
+                    "read_page": "Reading a page from the Annual Report",
+                    "cite_source": "Recording a source citation",
+                }
+                desc = descriptions.get(tool_name, tool_name)
+                # Extract args if available
+                raw = item.raw_item if hasattr(item, "raw_item") else None
+                if tool_name == "read_page" and raw and hasattr(raw, "arguments"):
+                    try:
+                        args = json.loads(raw.arguments) if isinstance(raw.arguments, str) else raw.arguments
+                        fname = args.get("filename", "")
+                        if fname:
+                            desc = f"Reading {fname.replace('.md', '').replace('-', ' ')}"
+                    except Exception:
+                        pass
+                events.append(sse("tool_call", {"name": tool_name, "description": desc}))
+            elif hasattr(item, "type") and item.type == "tool_call_output_item":
+                # Tool results — show page titles from list_pages
+                raw = item.raw_item if hasattr(item, "raw_item") else None
+                if raw and hasattr(raw, "output"):
+                    output = raw.output if isinstance(raw.output, str) else str(raw.output)
+                    # For list_pages, extract page titles as results
+                    if "p." in output and "[" in output:
+                        lines = [l.strip() for l in output.split("\n") if l.strip()][:6]
+                        if lines:
+                            events.append(sse("tool_call", {
+                                "name": "list_pages",
+                                "description": f"Annual Report — {len(lines)} sections",
+                                "results": lines,
+                            }))
             elif hasattr(item, "type") and item.type == "message_output_item":
                 raw = item.raw_item if hasattr(item, "raw_item") else None
                 if raw and hasattr(raw, "content"):
