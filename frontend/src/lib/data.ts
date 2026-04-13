@@ -948,9 +948,9 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
   "cba-model-risk-framework": {
     ...governanceDocuments[2],
     purpose:
-      "Provide a structured approach to identifying, assessing, and mitigating risks arising from the use of models — including AI and ML models — in business decision-making across CBA.",
+      "This framework establishes the requirements for managing risk arising from the use of models across the Commonwealth Bank Group, with particular emphasis on models that incorporate AI and ML techniques. It provides a structured approach to model development, validation, deployment, monitoring, and retirement that is proportionate to the risk each model presents. This framework is subordinate to the CBA Group AI Policy (GOV-AI-001) and implements model-specific governance requirements referenced in that policy.",
     scope:
-      "All models used for decision-making, risk measurement, financial reporting, or customer-facing interactions. Includes traditional statistical models, machine learning models, and generative AI systems.",
+      "All models that use machine learning, deep learning, or generative AI techniques, regardless of whether developed in-house, procured from vendors, or provided by third parties. Also covers traditional statistical models registered on the AI governance platform and ensemble/hybrid systems. Applies to models in all lifecycle stages from initial development through to retirement. Does not apply to deterministic rule-based systems, pure RAG systems without a trained model component, or spreadsheet-based calculations.",
     keyRequirements: [
       "All models must be registered in the Group model inventory with complete metadata including purpose, owner, and risk classification",
       "Models must undergo independent validation before production deployment, with validation scope proportionate to model risk tier",
@@ -959,6 +959,111 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       "Golden datasets used for validation must be reviewed and approved by qualified personnel independent of the development team",
       "Bias and fairness assessments are mandatory for models that impact customers or make decisions about individuals",
     ],
+    sections: [
+      {
+        title: "Definitions",
+        table: {
+          headers: ["Term", "Definition"],
+          rows: [
+            ["Model", "A quantitative method or system that applies statistical, mathematical, or AI/ML techniques to process input data into quantitative estimates, predictions, classifications, scores, or generated outputs."],
+            ["Model Risk", "The potential for adverse consequences from decisions based on incorrect or misused model outputs, arising from fundamental errors, incorrect use, or use in unvalidated contexts."],
+            ["Model Owner", "The individual accountable for the model's performance, compliance, and business outcomes — typically the squad lead or product owner."],
+            ["Model Validator", "An individual or team independent of development who assesses the model's conceptual soundness, implementation correctness, and ongoing performance."],
+            ["Model Card", "A structured document recording a model's purpose, architecture, training data, performance, limitations, and governance metadata. Mandatory for all models above experimental tier."],
+            ["Challenger Model", "An alternative model maintained alongside the production model to provide an independent performance benchmark and facilitate replacement when necessary."],
+            ["Model Risk Tier", "A classification determining governance intensity, aligned with the AI solution risk tiers defined in GOV-AI-001."],
+          ],
+        },
+      },
+      {
+        title: "Model Risk Classification",
+        content: "Model risk tiers are aligned with the AI solution risk tiers defined in GOV-AI-001 Section 5. Risk may be elevated based on materiality of decisions, model complexity, data sensitivity, regulatory significance, or concentration risk.",
+        table: {
+          headers: ["AI Solution Risk Tier", "Model Risk Tier", "Model Risk Label", "Governance Intensity"],
+          rows: [
+            ["experimental", "Tier 1", "Low", "Basic documentation and monitoring"],
+            ["production_internal", "Tier 2", "Medium", "Full documentation, periodic validation, active monitoring"],
+            ["production_customer_facing", "Tier 3", "High", "Full documentation, independent validation, continuous monitoring, challenger model"],
+          ],
+        },
+      },
+      {
+        title: "Model Lifecycle Stages",
+        content: "Every model progresses through five lifecycle stages. Each stage has defined entry criteria, activities, and exit criteria.",
+        table: {
+          headers: ["Stage", "Entry Criteria", "Key Activities", "Exit Criteria"],
+          rows: [
+            ["Development", "Approved use case, registered AI solution", "Data preparation, feature engineering, model training, initial testing, model card creation", "Model card complete, initial performance metrics documented"],
+            ["Validation", "Development complete, model card available", "Independent review, conceptual soundness assessment, implementation testing, performance benchmarking", "Validation report issued, findings addressed"],
+            ["Deployment", "Validation passed, all compliance gates passed", "Integration into production, A/B testing where applicable, monitoring activation", "Model live in production, monitoring dashboards active"],
+            ["Monitoring", "Model deployed to production", "Performance tracking, drift detection, periodic re-validation, incident response", "Ongoing — exits only to Retirement"],
+            ["Retirement", "Replacement model deployed or business decision to decommission", "Output archival, audit trail preservation, model registry update, dependent system notification", "Model removed from production, registry updated to retired"],
+          ],
+        },
+      },
+      {
+        title: "Model Validation",
+        subsections: [
+          { title: "Validation Independence", content: "Tier 1: peer review by a team member not involved in development. Tier 2: validation by Model Risk team or independent internal team (different reporting line). Tier 3: Model Risk team mandatory; external validation may also be required for models with material financial impact." },
+          { title: "Conceptual Soundness", content: "Is the modelling approach appropriate? Are assumptions documented? For AI/ML models: is the choice of algorithm, architecture, and hyperparameters justified?" },
+          { title: "Implementation Correctness", content: "Has the model been implemented correctly? Are data pipelines accurate? Are training, inference, and serving pipelines reproducible across environments?" },
+          { title: "Performance Assessment", content: "Scoring models: AUC/Gini, calibration (Brier score, ECE), discrimination metrics. Classification models: precision, recall, F1, confusion matrix across demographic groups. Generative AI: evaluation harness results per GOV-AI-006." },
+        ],
+      },
+      {
+        title: "Performance Monitoring — Scoring Models",
+        content: "Monitoring requirements scale by tier. Tier 3 requires real-time alerting, weekly PSI, weekly discrimination tracking, and monthly calibration monitoring.",
+        table: {
+          headers: ["Metric", "Description", "Tier 2 Alert Threshold", "Tier 3 Alert Threshold"],
+          rows: [
+            ["AUC/Gini decay", "Change in discriminatory power from baseline", "> 5% relative decline", "> 3% relative decline"],
+            ["PSI", "Shift in score distribution", "> 0.20", "> 0.10"],
+            ["CSI", "Shift in individual feature distributions", "> 0.25", "> 0.15"],
+            ["Calibration drift", "Difference between predicted and observed rates", "> 10% relative deviation", "> 5% relative deviation"],
+            ["Approval rate shift", "Change in population-level approval rate", "> 5 percentage points", "> 3 percentage points"],
+          ],
+        },
+      },
+      {
+        title: "Challenger Model Requirements",
+        content: "Challenger models are required for all Tier 3 (High) models and recommended for Tier 2. They must be developed independently, maintained alongside the production model, validated to the same standard, and deployable within 48 hours if the production model is taken offline.",
+        bullets: [
+          "Champion-to-challenger switching requires documented evidence the challenger outperforms on the primary business metric",
+          "A validation report for the challenger model must be issued before switching",
+          "Parallel running period: at least 14 days (Tier 2) or 30 days (Tier 3)",
+          "Approval from Model Risk (Tier 2) or Head of Model Risk (Tier 3) is required",
+        ],
+      },
+      {
+        title: "Required Documentation by Tier",
+        table: {
+          headers: ["Document", "Tier 1", "Tier 2", "Tier 3"],
+          rows: [
+            ["Model card", "Recommended", "Required", "Required"],
+            ["Validation report", "Not required", "Required", "Required"],
+            ["Training data lineage", "Recommended", "Required", "Required"],
+            ["Feature documentation", "Recommended", "Required", "Required"],
+            ["Monitoring specification", "Not required", "Required", "Required"],
+            ["Challenger model comparison", "Not required", "Recommended", "Required"],
+            ["Incident response plan", "Not required", "Recommended", "Required"],
+          ],
+        },
+      },
+      {
+        title: "APRA CPS 230 Alignment",
+        content: "This framework implements APRA CPS 230 operational risk management requirements for models.",
+        table: {
+          headers: ["CPS 230 Requirement", "Framework Implementation"],
+          rows: [
+            ["Identify and assess operational risks", "Model risk classification (Section 4), model inventory (Section 9)"],
+            ["Maintain effective controls", "Compliance gates (GOV-AI-001), validation requirements, monitoring"],
+            ["Manage change effectively", "Lifecycle stage transitions, validation triggers"],
+            ["Business continuity", "Challenger model requirements, incident response per GOV-AI-001"],
+            ["Third-party risk management", "Scope includes vendor and third-party models"],
+          ],
+        },
+      },
+    ] as DocumentSection[],
     controlMappings: [
       { controlId: "AI-GOV-001", requirement: "Model inventory registration", platformEnforcement: "Solution manifest schema enforces registration with metadata completeness check; deployment blocked without valid registration" },
       { controlId: "AI-GOV-003", requirement: "Pre-deployment validation", platformEnforcement: "Evaluation harness runs full metric suite against golden dataset; thresholds configured per risk tier in YAML" },
@@ -966,14 +1071,14 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       { controlId: "AI-GOV-009", requirement: "Independent test data review", platformEnforcement: "Golden dataset sign-off gate requires documented reviewer, review date, and explicit approval before deployment" },
     ],
     approvalAuthority: "Head of Model Risk",
-    relatedDocuments: ["cba-group-ai-policy", "cba-ai-testing-framework"],
+    relatedDocuments: ["cba-group-ai-policy", "cba-responsible-ai-principles", "cba-data-governance-standard", "cba-ai-registration-standard", "cba-ai-testing-framework", "cba-prompt-governance-guideline", "apra-cps-230", "apra-cps-234"],
   },
   "cba-data-governance-standard": {
     ...governanceDocuments[3],
     purpose:
-      "Establish standards for data quality, lineage, classification, retention, and privacy across all CBA data assets, with specific provisions for data used in AI and ML systems.",
+      "This standard establishes the data governance requirements for all data used in, generated by, or associated with AI and ML systems across the Commonwealth Bank Group. It ensures that data used in AI systems meets the Group's requirements for quality, privacy, security, lineage, and regulatory compliance. Poor data governance in AI systems creates risks amplified by the scale and speed at which AI operates: a bias in training data becomes a bias in millions of automated decisions; a PII leak in a prompt response is replicated across every similar interaction.",
     scope:
-      "All data assets across CBA, with enhanced requirements for data used in AI training, evaluation, and production inference. Covers both structured and unstructured data.",
+      "All data used to train, fine-tune, or calibrate AI/ML models; all data in RAG knowledge bases and vector stores; all golden datasets for evaluation; all data generated by AI systems (outputs, predictions, generated text); all interaction data (user queries, AI responses, trace data, audit logs); and all metadata (solution manifests, evaluation results, compliance evidence). Does not replace the Group's existing data governance policies — provides AI-specific requirements that supplement them.",
     keyRequirements: [
       "Data used in AI systems must be classified according to CBA's data classification scheme and handled according to its sensitivity level",
       "AI solution outputs must not contain personal information unless explicitly required and authorised for the solution's purpose",
@@ -982,13 +1087,113 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       "Data retention periods must be defined and enforced for all AI-related data assets including training data, evaluation results, and interaction logs",
       "Data lineage must be documented for AI training data, enabling traceability from source to model",
     ],
+    sections: [
+      {
+        title: "Definitions",
+        table: {
+          headers: ["Term", "Definition"],
+          rows: [
+            ["Personal Information (PI)", "Information or an opinion about an identified or reasonably identifiable individual, as defined under the Australian Privacy Act 1988."],
+            ["Personally Identifiable Information (PII)", "A subset of PI that can uniquely identify an individual, including direct identifiers (name, address, email) and indirect identifiers that in combination could identify someone."],
+            ["Sensitive Information", "A subset of PI with additional protections: racial/ethnic origin, political opinions, religious beliefs, sexual orientation, criminal record, health information, genetic/biometric data, trade union membership."],
+            ["Data Lineage", "A documented record of data's origins, transformations, and movements from source systems through to its use in an AI system."],
+            ["Synthetic Data", "Data artificially generated to resemble real data in structure and statistical properties but not corresponding to any real individual or transaction."],
+            ["Golden Dataset", "A curated, human-reviewed set of test cases used to evaluate an AI solution's quality, safety, and compliance, as defined in GOV-AI-001 Section 8.1."],
+          ],
+        },
+      },
+      {
+        title: "Data Classification Scheme",
+        content: "All data associated with AI systems must be classified according to the Group's four-tier scheme. Solution owners may elevate but not lower default classifications.",
+        table: {
+          headers: ["Classification", "Definition", "AI Context Examples"],
+          rows: [
+            ["Public", "Intended for or available to the public; disclosure causes no harm", "Published AI principles, public documentation, open-source model architectures"],
+            ["Internal", "Intended for use within CBA; disclosure could cause minor reputational impact", "Internal policy documents, non-sensitive training data, solution manifests"],
+            ["Confidential", "Could cause material harm to CBA or customers if disclosed", "Customer interaction logs, model outputs with business logic, evaluation results"],
+            ["Restricted", "Could cause severe harm if disclosed; strictest access controls", "Raw customer PII, credit scoring model weights, fraud detection parameters, encryption keys"],
+          ],
+        },
+      },
+      {
+        title: "PII Detection Requirements",
+        content: "All AI solutions that process text or unstructured data must implement PII detection guardrails. Australian-specific PII types include TFN (Tax File Number), Medicare number, ABN, and CBA Customer Reference Number.",
+        table: {
+          headers: ["Requirement", "Experimental", "Production Internal", "Production Customer-Facing"],
+          rows: [
+            ["PII detection in outputs", "Recommended", "Required", "Required (zero tolerance)"],
+            ["PII detection in inputs", "Not required", "Recommended", "Required"],
+            ["PII detection method", "Any", "Regex + NER model", "Regex + NER model + LLM-based review"],
+            ["TFN-specific detection", "Required if processing financial data", "Required", "Required"],
+            ["Medicare-specific detection", "Not required", "Required if processing health data", "Required"],
+            ["False positive review", "Not required", "Quarterly", "Monthly"],
+          ],
+        },
+      },
+      {
+        title: "Data Retention Periods",
+        content: "Retention periods are minimums. Data must not be retained beyond the stated period plus a 90-day grace period unless a legal hold requires extended retention.",
+        table: {
+          headers: ["Data Type", "Retention Period", "Rationale"],
+          rows: [
+            ["Training data (raw)", "Lifetime of model + 5 years", "Required for model re-validation and regulatory enquiry"],
+            ["Training data (processed)", "Lifetime of model + 3 years", "Required for model reproducibility"],
+            ["RAG knowledge base content", "Current version + 2 prior versions", "Required for audit trail of information available to the AI"],
+            ["Golden datasets", "Lifetime of solution + 5 years", "Required for compliance evidence"],
+            ["User interaction logs", "7 years", "Aligned to APRA record-keeping requirements"],
+            ["Trace data (full audit trail)", "7 years", "Required for reconstructing AI-assisted decisions"],
+            ["Model weights and checkpoints", "Lifetime of model + 2 years", "Required for incident investigation and reproducibility"],
+          ],
+        },
+      },
+      {
+        title: "Cross-Border Data Restrictions",
+        content: "Australian customer data processed by AI systems must remain within Australian borders unless an explicit exception is approved. Embeddings derived from customer data retain their original classification and sovereignty requirements.",
+        table: {
+          headers: ["Scenario", "Requirement"],
+          rows: [
+            ["CBA-hosted model in Australian data centre", "Permitted — preferred approach"],
+            ["Cloud-hosted model in Australian region", "Permitted — data residency must be contractually guaranteed"],
+            ["Cloud-hosted model outside Australia (e.g. OpenAI, Anthropic API)", "Restricted — only if no customer PII transmitted, data anonymised/synthetic, CDO approved, and DPA in place"],
+            ["Third-party API with no data residency guarantee", "Not permitted for Confidential or Restricted data"],
+          ],
+        },
+      },
+      {
+        title: "Right to Explanation",
+        content: "When an AI system makes or materially contributes to a decision about an individual, that individual has the right to understand the basis of the decision, derived from Australian Privacy Principle 6, ASIC Regulatory Guide 209, and CBA's Responsible AI Principles.",
+        table: {
+          headers: ["Decision Type", "Explanation Requirement", "Explanation Method"],
+          rows: [
+            ["Credit decisioning (approve/decline)", "Mandatory — provided on request", "Key factors in plain language"],
+            ["Credit limit or pricing", "Mandatory — available for enquiry", "Primary variables and directional influence"],
+            ["Insurance claim assessment", "Mandatory — provided with outcome", "Factors considered and their contribution"],
+            ["Customer service triage/routing", "Low — informational only", "General description of routing logic"],
+            ["Fraud detection (alert generation)", "Not provided to subject", "Available to internal investigators on request"],
+          ],
+        },
+      },
+      {
+        title: "Handling Requirements by Classification",
+        table: {
+          headers: ["Requirement", "Internal", "Confidential", "Restricted"],
+          rows: [
+            ["Access control", "Role-based", "Role-based + need-to-know", "Named individuals + approval"],
+            ["Encryption at rest", "Required", "Required (AES-256)", "Required (AES-256 + key management)"],
+            ["Encryption in transit", "Required (TLS 1.2+)", "Required (TLS 1.3)", "Required (TLS 1.3 + certificate pinning)"],
+            ["Logging of access", "Recommended", "Required", "Required (with alerting)"],
+            ["Sharing outside CBA", "Permitted with approval", "Permitted with CDO approval", "Not permitted without GCRO approval"],
+          ],
+        },
+      },
+    ] as DocumentSection[],
     controlMappings: [
       { controlId: "AI-GOV-005", requirement: "PII protection in outputs", platformEnforcement: "Presidio scans every AI response for PII entities; detected PII triggers response blocking and alert to solution owner" },
       { controlId: "AI-GOV-008", requirement: "Audit trail for data access", platformEnforcement: "Tracing SDK logs all data retrieval and transformation steps; 100% completeness enforced at deployment gate" },
       { controlId: "AI-GOV-009", requirement: "Synthetic data in evaluation", platformEnforcement: "Golden dataset sign-off process includes confirmation that test data is synthetic; chapter reviews during intake" },
     ],
     approvalAuthority: "Chief Data Officer",
-    relatedDocuments: ["cba-group-ai-policy", "cba-responsible-ai-principles", "apra-cps-234"],
+    relatedDocuments: ["cba-group-ai-policy", "cba-responsible-ai-principles", "cba-model-risk-framework", "cba-ai-registration-standard", "cba-ai-testing-framework", "cba-prompt-governance-guideline", "apra-cps-230", "apra-cps-234"],
   },
   "cba-ai-registration-standard": {
     ...governanceDocuments[4],
@@ -1035,9 +1240,9 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
   "cba-prompt-governance-guideline": {
     ...governanceDocuments[6],
     purpose:
-      "Provide guidance on the version control, review, and approval of system prompts in generative AI solutions, ensuring prompt changes are governed with the same rigour as code changes.",
+      "This guideline provides recommendations and requirements for the governance of prompts used in generative AI systems across the Commonwealth Bank Group, covering system prompts, user-facing prompt templates, prompt engineering practices, and the change management processes that accompany prompt modifications. Prompts are the primary control interface for generative AI systems — unlike traditional software where behaviour is determined by compiled code, generative AI behaviour can be fundamentally altered by changing a few lines of natural language, making prompt governance both uniquely important and uniquely challenging.",
     scope:
-      "All generative AI solutions that use system prompts, including RAG pipelines, agentic workflows, and conversational AI. Does not apply to traditional ML models.",
+      "System prompts that define the behaviour of generative AI solutions (LLMs, conversational AI, agentic workflows), user-facing prompt templates, few-shot examples embedded in prompts, tool and function definitions provided to agentic AI systems, and RAG prompt templates. Does not apply to end-user free-text queries (governed by input guardrails), model training prompts or fine-tuning datasets (governed by GOV-AI-004), or traditional software configuration files.",
     keyRequirements: [
       "System prompts must be stored in version control with a clear change history",
       "Prompt changes must be reviewed and approved before deployment, with the approval commit linked in the solution manifest",
@@ -1045,11 +1250,118 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       "Prompt versions must be tracked in the evidence package, with the current active prompt and full change log available for audit",
       "Emergency prompt changes must follow the same approval workflow but may use an expedited review process",
     ],
+    sections: [
+      {
+        title: "Definitions",
+        table: {
+          headers: ["Term", "Definition"],
+          rows: [
+            ["System Prompt", "The initial instruction set provided to a language model that establishes its role, behaviour, boundaries, and constraints. Not visible to end users; considered part of the solution's configuration."],
+            ["Prompt Template", "A structured prompt containing variable placeholders populated at runtime with context, user input, retrieved documents, or other dynamic content."],
+            ["Prompt Version", "A specific, immutable snapshot of a prompt identified by a version identifier (typically a git commit hash)."],
+            ["Prompt Owner", "The individual responsible for a prompt's content, accuracy, and appropriateness — typically the solution owner or a designated prompt engineer."],
+            ["Prompt Injection", "An attack where malicious input attempts to override or circumvent the system prompt's instructions, causing unintended AI behaviour."],
+            ["Prompt Leakage", "The unintended disclosure of system prompt content, internal instructions, or confidential configuration to end users or external parties."],
+          ],
+        },
+      },
+      {
+        title: "Version Control Requirements",
+        content: "All system prompts for solutions above experimental tier must be stored in a version-controlled repository. The solution manifest must reference the approved prompt commit hash, and the platform's prompt governance gate (AI-GOV-010) verifies the deployed prompt matches.",
+        table: {
+          headers: ["Requirement", "Experimental", "Production Internal", "Production Customer-Facing"],
+          rows: [
+            ["Git-based version control", "Recommended", "Required", "Required"],
+            ["Commit hash tracking in manifest", "Not required", "Required", "Required"],
+            ["Descriptive commit messages", "Recommended", "Required", "Required"],
+            ["Change linked to approval record", "Not required", "Required", "Required"],
+            ["Branch protection on prompt files", "Not required", "Recommended", "Required"],
+          ],
+        },
+      },
+      {
+        title: "Prompt Change Approval Authority",
+        content: "The authority required to approve prompt changes varies by risk tier and the nature of the change. Minor wording changes do not alter AI behaviour; boundary changes alter what the AI is allowed to do; safety changes modify guardrail-related prompt content.",
+        table: {
+          headers: ["Change Type", "Experimental", "Production Internal", "Production Customer-Facing"],
+          rows: [
+            ["Minor wording or formatting", "Prompt Owner", "Prompt Owner", "Prompt Owner + Prompt Reviewer"],
+            ["Behaviour modification (tone, style)", "Prompt Owner", "Prompt Reviewer", "Prompt Reviewer + Chapter Lead"],
+            ["Boundary or scope change", "N/A", "Prompt Reviewer + Chapter Lead", "Chapter Lead + Head of Risk Management AI"],
+            ["Safety or guardrail instruction change", "N/A", "Chapter Lead", "Chapter Lead + Head of Risk Management AI"],
+            ["New tool or function definition (agentic)", "N/A", "Prompt Reviewer + Chapter Lead", "Chapter Lead + Head of Risk Management AI"],
+          ],
+        },
+      },
+      {
+        title: "Regression Testing Tolerances",
+        content: "Prompt changes for Tier 2 and Tier 3 solutions must be tested against the golden dataset before deployment. Any metric regression beyond the defined tolerance triggers a review and blocks deployment until resolved or a documented exception is granted.",
+        table: {
+          headers: ["Metric Category", "Tier 2 Tolerance", "Tier 3 Tolerance"],
+          rows: [
+            ["Faithfulness / accuracy", "<= 2% decline", "<= 1% decline"],
+            ["Guardrail pass rate", "No decline permitted", "No decline permitted"],
+            ["Bias and toxicity scores", "No increase permitted", "No increase permitted"],
+            ["Citation coverage", "<= 3% decline", "<= 1% decline"],
+            ["Boundary adherence", "No decline permitted", "No decline permitted"],
+            ["Response latency", "<= 20% increase", "<= 10% increase"],
+          ],
+        },
+      },
+      {
+        title: "Prompt Security",
+        subsections: [
+          { title: "Prompt Injection Defence", content: "All AI solutions must implement multi-layer defences: (1) System prompt hardening with explicit refusal instructions and delimiters, (2) Input guardrails for automated detection of known injection patterns, (3) Output validation to check responses do not contain system prompt content or out-of-scope information." },
+          { title: "Information Leakage Prevention", content: "System prompts must include explicit refusal instructions for direct requests, indirect elicitation, encoding tricks, and multi-turn extraction attempts. Error handling must return generic messages rather than internal prompt details." },
+          { title: "Prompt Security Testing", content: "Golden datasets for Tier 2 and Tier 3 solutions must include test cases for direct prompt injection, indirect injection via retrieved context (RAG), system prompt extraction, role-playing attacks, and multi-language injection attempts." },
+        ],
+      },
+      {
+        title: "Prompt Template Library",
+        content: "The Chapter maintains a library of approved prompt templates and reusable components that squads can use as starting points. Squads should not modify the guardrail-block or pii-protection-block templates without Chapter approval.",
+        table: {
+          headers: ["Template", "Purpose", "Suitable For"],
+          rows: [
+            ["base-qa-agent", "Foundation for Q&A agents with RAG", "Q&A solutions over a knowledge base"],
+            ["base-classifier", "Foundation for text classification agents", "Classification and routing solutions"],
+            ["guardrail-block", "Standard safety and boundary instructions", "All solutions — append to any system prompt"],
+            ["pii-protection-block", "PII detection and refusal instructions", "Solutions processing text that may contain PII"],
+            ["citation-block", "Instructions for citing sources in responses", "RAG-based solutions requiring source attribution"],
+            ["escalation-block", "Instructions for escalating to a human", "Customer-facing solutions"],
+          ],
+        },
+      },
+      {
+        title: "Emergency Prompt Changes",
+        content: "Emergency changes are appropriate when the current prompt is causing customer harm, a prompt injection vulnerability is being actively exploited, a regulatory direction requires immediate changes, or a PII leakage incident has been traced to prompt configuration. More than two emergency changes in a 90-day period triggers a review of the solution's prompt architecture.",
+        bullets: [
+          "Notify the Chapter Lead with incident description and proposed change",
+          "Test against minimum subset of golden dataset (at least safety and guardrail test cases)",
+          "Chapter Lead (or delegate) provides approval; Head of Risk Management AI must also approve for customer-facing solutions",
+          "Within 48 hours: complete full regression testing, document rationale, update manifest, conduct post-incident review",
+        ],
+      },
+      {
+        title: "Prompt Audit Trail",
+        content: "The platform captures prompt-related data for every AI interaction. For Tier 3 solutions, audit trail coverage must be 100%. For Tier 2, sampling is permitted but must cover at least 10% of interactions, with full logging during the first 30 days after any prompt change.",
+        table: {
+          headers: ["Data Element", "Description", "Required From"],
+          rows: [
+            ["System prompt version", "Commit hash of the active system prompt", "Tier 2+"],
+            ["Rendered prompt", "Fully assembled prompt sent to the model", "Tier 3"],
+            ["Model identifier", "Specific model and version used", "All tiers"],
+            ["Model parameters", "Temperature, top-p, max tokens, etc.", "Tier 2+"],
+            ["Retrieved context", "Documents/passages retrieved by RAG", "Tier 2+ (RAG solutions)"],
+            ["Guardrail results", "Results of input and output guardrail checks", "Tier 2+"],
+          ],
+        },
+      },
+    ] as DocumentSection[],
     controlMappings: [
       { controlId: "AI-GOV-010", requirement: "Prompt version control and approval", platformEnforcement: "CI/CD gate verifies prompt directory has version tags and approval commits; prompt hash changes trigger automatic re-evaluation" },
     ],
     approvalAuthority: "Head of Risk Management AI",
-    relatedDocuments: ["cba-group-ai-policy", "cba-ai-testing-framework"],
+    relatedDocuments: ["cba-group-ai-policy", "cba-responsible-ai-principles", "cba-model-risk-framework", "cba-data-governance-standard", "cba-ai-registration-standard", "cba-ai-testing-framework", "apra-cps-230", "apra-cps-234"],
   },
   "apra-cps-230": {
     ...governanceDocuments[7],
