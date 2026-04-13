@@ -1,0 +1,611 @@
+<!--
+  Dataset Explorer: ML Solution Datasets
+  Australian Credit Approval + Taiwan Credit Default
+  Standalone — opens directly in browser, no server needed
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dataset Explorer — Chapter AI Platform</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #18181b; background: #f4f4f5; min-height: 100vh;
+    }
+
+    /* Top bar */
+    .topbar {
+      background: #18181b; color: #fff; padding: 16px 32px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .topbar h1 { font-size: 16px; font-weight: 600; }
+    .topbar .badge { font-size: 11px; background: #27272a; padding: 2px 8px; border-radius: 4px; color: #a1a1aa; }
+
+    /* Dataset selector */
+    .selector {
+      background: #fff; border-bottom: 1px solid #e4e4e7; padding: 16px 32px;
+      display: flex; gap: 12px; align-items: center;
+    }
+    .selector label { font-size: 13px; font-weight: 500; color: #71717a; }
+    .ds-btn {
+      padding: 8px 16px; border-radius: 6px; border: 1px solid #e4e4e7;
+      background: #fff; font-size: 13px; cursor: pointer; transition: all 0.15s;
+    }
+    .ds-btn:hover { border-color: #a1a1aa; }
+    .ds-btn.active { background: #18181b; color: #fff; border-color: #18181b; }
+    .file-input-wrap { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .file-input-wrap label { font-size: 12px; color: #71717a; }
+
+    /* Layout */
+    .content { padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* Cards */
+    .card {
+      background: #fff; border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 20px; border-bottom: 1px solid #e4e4e7;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-header h3 { font-size: 14px; font-weight: 600; }
+    .card-header .sub { font-size: 12px; color: #71717a; }
+    .card-body { padding: 16px 20px; }
+
+    /* Summary stats row */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .stat-box { text-align: center; padding: 12px; background: #fafafa; border-radius: 6px; }
+    .stat-box .value { font-size: 22px; font-weight: 700; color: #18181b; }
+    .stat-box .label { font-size: 11px; color: #71717a; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Feature table */
+    .feat-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .feat-table th {
+      text-align: left; padding: 10px 12px; font-weight: 500; color: #71717a;
+      border-bottom: 1px solid #e4e4e7; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .feat-table td { padding: 8px 12px; border-bottom: 1px solid #f4f4f5; }
+    .feat-table tr:hover td { background: #fafafa; }
+
+    /* Histogram */
+    .hist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .hist-card { background: #fafafa; border-radius: 6px; padding: 12px; }
+    .hist-card h4 { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+    .hist-bar-wrap { display: flex; align-items: flex-end; gap: 2px; height: 80px; }
+    .hist-bar {
+      flex: 1; background: #3b82f6; border-radius: 2px 2px 0 0; min-width: 4px;
+      position: relative; transition: background 0.15s;
+    }
+    .hist-bar:hover { background: #2563eb; }
+    .hist-bar .tip {
+      display: none; position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+      background: #18181b; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 3px; white-space: nowrap;
+    }
+    .hist-bar:hover .tip { display: block; }
+    .hist-labels { display: flex; justify-content: space-between; font-size: 10px; color: #a1a1aa; margin-top: 4px; }
+
+    /* Proxy disparity */
+    .disparity-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f4f4f5; }
+    .disparity-row:last-child { border-bottom: none; }
+    .disparity-label { width: 50px; font-size: 13px; font-weight: 600; }
+    .disparity-bar-bg { flex: 1; height: 20px; background: #f4f4f5; border-radius: 4px; position: relative; overflow: hidden; }
+    .disparity-bar { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+    .disparity-bar.approved { background: #34d399; }
+    .disparity-bar.denied { background: #f87171; }
+    .disparity-val { width: 60px; text-align: right; font-size: 12px; font-weight: 500; }
+    .flag { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-left: 6px; }
+    .flag-fail { background: #fef2f2; color: #dc2626; }
+    .flag-pass { background: #f0fdf4; color: #16a34a; }
+
+    /* Data table */
+    .data-table-wrap { max-height: 400px; overflow: auto; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: "SF Mono", "Fira Code", monospace; }
+    .data-table th {
+      position: sticky; top: 0; background: #fafafa; padding: 8px 10px;
+      font-weight: 600; font-size: 11px; text-align: right; border-bottom: 2px solid #e4e4e7;
+      white-space: nowrap; z-index: 1;
+    }
+    .data-table th:first-child { text-align: center; }
+    .data-table td { padding: 4px 10px; text-align: right; border-bottom: 1px solid #f4f4f5; }
+    .data-table td:first-child { text-align: center; color: #a1a1aa; }
+    .data-table tr:hover td { background: #fffbeb; }
+    .data-table .target-1 { color: #16a34a; font-weight: 600; }
+    .data-table .target-0 { color: #dc2626; font-weight: 600; }
+
+    /* Pagination */
+    .pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid #e4e4e7; }
+    .pagination .info { font-size: 12px; color: #71717a; }
+    .pagination .btns { display: flex; gap: 4px; }
+    .page-btn {
+      padding: 4px 10px; border: 1px solid #e4e4e7; border-radius: 4px;
+      background: #fff; font-size: 12px; cursor: pointer;
+    }
+    .page-btn:hover { background: #f4f4f5; }
+    .page-btn:disabled { opacity: 0.4; cursor: default; }
+    .page-btn:disabled:hover { background: #fff; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid #e4e4e7; padding: 0 20px; }
+    .tab {
+      padding: 10px 16px; font-size: 13px; font-weight: 500; color: #71717a;
+      border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s;
+    }
+    .tab:hover { color: #18181b; }
+    .tab.active { color: #18181b; border-bottom-color: #18181b; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 60px; color: #a1a1aa; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Dataset Explorer</h1>
+  <span class="badge">ML Solutions</span>
+</div>
+
+<div class="selector">
+  <label>Dataset:</label>
+  <button class="ds-btn active" onclick="loadDataset('australian')" id="btn-australian">Australian Credit Approval (690 rows)</button>
+  <button class="ds-btn" onclick="loadDataset('taiwan')" id="btn-taiwan">Taiwan Credit Default (30,000 rows)</button>
+  <div class="file-input-wrap">
+    <label>Or load file:</label>
+    <input type="file" accept=".dat,.csv,.txt" onchange="loadFile(event)" style="font-size:12px; width:200px;" />
+  </div>
+</div>
+
+<div class="content" id="main-content">
+  <div class="loading" id="loading">Select a dataset above to begin exploring.</div>
+</div>
+
+<script>
+// =========================================================================
+// State
+// =========================================================================
+let currentData = null;
+let currentMeta = null;
+let currentPage = 0;
+const PAGE_SIZE = 25;
+
+// =========================================================================
+// Dataset metadata
+// =========================================================================
+const DATASETS = {
+  australian: {
+    name: "Australian Credit Approval",
+    id: "credit-approval-scorer",
+    source: "UCI Statlog (via OpenML #40981)",
+    origin: "Australian financial institution",
+    separator: " ",
+    hasHeader: false,
+    columns: ["A1","A2","A3","A4","A5","A6","A7","A8","A9","A10","A11","A12","A13","A14","A15"],
+    target: "A15",
+    targetLabels: { 1: "Approved", 0: "Denied" },
+    featureTypes: {
+      A1: "cat-binary", A2: "continuous", A3: "continuous", A4: "cat-multi",
+      A5: "cat-multi", A6: "cat-multi", A7: "continuous", A8: "cat-binary",
+      A9: "cat-binary", A10: "continuous", A11: "cat-binary", A12: "cat-multi",
+      A13: "continuous", A14: "continuous",
+    },
+    proxyCandidates: ["A1", "A8", "A9", "A11"],
+    path: "/datasets/australian.dat",
+    governanceNotes: [
+      "All features anonymised (A1-A14) — no known protected attributes",
+      "Binary categoricals (A1, A8, A9, A11) are proxy discrimination candidates",
+      "Small dataset (690 records) — bootstrap CI required for reliable metrics",
+    ],
+  },
+  taiwan: {
+    name: "Taiwan Credit Card Default",
+    id: "credit-default-scorer",
+    source: "UCI Machine Learning Repository",
+    origin: "Taiwan",
+    separator: ",",
+    hasHeader: true,
+    columns: null, // read from header
+    target: "default.payment.next.month",
+    targetAliases: ["default payment next month", "default.payment.next.month", "default_payment_next_month"],
+    targetLabels: { 1: "Default", 0: "No Default" },
+    featureTypes: {},
+    protectedAttributes: ["SEX", "EDUCATION", "MARRIAGE", "AGE"],
+    path: "/datasets/UCI_Credit_Card.csv",
+    governanceNotes: [
+      "4 known protected attributes: SEX, EDUCATION, MARRIAGE, AGE",
+      "30,000 records — sufficient for reliable statistical metrics",
+      "Gender (SEX) is the primary fairness concern — direct discrimination testing possible",
+    ],
+  },
+};
+
+// =========================================================================
+// Data loading
+// =========================================================================
+async function loadDataset(key) {
+  document.querySelectorAll('.ds-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + key).classList.add('active');
+  document.getElementById('main-content').innerHTML = '<div class="loading">Loading dataset...</div>';
+
+  const meta = DATASETS[key];
+  try {
+    const resp = await fetch(meta.path);
+    if (!resp.ok) throw new Error('File not found: ' + meta.path);
+    const text = await resp.text();
+    parseAndRender(text, meta);
+  } catch (e) {
+    document.getElementById('main-content').innerHTML =
+      '<div class="loading">Could not load dataset.<br><br>' +
+      '<span style="font-size:12px;color:#a1a1aa;">' + e.message + '<br><br>' +
+      'Use the file picker above to load the .dat or .csv file directly.</span></div>';
+  }
+}
+
+function loadFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    // Guess which dataset
+    const isCSV = file.name.endsWith('.csv') || text.includes('LIMIT_BAL');
+    const key = isCSV ? 'taiwan' : 'australian';
+    document.querySelectorAll('.ds-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + key).classList.add('active');
+    parseAndRender(text, DATASETS[key]);
+  };
+  reader.readAsText(file);
+}
+
+function parseAndRender(text, meta) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  let columns, dataLines;
+
+  if (meta.hasHeader) {
+    const headerLine = lines[0];
+    columns = headerLine.split(meta.separator).map(c => c.replace(/"/g, '').trim());
+    dataLines = lines.slice(1);
+  } else {
+    columns = meta.columns;
+    dataLines = lines;
+  }
+
+  // Parse rows
+  const rows = [];
+  for (const line of dataLines) {
+    const vals = line.split(meta.separator === ',' ? ',' : /\s+/);
+    if (vals.length < columns.length) continue;
+    const row = {};
+    for (let i = 0; i < columns.length; i++) {
+      const v = vals[i]?.replace(/"/g, '').trim();
+      row[columns[i]] = isNaN(v) ? v : parseFloat(v);
+    }
+    rows.push(row);
+  }
+
+  // Resolve target column
+  let targetCol = meta.target;
+  if (!columns.includes(targetCol) && meta.targetAliases) {
+    for (const alias of meta.targetAliases) {
+      if (columns.includes(alias)) { targetCol = alias; break; }
+    }
+  }
+
+  // Drop ID column if present
+  const featureCols = columns.filter(c => c !== targetCol && c !== 'ID' && c !== 'id');
+
+  currentData = { rows, columns, featureCols, targetCol, meta };
+  currentMeta = meta;
+  currentPage = 0;
+  renderAll();
+}
+
+// =========================================================================
+// Rendering
+// =========================================================================
+function renderAll() {
+  const { rows, featureCols, targetCol, meta } = currentData;
+  const nRows = rows.length;
+  const nFeatures = featureCols.length;
+
+  // Target distribution
+  const targetCounts = {};
+  rows.forEach(r => {
+    const v = r[targetCol];
+    targetCounts[v] = (targetCounts[v] || 0) + 1;
+  });
+  const positiveRate = ((targetCounts[1] || 0) / nRows * 100).toFixed(1);
+
+  // Feature stats
+  const featureStats = featureCols.map(col => {
+    const vals = rows.map(r => r[col]).filter(v => v !== undefined && v !== null && !isNaN(v));
+    const n = vals.length;
+    if (n === 0) return { col, type: 'unknown', unique: 0, missing: nRows };
+    const unique = new Set(vals).size;
+    const sorted = [...vals].sort((a, b) => a - b);
+    const mean = vals.reduce((s, v) => s + v, 0) / n;
+    const min = sorted[0], max = sorted[n - 1];
+    const median = n % 2 === 0 ? (sorted[n/2 - 1] + sorted[n/2]) / 2 : sorted[Math.floor(n/2)];
+    const std = Math.sqrt(vals.reduce((s, v) => s + (v - mean) ** 2, 0) / n);
+    const type = meta.featureTypes[col] || (unique <= 10 ? 'categorical' : 'continuous');
+    return { col, type, unique, missing: nRows - n, min, max, mean: mean.toFixed(2), median: median.toFixed(2), std: std.toFixed(2), vals };
+  });
+
+  let html = '';
+
+  // --- Summary stats ---
+  html += `<div class="card"><div class="card-header"><h3>${meta.name}</h3><span class="sub">${meta.source} &middot; ${meta.origin}</span></div><div class="card-body"><div class="stats-row">`;
+  html += `<div class="stat-box"><div class="value">${nRows.toLocaleString()}</div><div class="label">Records</div></div>`;
+  html += `<div class="stat-box"><div class="value">${nFeatures}</div><div class="label">Features</div></div>`;
+  html += `<div class="stat-box"><div class="value">${positiveRate}%</div><div class="label">${meta.targetLabels[1]} Rate</div></div>`;
+  html += `<div class="stat-box"><div class="value">${featureStats.filter(f => f.type.startsWith('cat')||f.type==='categorical').length}</div><div class="label">Categorical</div></div>`;
+  html += `<div class="stat-box"><div class="value">${featureStats.filter(f => f.type === 'continuous').length}</div><div class="label">Continuous</div></div>`;
+  html += `<div class="stat-box"><div class="value">${featureStats.reduce((s,f) => s + f.missing, 0)}</div><div class="label">Missing Values</div></div>`;
+  html += `</div>`;
+  // Governance notes
+  if (meta.governanceNotes) {
+    html += `<div style="margin-top:14px;padding:10px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:12px;color:#92400e;">`;
+    html += `<strong>Governance Notes:</strong><ul style="margin:4px 0 0 16px;">`;
+    meta.governanceNotes.forEach(n => html += `<li>${n}</li>`);
+    html += `</ul></div>`;
+  }
+  html += `</div></div>`;
+
+  // --- Tabs ---
+  html += `<div class="card"><div class="tabs">`;
+  html += `<div class="tab active" onclick="switchTab(this,'tab-features')">Feature Summary</div>`;
+  html += `<div class="tab" onclick="switchTab(this,'tab-distributions')">Distributions</div>`;
+  if (meta.proxyCandidates || meta.protectedAttributes) {
+    html += `<div class="tab" onclick="switchTab(this,'tab-fairness')">Fairness Analysis</div>`;
+  }
+  html += `<div class="tab" onclick="switchTab(this,'tab-data')">Raw Data</div>`;
+  html += `</div>`;
+
+  // --- Tab: Feature Summary ---
+  html += `<div class="tab-content active" id="tab-features"><div class="card-body">`;
+  html += `<table class="feat-table"><thead><tr>`;
+  html += `<th>Feature</th><th>Type</th><th>Unique</th><th>Min</th><th>Max</th><th>Mean</th><th>Median</th><th>Std</th><th>Missing</th>`;
+  html += `</tr></thead><tbody>`;
+  featureStats.forEach(f => {
+    const typeLabel = f.type.replace('cat-binary', 'Binary').replace('cat-multi', 'Categorical').replace('continuous', 'Continuous').replace('categorical', 'Categorical');
+    const isProxy = (meta.proxyCandidates || []).includes(f.col);
+    const isProtected = (meta.protectedAttributes || []).includes(f.col);
+    let flag = '';
+    if (isProxy) flag = '<span class="flag flag-fail">PROXY</span>';
+    if (isProtected) flag = '<span class="flag flag-fail">PROTECTED</span>';
+    html += `<tr><td><strong>${f.col}</strong>${flag}</td><td>${typeLabel}</td><td>${f.unique}</td>`;
+    html += `<td>${f.min !== undefined ? f.min : '—'}</td><td>${f.max !== undefined ? f.max : '—'}</td>`;
+    html += `<td>${f.mean || '—'}</td><td>${f.median || '—'}</td><td>${f.std || '—'}</td>`;
+    html += `<td>${f.missing || 0}</td></tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+
+  // --- Tab: Distributions ---
+  html += `<div class="tab-content" id="tab-distributions"><div class="card-body"><div class="hist-grid">`;
+
+  // Target distribution first
+  html += renderTargetDist(targetCounts, meta);
+
+  featureStats.forEach(f => {
+    if (f.type === 'continuous') {
+      html += renderHistogram(f.col, f.vals);
+    } else {
+      html += renderBarChart(f.col, f.vals, meta);
+    }
+  });
+  html += `</div></div></div>`;
+
+  // --- Tab: Fairness ---
+  if (meta.proxyCandidates || meta.protectedAttributes) {
+    html += `<div class="tab-content" id="tab-fairness"><div class="card-body">`;
+    html += renderFairness(rows, featureCols, targetCol, meta);
+    html += `</div></div>`;
+  }
+
+  // --- Tab: Raw Data ---
+  html += `<div class="tab-content" id="tab-data">`;
+  html += renderDataTable();
+  html += `</div>`;
+
+  html += `</div>`; // close card
+  document.getElementById('main-content').innerHTML = html;
+}
+
+// =========================================================================
+// Chart renderers
+// =========================================================================
+function renderTargetDist(counts, meta) {
+  const total = Object.values(counts).reduce((s, v) => s + v, 0);
+  let html = `<div class="hist-card"><h4>Target: ${meta.target}</h4>`;
+  html += `<div class="hist-bar-wrap" style="height:60px;">`;
+  for (const [val, count] of Object.entries(counts).sort((a,b) => a[0] - b[0])) {
+    const pct = count / total * 100;
+    const color = val == 1 ? '#34d399' : '#f87171';
+    const label = meta.targetLabels[val] || val;
+    html += `<div class="hist-bar" style="height:${pct}%;background:${color};flex:${count}"><span class="tip">${label}: ${count} (${pct.toFixed(1)}%)</span></div>`;
+  }
+  html += `</div>`;
+  html += `<div class="hist-labels">`;
+  for (const [val] of Object.entries(counts).sort((a,b) => a[0] - b[0])) {
+    html += `<span>${meta.targetLabels[val] || val}</span>`;
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+function renderHistogram(col, vals, nBins = 15) {
+  const min = Math.min(...vals), max = Math.max(...vals);
+  if (min === max) return `<div class="hist-card"><h4>${col}</h4><div style="font-size:11px;color:#a1a1aa;">Constant: ${min}</div></div>`;
+  const binWidth = (max - min) / nBins;
+  const bins = Array(nBins).fill(0);
+  vals.forEach(v => {
+    let idx = Math.floor((v - min) / binWidth);
+    if (idx >= nBins) idx = nBins - 1;
+    bins[idx]++;
+  });
+  const maxCount = Math.max(...bins);
+  let html = `<div class="hist-card"><h4>${col}</h4><div class="hist-bar-wrap">`;
+  bins.forEach((count, i) => {
+    const h = maxCount > 0 ? (count / maxCount * 100) : 0;
+    const lo = (min + i * binWidth).toFixed(1);
+    const hi = (min + (i + 1) * binWidth).toFixed(1);
+    html += `<div class="hist-bar" style="height:${h}%"><span class="tip">[${lo}, ${hi}): ${count}</span></div>`;
+  });
+  html += `</div><div class="hist-labels"><span>${min.toFixed(1)}</span><span>${max.toFixed(1)}</span></div></div>`;
+  return html;
+}
+
+function renderBarChart(col, vals, meta) {
+  const counts = {};
+  vals.forEach(v => counts[v] = (counts[v] || 0) + 1);
+  const maxCount = Math.max(...Object.values(counts));
+  const entries = Object.entries(counts).sort((a, b) => a[0] - b[0]);
+  let html = `<div class="hist-card"><h4>${col}</h4><div class="hist-bar-wrap">`;
+  entries.forEach(([val, count]) => {
+    const h = maxCount > 0 ? (count / maxCount * 100) : 0;
+    html += `<div class="hist-bar" style="height:${h}%"><span class="tip">${val}: ${count}</span></div>`;
+  });
+  html += `</div><div class="hist-labels">`;
+  if (entries.length <= 6) {
+    entries.forEach(([val]) => html += `<span>${val}</span>`);
+  } else {
+    html += `<span>${entries[0][0]}</span><span>${entries[entries.length-1][0]}</span>`;
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+// =========================================================================
+// Fairness analysis
+// =========================================================================
+function renderFairness(rows, featureCols, targetCol, meta) {
+  const attrs = meta.proxyCandidates || meta.protectedAttributes || [];
+  const isProxy = !!meta.proxyCandidates;
+  const title = isProxy ? 'Proxy Discrimination Analysis' : 'Protected Attribute Analysis';
+  const subtitle = isProxy
+    ? 'Binary features tested as potential demographic proxies. Approval rate disparity exceeding 15% is flagged.'
+    : 'Approval/default rates across protected attribute groups. Disparity exceeding 5% is flagged.';
+  const threshold = isProxy ? 0.15 : 0.05;
+
+  let html = `<h4 style="margin-bottom:4px;">${title}</h4>`;
+  html += `<p style="font-size:12px;color:#71717a;margin-bottom:16px;">${subtitle}</p>`;
+
+  attrs.forEach(attr => {
+    if (!rows[0].hasOwnProperty(attr)) return;
+    const groups = {};
+    rows.forEach(r => {
+      const g = r[attr];
+      if (g === undefined || g === null) return;
+      if (!groups[g]) groups[g] = { total: 0, positive: 0 };
+      groups[g].total++;
+      if (r[targetCol] == 1) groups[g].positive++;
+    });
+
+    const entries = Object.entries(groups).sort((a, b) => a[0] - b[0]);
+    const rates = entries.map(([g, d]) => ({ group: g, rate: d.positive / d.total, count: d.total }));
+    const maxRate = Math.max(...rates.map(r => r.rate));
+    const minRate = Math.min(...rates.map(r => r.rate));
+    const disparity = maxRate - minRate;
+    const pass = disparity <= threshold;
+
+    html += `<div style="margin-bottom:20px;">`;
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">`;
+    html += `<strong style="font-size:13px;">${attr}</strong>`;
+    html += `<span class="flag ${pass ? 'flag-pass' : 'flag-fail'}">${pass ? 'PASS' : 'FLAG'}</span>`;
+    html += `<span style="font-size:11px;color:#71717a;">Disparity: ${(disparity * 100).toFixed(1)}%</span>`;
+    html += `</div>`;
+
+    rates.forEach(({ group, rate, count }) => {
+      const pct = (rate * 100).toFixed(1);
+      const width = maxRate > 0 ? (rate / 1 * 100) : 0; // scale to 100%
+      html += `<div class="disparity-row">`;
+      html += `<div class="disparity-label">${attr}=${group}</div>`;
+      html += `<div class="disparity-bar-bg"><div class="disparity-bar approved" style="width:${width}%"></div></div>`;
+      html += `<div class="disparity-val">${pct}% <span style="color:#a1a1aa;font-size:10px;">(n=${count})</span></div>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+
+  return html;
+}
+
+// =========================================================================
+// Raw data table
+// =========================================================================
+function renderDataTable() {
+  const { rows, columns, targetCol, meta } = currentData;
+  const start = currentPage * PAGE_SIZE;
+  const end = Math.min(start + PAGE_SIZE, rows.length);
+  const pageRows = rows.slice(start, end);
+  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
+
+  let html = `<div class="data-table-wrap"><table class="data-table"><thead><tr><th>#</th>`;
+  columns.forEach(c => {
+    const isTarget = c === targetCol;
+    html += `<th${isTarget ? ' style="background:#fef9c3;"' : ''}>${c}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+
+  pageRows.forEach((row, i) => {
+    html += `<tr>`;
+    html += `<td>${start + i + 1}</td>`;
+    columns.forEach(c => {
+      const v = row[c];
+      const isTarget = c === targetCol;
+      if (isTarget) {
+        html += `<td class="${v == 1 ? 'target-1' : 'target-0'}" style="background:#fffde7;">${v}</td>`;
+      } else {
+        html += `<td>${v !== undefined ? v : ''}</td>`;
+      }
+    });
+    html += `</tr>`;
+  });
+  html += `</tbody></table></div>`;
+
+  // Pagination
+  html += `<div class="pagination">`;
+  html += `<div class="info">Showing ${start + 1}–${end} of ${rows.length.toLocaleString()} records</div>`;
+  html += `<div class="btns">`;
+  html += `<button class="page-btn" onclick="goPage(0)" ${currentPage === 0 ? 'disabled' : ''}>First</button>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>&laquo; Prev</button>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Next &raquo;</button>`;
+  html += `<button class="page-btn" onclick="goPage(${totalPages - 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Last</button>`;
+  html += `</div></div>`;
+
+  return html;
+}
+
+function goPage(page) {
+  if (!currentData) return;
+  const totalPages = Math.ceil(currentData.rows.length / PAGE_SIZE);
+  if (page < 0 || page >= totalPages) return;
+  currentPage = page;
+  const tabContent = document.getElementById('tab-data');
+  tabContent.innerHTML = renderDataTable();
+}
+
+// =========================================================================
+// Tab switching
+// =========================================================================
+function switchTab(el, tabId) {
+  el.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  el.closest('.card').querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+// =========================================================================
+// Auto-load Australian dataset on page open
+// =========================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = window.location.hash.replace('#', '');
+  const key = (hash === 'taiwan' || hash === 'australian') ? hash : 'australian';
+  loadDataset(key);
+});
+</script>
+
+</body>
+</html>
