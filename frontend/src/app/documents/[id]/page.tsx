@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import { documentDetails, governanceDocuments, aiGovPolicies } from "@/lib/data";
-import type { DocumentType, DocumentStatus } from "@/lib/types";
+import type { DocumentType, DocumentStatus, DocumentSection } from "@/lib/types";
 
 function TypeBadge({ type }: { type: DocumentType }) {
   const styles: Record<DocumentType, string> = {
@@ -95,6 +95,66 @@ export default async function DocumentDetailPage({
             ))}
           </ul>
         </div>
+
+        {/* Document Sections */}
+        {doc.sections && doc.sections.length > 0 && doc.sections.map((section: DocumentSection, idx: number) => (
+          <div key={idx} className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-zinc-900">{section.title}</h3>
+
+            {section.content && (
+              <p className="text-sm text-zinc-600 leading-relaxed">{section.content}</p>
+            )}
+
+            {section.bullets && (
+              <ul className="space-y-2">
+                {section.bullets.map((bullet, i) => (
+                  <li key={i} className="flex gap-2 text-sm text-zinc-600">
+                    <span className="text-zinc-400 mt-1 shrink-0">-</span>
+                    <span className="leading-relaxed">{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {section.subsections && (
+              <div className="space-y-4">
+                {section.subsections.map((sub, i) => (
+                  <div key={i}>
+                    <h4 className="text-sm font-medium text-zinc-800 mb-1">{sub.title}</h4>
+                    <p className="text-sm text-zinc-600 leading-relaxed">{sub.content}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {section.table && (
+              <div className="overflow-x-auto -mx-6 px-6">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-200">
+                      {section.table.headers.map((header, i) => (
+                        <th key={i} className="text-left py-2 pr-4 font-medium text-zinc-700 text-xs uppercase tracking-wider">
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {section.table.rows.map((row, i) => (
+                      <tr key={i} className="hover:bg-zinc-50">
+                        {row.map((cell, j) => (
+                          <td key={j} className={`py-2.5 pr-4 text-zinc-600 leading-relaxed ${j === 0 ? "font-medium text-zinc-800" : ""}`}>
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ))}
 
         {/* Control Mapping */}
         <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden">

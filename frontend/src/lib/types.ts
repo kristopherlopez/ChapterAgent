@@ -227,10 +227,19 @@ export interface ValidationDataset {
   testCases: ValidationTestCase[];
 }
 
+export interface DocumentSection {
+  title: string;
+  content?: string;
+  bullets?: string[];
+  table?: { headers: string[]; rows: string[][] };
+  subsections?: { title: string; content: string }[];
+}
+
 export interface GovernanceDocumentDetail extends GovernanceDocument {
   purpose: string;
   scope: string;
   keyRequirements: string[];
+  sections?: DocumentSection[];
   controlMappings: ControlMapping[];
   approvalAuthority: string;
   relatedDocuments: string[];

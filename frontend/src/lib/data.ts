@@ -5,6 +5,7 @@ import type {
   TraceStep,
   GovernanceDocument,
   GovernanceDocumentDetail,
+  DocumentSection,
   Control,
   RuntimeGuardrail,
   RiskControlMapping,
@@ -774,9 +775,9 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
   "cba-group-ai-policy": {
     ...governanceDocuments[0],
     purpose:
-      "Establish mandatory requirements for the safe, ethical, and compliant development, deployment, and operation of AI systems across the Commonwealth Bank Group.",
+      "Establish mandatory requirements for the safe, ethical, and compliant development, deployment, and operation of AI systems across the Commonwealth Bank Group. This policy provides the overarching governance framework that all subordinate standards, frameworks, and guidelines must align to. It exists because AI systems introduce risks that are qualitatively different from traditional software: they can produce outputs that are unpredictable, difficult to explain, and harmful in ways that may not be immediately apparent.",
     scope:
-      "All AI and ML systems developed, procured, or operated by any CBA business unit, subsidiary, or third-party vendor acting on CBA's behalf. Applies to both generative AI and traditional machine learning.",
+      "All AI and ML systems developed, procured, or operated by any CBA business unit, subsidiary, or third-party vendor acting on CBA's behalf. Applies to both generative AI (large language models, RAG, agentic workflows, conversational AI) and traditional machine learning (scoring models, classifiers, anomaly detectors, forecasting models). Covers systems in all lifecycle stages: development, testing, staging, production, and retirement. Does not apply to pure analytics/BI, deterministic RPA, or disconnected research prototypes.",
     keyRequirements: [
       "All AI solutions must be registered in the Group AI inventory before deployment",
       "AI solutions must be assigned a risk tier based on impact assessment and undergo governance proportionate to that tier",
@@ -787,6 +788,129 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       "Human-reviewed golden datasets must be used for evaluation, with sign-off recorded and traceable",
       "System prompts must be version-controlled with approval workflows before deployment",
     ],
+    sections: [
+      {
+        title: "Definitions",
+        table: {
+          headers: ["Term", "Definition"],
+          rows: [
+            ["AI Solution", "Any system that uses machine learning, deep learning, or generative AI to produce outputs, predictions, classifications, or decisions. Includes both standalone systems and AI components within larger applications."],
+            ["Risk Tier", "A classification assigned during intake that determines the level of governance applied. Three tiers: experimental (lowest), production_internal (medium), production_customer_facing (highest)."],
+            ["Solution Manifest", "A structured YAML file (solution.yaml) that declares a solution's identity, type, owner, risk tier, guardrail configuration, evaluation criteria, and compliance requirements."],
+            ["Guardrail", "An automated check that runs on AI inputs or outputs to enforce safety, scope, and quality boundaries. Guardrails may block, flag, or log depending on configuration."],
+            ["Golden Dataset", "A curated, human-reviewed set of test cases used to evaluate an AI solution's quality, safety, and compliance. Must be representative of production scenarios including edge cases and adversarial inputs."],
+            ["Deployment Gate", "An automated compliance check that must pass before a solution can enter or remain in production. Eight gates are defined in this policy."],
+            ["Chapter", "The Risk Management AI capability team responsible for maintaining the AI governance platform, reviewing solution intakes, and providing governance tooling to squads."],
+            ["Squad", "A cross-functional delivery team that builds and operates an AI solution. Squads are accountable for their solution's behaviour; the Chapter provides the governance infrastructure."],
+          ],
+        },
+      },
+      {
+        title: "Principles",
+        subsections: [
+          { title: "Proportionate Governance", content: "Governance intensity must match risk. An experimental prototype used by three internal analysts does not require the same rigour as a customer-facing credit scoring model. The risk tier system codifies this proportionality. However, proportionality is not an excuse for avoidance — every AI solution, regardless of tier, must be registered, have an owner, and have a minimum set of guardrails active. The floor is non-negotiable; the ceiling scales with risk." },
+          { title: "Transparency and Explainability", content: "AI systems must be explainable to the degree required by their impact. For customer-facing decisions, affected individuals must be able to understand why an AI-assisted decision was made. For internal systems, operators and risk managers must be able to inspect the system's reasoning. Explainability takes different forms: citation coverage for Q&A agents, feature importance (SHAP) for scoring models, decision traces for agentic workflows." },
+          { title: "Fairness and Non-Discrimination", content: "AI systems must not produce systematically biased outputs across demographic groups. Bias testing is mandatory for all solutions above experimental tier, with stricter thresholds for customer-facing systems. The definition of fairness must be documented for each solution because fairness means different things in different contexts. Demographic parity may be appropriate for one use case while equalised odds is appropriate for another." },
+          { title: "Privacy by Design", content: "AI systems must not collect, store, process, or expose personal information beyond what is explicitly required and authorised. PII detection guardrails are mandatory for all solutions that process text or unstructured data. This extends to training and evaluation data — golden datasets must use synthetic or appropriately anonymised data. Real customer data must not be used in test cases." },
+          { title: "Accountability and Auditability", content: "Every AI interaction must be traceable. The audit trail must be complete enough to reconstruct any AI-assisted decision after the fact. This is both a regulatory requirement (APRA CPS 230, CPS 234) and an operational necessity for incident response. Accountability is personal: every solution has a named owner in the solution manifest." },
+        ],
+      },
+      {
+        title: "Risk Tier Classification",
+        table: {
+          headers: ["Tier", "Label", "Criteria", "Examples"],
+          rows: [
+            ["1", "experimental", "Not connected to production systems. No real customer data. Used for research, prototyping, or internal exploration.", "Research prototypes, hackathon projects, internal tooling experiments"],
+            ["2", "production_internal", "Deployed in production but used only by internal CBA staff. Outputs inform decisions but do not directly reach customers.", "Internal Q&A agents, risk assessment tools, model validation assistants"],
+            ["3", "production_customer_facing", "Outputs are visible to or directly impact customers, investors, regulators, or the public.", "Customer chatbots, public Q&A agents, credit scoring models, automated decisioning"],
+          ],
+        },
+      },
+      {
+        title: "Governance Requirements by Tier",
+        table: {
+          headers: ["Requirement", "Experimental", "Production Internal", "Production Customer-Facing"],
+          rows: [
+            ["Solution manifest", "Required", "Required", "Required"],
+            ["Named owner", "Required", "Required", "Required"],
+            ["Guardrails active", "Minimum set (scope, injection)", "Full set", "Full set at strictest thresholds"],
+            ["Golden dataset", "Recommended", "Required (30+ cases)", "Required (50+ cases)"],
+            ["Golden dataset sign-off", "Not required", "Required", "Required"],
+            ["Evaluation harness", "Recommended", "Required", "Required"],
+            ["Bias testing", "Not required", "Required", "Required at strictest thresholds"],
+            ["Audit trail", "Recommended", "Required (sampling OK)", "Required (100% coverage)"],
+            ["Prompt governance", "Not required", "Required", "Required"],
+            ["Re-evaluation cadence", "None", "Every 90 days", "Every 30 days"],
+            ["Compliance gates", "Registration only", "All 8 gates", "All 8 gates"],
+            ["Independent review", "Not required", "Recommended", "Required"],
+          ],
+        },
+      },
+      {
+        title: "Guardrail Thresholds by Tier",
+        table: {
+          headers: ["Guardrail", "Experimental", "Production Internal", "Production Customer-Facing"],
+          rows: [
+            ["Prompt injection detection", "Required", "Required", "Required"],
+            ["Scope containment", "Required", "Required", "Required"],
+            ["PII detection", "Recommended", "Required", "Required (zero tolerance)"],
+            ["Faithfulness", "Not required", ">= 0.85", ">= 0.90"],
+            ["Bias detection", "Not required", "<= 0.10", "<= 0.05"],
+            ["Toxicity detection", "Not required", "<= 0.10", "<= 0.05"],
+            ["Citation coverage", "Not required", ">= 0.85", ">= 0.95"],
+            ["Temporal accuracy", "Not required", "Where applicable", "Where applicable"],
+          ],
+        },
+      },
+      {
+        title: "Compliance Gates",
+        content: "Every AI solution above experimental tier must pass eight automated compliance gates before deployment. These gates are enforced by the platform — they are not advisory, they are blocking. Gates are binary: pass or fail. There is no \"pass with conditions\" or \"advisory pass.\" If a gate fails, the solution cannot deploy until the failure is remediated and the gate re-run.",
+        table: {
+          headers: ["Gate", "Control ID", "What It Checks", "Failure Action"],
+          rows: [
+            ["Registration", "AI-GOV-001", "Solution manifest is complete, valid, and includes all mandatory fields", "Deployment blocked"],
+            ["Evaluation Harness", "AI-GOV-003", "All golden dataset metrics meet risk-tier-specific thresholds", "Deployment blocked"],
+            ["PII Validation", "AI-GOV-005", "No PII detected in any golden dataset response", "Deployment blocked"],
+            ["Guardrail Validation", "AI-GOV-006", "All configured guardrails pass at required rate on golden dataset", "Deployment blocked"],
+            ["Bias & Toxicity", "AI-GOV-007", "Bias and toxicity scores within risk-tier thresholds", "Deployment blocked"],
+            ["Audit Trail", "AI-GOV-008", "100% trace coverage across all golden dataset interactions", "Deployment blocked"],
+            ["Golden Dataset Sign-off", "AI-GOV-009", "Human reviewer has approved the golden dataset with recorded identity and date", "Deployment blocked"],
+            ["Prompt Governance", "AI-GOV-010", "System prompts are version-controlled with approval commit hash linked", "Deployment blocked"],
+          ],
+        },
+      },
+      {
+        title: "Gate Exceptions",
+        content: "In exceptional circumstances, a gate can be temporarily exempted. Exceptions require written justification from the solution owner, approval from the Chapter Lead and the relevant control owner, a documented remediation plan with a maximum 30-day deadline, and the exception recorded in the compliance evidence package. Exceptions are not renewable — if the deadline passes without resolution, the solution must be taken out of production. The Registration gate (AI-GOV-001) cannot be exempted under any circumstances.",
+      },
+      {
+        title: "Incident Response",
+        table: {
+          headers: ["Severity", "Criteria", "Response Time", "Escalation"],
+          rows: [
+            ["Critical", "AI output causes customer harm, regulatory breach, or financial loss", "Immediate", "GCRO, Board Risk Committee"],
+            ["High", "AI output is systematically incorrect, biased, or leaking PII", "4 hours", "Chapter Lead, Solution Owner, relevant control owner"],
+            ["Medium", "AI output quality degrades below thresholds but no immediate harm", "24 hours", "Chapter Lead, Solution Owner"],
+            ["Low", "Isolated incorrect output, caught by guardrails", "5 business days", "Solution Owner"],
+          ],
+        },
+      },
+      {
+        title: "Roles and Responsibilities",
+        table: {
+          headers: ["Role", "Responsibilities"],
+          rows: [
+            ["Group Chief Risk Officer", "Approval authority for this policy. Accountable for the Group's AI risk posture."],
+            ["Chapter Lead", "Maintains the AI governance platform. Reviews solution intakes. Approves tier assignments and gate exceptions."],
+            ["Solution Owner", "Accountable for their solution's compliance. Maintains the solution manifest. Responds to incidents."],
+            ["Squad", "Builds and operates the AI solution. Implements guardrails. Maintains the golden dataset."],
+            ["AI Ethics Board", "Sets fairness principles. Reviews bias testing results for customer-facing solutions."],
+            ["Model Risk", "Reviews scoring models and classifiers. Provides independent validation."],
+            ["Internal Audit", "Audits compliance evidence packages. Validates gate enforcement."],
+          ],
+        },
+      },
+    ] as DocumentSection[],
     controlMappings: [
       { controlId: "AI-GOV-001", requirement: "AI inventory registration", platformEnforcement: "Automated registration check in CI/CD pipeline verifies solution manifest is complete, risk tier assigned, and owner designated" },
       { controlId: "AI-GOV-003", requirement: "Quality threshold compliance", platformEnforcement: "DeepEval evaluation harness runs against golden dataset with risk-tier-specific thresholds; deployment blocked if any metric fails" },
@@ -798,7 +922,7 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       { controlId: "AI-GOV-010", requirement: "Prompt version control", platformEnforcement: "Prompt governance check verifies version tracking and approval commit linkage; prompt hash changes trigger automatic re-evaluation" },
     ],
     approvalAuthority: "Group Chief Risk Officer",
-    relatedDocuments: ["cba-responsible-ai-principles", "cba-model-risk-framework", "cba-data-governance-standard"],
+    relatedDocuments: ["cba-responsible-ai-principles", "cba-model-risk-framework", "cba-data-governance-standard", "cba-ai-registration-standard", "cba-ai-testing-framework", "cba-prompt-governance-guideline", "apra-cps-230", "apra-cps-234", "disr-ai-safety-standard"],
   },
   "cba-responsible-ai-principles": {
     ...governanceDocuments[1],
