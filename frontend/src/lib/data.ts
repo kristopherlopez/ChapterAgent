@@ -1670,9 +1670,9 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
   "apra-cps-230": {
     ...governanceDocuments[7],
     purpose:
-      "Strengthen the management of operational risks by authorised deposit-taking institutions (ADIs), including risks from technology, third-party service providers, and business disruptions.",
+      "CBA's interpretation of APRA Prudential Standard CPS 230 (Operational Risk Management) as it applies to artificial intelligence systems. CPS 230 came into effect on 1 July 2025 and replaced previous standards CPS 231, CPS 232, and CPG 235 with a single integrated standard covering operational risk identification, control effectiveness, business continuity, and third-party risk management. AI systems represent a new and material category of operational risk whose outputs can be unpredictable, whose failure modes differ from traditional software, and whose reliance on third-party LLM providers creates vendor concentration risk that CPS 230 explicitly requires institutions to manage.",
     scope:
-      "All APRA-regulated ADIs, including CBA. Applies to operational risk management frameworks, including risks introduced by AI and ML systems used in banking operations.",
+      "All AI solutions registered on the CBA AI governance platform regardless of risk tier. Third-party AI services procured or consumed by CBA business units, including LLM API providers, AI SaaS tools, and AI components embedded in vendor platforms. AI-related operational processes including model deployment, monitoring, incident response, and change management. This interpretation supplements the Group-wide operational risk management framework with AI-specific guidance.",
     keyRequirements: [
       "ADIs must identify, assess, manage, and monitor operational risks, including those arising from the use of AI and technology",
       "Effective controls must be maintained that are proportionate to the operational risk profile, with regular testing of control effectiveness",
@@ -1681,6 +1681,103 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       "Business continuity arrangements must account for AI system failures, including graceful degradation and fallback procedures",
       "ADIs must maintain an operational risk profile that is regularly updated to reflect changes in the operating environment",
     ],
+    sections: [
+      {
+        title: "Definitions",
+        table: {
+          headers: ["Term", "Definition"],
+          rows: [
+            ["Operational Risk", "Risk of loss from inadequate or failed internal processes, people, and systems, or from external events. Includes legal risk but excludes strategic and reputational risk."],
+            ["Material Service Provider", "A third party whose disruption could materially affect CBA's obligations. LLM providers powering customer-facing AI solutions are likely material service providers."],
+            ["Critical Operation", "A process or service that, if disrupted, would have a material adverse impact on depositors, policyholders, or the financial system. AI systems automating customer decisions may qualify."],
+            ["Tolerance Level", "Maximum acceptable level of disruption to a critical operation, expressed in duration and impact. AI systems must define tolerance levels in their solution manifest."],
+            ["Control Effectiveness", "A measure of how well a control mitigates its target risk. CPS 230 requires regular testing; the platform's compliance gates serve this function for AI-specific controls."],
+          ],
+        },
+      },
+      {
+        title: "AI-Specific Operational Risks (Paragraphs 14-18)",
+        content: "CPS 230 requires institutions to identify and assess operational risks across all business activities. AI systems introduce six categories of operational risk that must be documented.",
+        table: {
+          headers: ["Risk Category", "Description", "AI-Specific Example"],
+          rows: [
+            ["Output unpredictability", "AI systems can produce incorrect or harmful non-deterministic outputs", "A Q&A agent fabricating policy information or a credit model producing unexplainable scores"],
+            ["Model drift", "Performance degrades as input-output relationships change over time", "An LLM provider updates their model, changing CBA solution behaviour without direct control"],
+            ["Data quality", "Errors in training or reference data propagate in non-obvious ways", "A RAG system retrieving outdated policy documents or poisoned training data producing biased outputs"],
+            ["Prompt fragility", "Small prompt or input changes cause dramatic behaviour shifts", "A guardrail-bypassing prompt injection or a system prompt edit that removes safety constraints"],
+            ["Vendor dependency", "Reliance on external LLM providers creates single points of failure", "OpenAI API outage rendering customer-facing Q&A agent unavailable"],
+            ["Cascading failure", "Agentic workflows propagate errors across systems via tool calls", "An agent making an incorrect tool call that triggers a downstream system action"],
+          ],
+        },
+      },
+      {
+        title: "Control Effectiveness Mapping (Paragraphs 19-25)",
+        content: "CPS 230 requires institutions to maintain effective controls for material operational risks and to test those controls regularly. The platform's compliance gates serve as the primary control testing mechanism.",
+        table: {
+          headers: ["CPS 230 Requirement", "AI-GOV Control", "Platform Implementation"],
+          rows: [
+            ["Identify and document controls", "AI-GOV-001", "Solution manifest documents all configured guardrails, evaluation metrics, and thresholds"],
+            ["Test control effectiveness regularly", "AI-GOV-003", "Evaluation harness runs golden dataset against all metrics at configured cadence (30 or 90 days)"],
+            ["Maintain control assurance", "AI-GOV-006", "Guardrail validation gate tests every configured guardrail against the golden dataset"],
+            ["Monitor controls on an ongoing basis", "AI-GOV-008", "Audit trail records 100% of AI interactions with full trace data for production solutions"],
+            ["Escalate control failures", "AI-GOV-001 to AI-GOV-010", "Any gate failure blocks deployment and generates an alert to the solution owner and Chapter Lead"],
+          ],
+        },
+      },
+      {
+        title: "APRA Notification Requirements (Paragraphs 36-41)",
+        content: "CPS 230 requires notification to APRA of material operational incidents. The Chapter Lead, in consultation with Group Risk and Legal, determines whether an AI incident meets the materiality threshold.",
+        table: {
+          headers: ["Incident Type", "Notification Trigger", "Timeframe"],
+          rows: [
+            ["Customer harm from AI output", "AI output causes financial loss, privacy breach, or discriminatory outcome", "As soon as practicable, no later than 72 hours"],
+            ["Systemic AI failure", "Multiple AI solutions fail simultaneously (e.g., shared LLM provider outage)", "As soon as practicable, no later than 72 hours"],
+            ["AI security breach", "Prompt injection or adversarial attack extracts sensitive information", "As soon as practicable, no later than 72 hours"],
+            ["Sustained quality degradation", "Customer-facing AI operates below thresholds for more than 24 hours", "Within 10 business days"],
+          ],
+        },
+      },
+      {
+        title: "Third-Party Risk for LLM Providers (Paragraphs 46-58)",
+        content: "CPS 230 introduced comprehensive third-party risk management requirements replacing the previous CPS 231. The global AI market is heavily concentrated among a small number of LLM providers, creating systemic risk.",
+        bullets: [
+          "Multi-provider capability: All production AI solutions must be architecturally capable of switching between at least two LLM providers",
+          "Provider monitoring: Quarterly assessment of each LLM provider's financial health, service reliability, compliance posture, and strategic direction",
+          "Contractual protections: Agreements must include SLAs, data handling requirements, change notification obligations, and exit provisions",
+          "No single-provider dependency for critical operations without a tested fallback",
+          "Fourth-party risk: LLM providers depend on cloud hyperscalers; disruption could simultaneously affect multiple providers and CBA solutions",
+        ],
+      },
+      {
+        title: "Business Continuity for AI Systems (Paragraphs 59-68)",
+        content: "CPS 230 requires tolerance levels for critical operations. AI business continuity arrangements must be tested at least annually for production solutions.",
+        table: {
+          headers: ["Parameter", "Definition", "Example"],
+          rows: [
+            ["Maximum tolerable downtime", "How long the AI solution can be unavailable before material impact", "Customer-facing Q&A: 4 hours. Internal decisioning: 24 hours."],
+            ["Recovery time objective", "Target time to restore normal operation", "Must be less than maximum tolerable downtime"],
+            ["Graceful degradation mode", "System behaviour when AI component is unavailable", "Show static FAQ content. Route to human agent."],
+            ["Fallback procedure", "Manual or alternative automated process to replace AI function", "Human review of applications. Deterministic rule-based fallback."],
+          ],
+        },
+      },
+      {
+        title: "CBA Platform Alignment",
+        content: "Maps CPS 230 requirements to the platform's AI-GOV controls with automated evidence of compliance. Evidence packages are exportable in structured format for audit and regulatory review.",
+        table: {
+          headers: ["CPS 230 Requirement", "Paragraph", "AI-GOV Control", "Platform Evidence"],
+          rows: [
+            ["Identify operational risks", "14-18", "AI-GOV-001", "Solution manifest documents risk tier, dependencies, failure modes, and guardrail configuration"],
+            ["Maintain effective controls", "19-25", "AI-GOV-003, AI-GOV-006", "Evaluation harness and guardrail validation gates test control effectiveness at defined cadence"],
+            ["Test controls regularly", "26-30", "AI-GOV-006", "Compliance gate runner produces timestamped, structured evidence of all control tests"],
+            ["Manage incidents", "36-41", "AI-GOV-008", "Audit trail provides complete interaction logs for incident investigation and root cause analysis"],
+            ["Manage third-party risk", "46-58", "AI-GOV-001", "Solution manifest documents primary and fallback LLM providers; provider assessments recorded quarterly"],
+            ["Business continuity", "59-68", "AI-GOV-001", "Solution manifest documents tolerance levels, degradation modes, and fallback procedures"],
+            ["Board oversight", "8-13", "AI-GOV-001", "Risk tier classification and compliance dashboard provide board-level AI risk visibility"],
+          ],
+        },
+      },
+    ] as DocumentSection[],
     controlMappings: [
       { controlId: "AI-GOV-001", requirement: "Operational risk identification", platformEnforcement: "Solution registry provides a complete inventory of AI operational risks; risk tier assignment classifies each solution's risk profile" },
       { controlId: "AI-GOV-003", requirement: "Effective controls proportionate to risk", platformEnforcement: "Evaluation thresholds scale by risk tier — higher-risk solutions face stricter quality gates, ensuring controls match risk" },
@@ -1688,14 +1785,14 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       { controlId: "AI-GOV-008", requirement: "Operational risk monitoring and reporting", platformEnforcement: "Compliance event logs capture all control outcomes; portfolio dashboard provides continuous operational risk visibility" },
     ],
     approvalAuthority: "APRA (Australian Prudential Regulation Authority)",
-    relatedDocuments: ["apra-cps-234", "cba-group-ai-policy", "cba-model-risk-framework"],
+    relatedDocuments: ["apra-cps-234", "cba-group-ai-policy", "cba-model-risk-framework", "cba-responsible-ai-principles", "disr-ai-safety-standard"],
   },
   "apra-cps-234": {
     ...governanceDocuments[8],
     purpose:
-      "Ensure ADIs maintain information security capability commensurate with the size and extent of threats to their information assets, including threats introduced by AI systems.",
+      "CBA's interpretation of APRA Prudential Standard CPS 234 (Information Security) as it applies to artificial intelligence systems. CPS 234 has been in force since 1 July 2019, but the rapid adoption of generative AI and large language models has created information security challenges the original standard did not explicitly anticipate. This interpretation extends CBA's existing CPS 234 compliance framework to cover AI-specific information assets, threat vectors, security controls, and incident reporting obligations.",
     scope:
-      "All APRA-regulated ADIs. Covers information security governance, controls, incident management, and testing obligations relevant to AI system security.",
+      "All AI solutions registered on the CBA AI governance platform, including solutions in development, testing, and production. All information assets associated with AI solutions: models, prompts, training data, fine-tuning data, reference corpora, evaluation datasets, interaction logs, and trace data. Third-party AI services and LLM providers that process CBA information. This interpretation supplements CBA's Group Information Security Policy with AI-specific requirements.",
     keyRequirements: [
       "Information assets (including AI systems and their data) must be classified and managed according to their sensitivity and criticality",
       "Security controls must be implemented commensurate with the threats to information assets, including AI-specific threats like prompt injection",
@@ -1704,6 +1801,111 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       "Control effectiveness must be tested regularly through systematic testing programs",
       "Third-party and vendor risks to information security must be actively managed",
     ],
+    sections: [
+      {
+        title: "Definitions",
+        table: {
+          headers: ["Term", "Definition"],
+          rows: [
+            ["Information Asset", "Any data, system, or component that has value to CBA and requires protection. AI models, system prompts, golden datasets, and interaction logs are all information assets."],
+            ["Threat Vector", "A method or pathway by which a threat actor can gain unauthorised access to or disrupt an information asset. AI systems have unique vectors including prompt injection and model extraction."],
+            ["Security Classification", "A label assigned to an information asset determining required security controls. CBA uses four tiers: Public, Internal, Confidential, Restricted."],
+            ["Red Team", "A group that simulates adversarial attacks against a system to identify vulnerabilities. AI red-teaming tests for prompt injection, jailbreaking, data leakage, and harmful output generation."],
+            ["Prompt Injection", "An attack where a malicious user crafts inputs designed to override, alter, or bypass the AI system's intended behaviour, including its system prompt and guardrails."],
+          ],
+        },
+      },
+      {
+        title: "Information Security Classification for AI Assets",
+        content: "CPS 234 Paragraph 15 requires institutions to classify information assets by sensitivity and criticality. AI systems contain several categories of information assets requiring explicit classification.",
+        table: {
+          headers: ["AI Asset", "Default Classification", "Risk if Compromised"],
+          rows: [
+            ["System prompts", "Confidential", "Attacker crafts inputs that bypass guardrails; business logic reverse-engineered by competitors"],
+            ["Golden datasets", "Confidential", "Attacker learns what the system is tested against and crafts evasions; evaluation integrity compromised"],
+            ["Training / fine-tuning data", "Confidential to Restricted", "Intellectual property loss; potential privacy breach if data contains residual PII"],
+            ["Reference corpora (RAG)", "Varies by content", "Unauthorised access to source documents; policy or regulatory information leaked externally"],
+            ["Interaction logs", "Confidential", "Privacy breach; intellectual property exposure; regulatory non-compliance"],
+            ["Model weights (fine-tuned)", "Restricted", "Model extraction; competitive advantage lost"],
+            ["Embedding vectors", "Confidential", "Source document content inferred; reference corpus compromised"],
+          ],
+        },
+      },
+      {
+        title: "AI-Specific Security Threats (Paragraph 17)",
+        content: "CPS 234 requires institutions to identify and assess information security threats. This threat taxonomy is specific to AI systems and supplements CBA's general information security threat register.",
+        table: {
+          headers: ["Threat", "Likelihood", "Impact", "Primary Targets"],
+          rows: [
+            ["Prompt injection (direct)", "High", "High", "System prompts, guardrails, output integrity"],
+            ["Prompt injection (indirect)", "Medium", "High", "RAG corpora, tool integrations, agentic workflows"],
+            ["Data poisoning", "Low", "Critical", "Training data, reference corpora, evaluation integrity"],
+            ["Model extraction", "Medium", "Medium", "Fine-tuned models, system prompts, business logic"],
+            ["Data exfiltration via AI", "Medium", "High", "Reference corpora, connected databases, internal systems"],
+            ["Adversarial inputs", "Medium", "Medium", "Output integrity, decision quality"],
+            ["Training data memorisation", "Low", "High", "PII, proprietary information, confidential documents"],
+          ],
+        },
+      },
+      {
+        title: "Mandatory Security Controls by Risk Tier (Paragraph 20)",
+        content: "CPS 234 requires security controls commensurate with the size and extent of threats to information assets. Controls scale with risk tier.",
+        table: {
+          headers: ["Security Control", "Experimental", "Production Internal", "Production Customer-Facing"],
+          rows: [
+            ["Prompt injection detection", "Required", "Required", "Required (strict mode)"],
+            ["Output filtering (PII, toxicity)", "Recommended", "Required", "Required (zero tolerance for PII)"],
+            ["Rate limiting per user/session", "Not required", "Required", "Required"],
+            ["System prompt protection", "Store in config", "Encrypted at rest", "Encrypted at rest + access audited"],
+            ["Interaction log encryption", "Not required", "Encrypted at rest", "Encrypted at rest and in transit"],
+            ["API key rotation", "Manual", "Automated quarterly", "Automated monthly"],
+          ],
+        },
+      },
+      {
+        title: "Security Testing Requirements (Paragraph 28)",
+        content: "CPS 234 requires systematic testing of security controls. AI red-teaming is distinct from traditional penetration testing and requires specialised skills.",
+        table: {
+          headers: ["Test Type", "Frequency", "Applies To"],
+          rows: [
+            ["Guardrail unit testing", "Every deployment", "All tiers"],
+            ["Golden dataset evaluation", "Per cadence (30/90 days)", "Production tiers"],
+            ["Penetration testing", "Annually", "Production tiers"],
+            ["AI red-teaming", "Quarterly", "Customer-facing"],
+            ["Vulnerability scanning", "Continuous", "All tiers"],
+            ["Third-party security review", "Annually", "All using third-party LLMs"],
+          ],
+        },
+      },
+      {
+        title: "APRA Notification Requirements (Paragraph 36)",
+        content: "CPS 234 requires APRA notification of material information security incidents. The CISO Office determines whether APRA notification is required and prepares the notification within the required timeframe.",
+        table: {
+          headers: ["Criterion", "AI-Specific Example", "Notification Timeframe"],
+          rows: [
+            ["Material information security incident", "Successful prompt injection on customer-facing AI that extracted restricted data", "Within 72 hours of becoming aware"],
+            ["Material control weakness", "Prompt injection guardrail has been ineffective for an extended period", "Within 10 business days"],
+            ["Material control weakness at service provider", "LLM provider suffers a data breach affecting CBA's interaction logs or prompts", "Within 72 hours of becoming aware"],
+          ],
+        },
+      },
+      {
+        title: "CBA Platform Alignment",
+        content: "Maps CPS 234 requirements to the platform's AI-GOV controls with automated evidence of compliance for regulatory review.",
+        table: {
+          headers: ["CPS 234 Requirement", "Paragraph", "AI-GOV Control", "Platform Evidence"],
+          rows: [
+            ["Classify information assets", "15", "AI-GOV-005", "Solution manifest documents all information assets and their classifications; PII validation confirms no unclassified personal data"],
+            ["Maintain security controls", "20-23", "AI-GOV-006", "Guardrail validation gate tests all security controls against the golden dataset"],
+            ["Test security control effectiveness", "28-30", "AI-GOV-006", "Compliance gate runner produces timestamped evidence of all security control tests; red-team findings integrated into golden dataset"],
+            ["Detect and respond to incidents", "31-35", "AI-GOV-008", "Audit trail provides 100% interaction logging with real-time guardrail alerts for blocked attacks"],
+            ["Notify APRA of material incidents", "36", "AI-GOV-008", "Incident reports generated from audit trail data with full timeline reconstruction"],
+            ["Manage service provider security", "37-40", "AI-GOV-010", "Change management gate ensures third-party provider changes are reviewed"],
+            ["Internal audit review", "41", "AI-GOV-008, AI-GOV-009", "Compliance evidence packages exportable for internal audit"],
+          ],
+        },
+      },
+    ] as DocumentSection[],
     controlMappings: [
       { controlId: "AI-GOV-005", requirement: "Information asset protection", platformEnforcement: "PII detection prevents AI systems from exposing sensitive information; zero-tolerance policy with per-response scanning" },
       { controlId: "AI-GOV-006", requirement: "Security controls for AI threats", platformEnforcement: "Prompt injection detection, scope containment, and content safety guardrails defend against AI-specific security threats" },
@@ -1711,14 +1913,14 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       { controlId: "AI-GOV-010", requirement: "Change management for AI systems", platformEnforcement: "Prompt version control ensures changes to AI behaviour are tracked, approved, and auditable — preventing unauthorised modifications" },
     ],
     approvalAuthority: "APRA (Australian Prudential Regulation Authority)",
-    relatedDocuments: ["apra-cps-230", "cba-group-ai-policy", "cba-data-governance-standard"],
+    relatedDocuments: ["apra-cps-230", "cba-group-ai-policy", "cba-data-governance-standard", "cba-ai-testing-framework", "disr-ai-safety-standard"],
   },
   "disr-ai-safety-standard": {
     ...governanceDocuments[9],
     purpose:
-      "Provide ten voluntary guardrails for the safe and responsible design, development, deployment, and use of AI systems in Australia, reflecting community expectations and international best practice.",
+      "Maps the Australian Government's Voluntary AI Safety Standard to CBA's AI governance platform. The standard was published by the Department of Industry, Science and Resources (DISR) in September 2024 and establishes 10 guardrails for the safe and responsible use of AI in Australia. While the standard is voluntary, CBA has made the strategic decision to treat compliance as mandatory for all production AI solutions, reflecting the anticipated regulatory trajectory toward binding legislation and APRA's expectation that regulated entities demonstrate alignment with industry AI safety standards.",
     scope:
-      "All organisations developing or deploying AI systems in Australia. Voluntary but represents the Australian Government's expectations and is likely to inform future mandatory regulation.",
+      "All AI solutions registered on the CBA AI governance platform at production_internal and production_customer_facing risk tiers. Experimental solutions are encouraged but not required to align. Third-party AI solutions procured by CBA should provide evidence of vendor alignment with the standard.",
     keyRequirements: [
       "Organisations must establish, implement, and publish accountability processes for AI systems, including clear ownership and escalation paths",
       "A risk management process must be established, with risks identified, assessed, and managed proportionate to the AI system's potential impact",
@@ -1727,6 +1929,80 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       "Human control or intervention mechanisms must be available, ensuring humans can override or shut down AI systems when necessary",
       "Records must be kept and maintained to support accountability, audit, and regulatory compliance",
     ],
+    sections: [
+      {
+        title: "Definitions",
+        table: {
+          headers: ["Term", "Definition"],
+          rows: [
+            ["DISR", "Department of Industry, Science and Resources — the Australian Government department responsible for AI policy."],
+            ["Voluntary AI Safety Standard", "A set of 10 guardrails published by DISR in September 2024 for safe and responsible AI deployment in Australia. Not currently legally binding."],
+            ["Guardrail (DISR context)", "One of the 10 high-level principles in the voluntary standard. Distinct from the platform's technical guardrails, though technical guardrails help implement DISR guardrails."],
+            ["Conformity Assessment", "The process of evaluating whether an AI system meets the requirements of a standard. DISR Guardrail 10 requires organisations to conduct conformity assessments."],
+          ],
+        },
+      },
+      {
+        title: "The 10 DISR Guardrails",
+        content: "Each guardrail maps to specific AI-GOV controls on the CBA platform. CBA treats compliance as mandatory for all production AI solutions.",
+        table: {
+          headers: ["Guardrail", "Requirement Summary", "AI-GOV Control", "CBA Status"],
+          rows: [
+            ["1. Organisational Accountability", "Clear governance structures, defined roles, and senior-level accountability for AI outcomes", "AI-GOV-001", "Fully aligned"],
+            ["2. Risk Management", "Identify, assess, and manage AI risks proportionate to the level of risk", "AI-GOV-001, AI-GOV-003", "Fully aligned"],
+            ["3. Data Protection", "Protect AI systems and data from cybersecurity threats, misuse, and unauthorised access", "AI-GOV-005, AI-GOV-006", "Fully aligned"],
+            ["4. Testing", "Test AI systems for fitness for purpose before and during deployment", "AI-GOV-003, AI-GOV-006, AI-GOV-009", "Fully aligned"],
+            ["5. Human Oversight", "Enable meaningful human oversight with ability to intervene or override", "AI-GOV-008", "Partially aligned"],
+            ["6. Transparency", "Inform people when interacting with AI; be transparent about how it works", "AI-GOV-001, AI-GOV-003", "Partially aligned"],
+            ["7. Contestability", "Provide mechanisms to contest AI-assisted decisions with human review", "AI-GOV-008", "Partially aligned"],
+            ["8. Record Keeping", "Maintain adequate records for accountability, auditability, and improvement", "AI-GOV-008, AI-GOV-009, AI-GOV-010", "Fully aligned"],
+            ["9. Fairness", "Identify and mitigate risks of unfair or discriminatory AI outcomes", "AI-GOV-007", "Fully aligned"],
+            ["10. Conformity Assessment", "Regularly assess AI systems against this standard", "All AI-GOV controls", "Fully aligned"],
+          ],
+        },
+      },
+      {
+        title: "Gap Assessment Summary",
+        content: "Three minor gaps have been identified, all classified as low severity. The platform provides the technical infrastructure; gaps relate to process guidance and policy documentation rather than technical capability.",
+        table: {
+          headers: ["Gap", "DISR Guardrail", "Remediation", "Target Date"],
+          rows: [
+            ["Human-in-the-loop guidance for customer-facing solutions", "Guardrail 5", "Develop decision framework for when mandatory human review is required vs. monitoring-based oversight", "Q3 2025"],
+            ["Disclosure enforcement for AI-powered interfaces", "Guardrail 6", "Create disclosure template library and automated check for customer-facing solutions", "Q4 2025"],
+            ["AI-specific contestability process", "Guardrail 7", "Develop AI decision contestability guidance integrated with existing complaints framework", "Q3 2025"],
+          ],
+        },
+      },
+      {
+        title: "Voluntary vs. Mandatory — Strategic Position",
+        content: "The Voluntary AI Safety Standard is not legally binding, but CBA treats it as mandatory for all production AI solutions. This decision was approved by the Group Chief Risk Officer.",
+        bullets: [
+          "Regulatory trajectory: The Australian Government has signalled mandatory AI regulation is forthcoming; the voluntary standard is the precursor to binding legislation",
+          "Prudential expectation: APRA expects regulated entities to demonstrate alignment with industry AI safety standards, even where not legally binding",
+          "Reputational risk: As a major financial institution, CBA is held to a higher standard by customers, regulators, and the public",
+          "International context: EU AI Act and Canada's AIDA are moving toward binding regulation, creating pressure for Australia to follow",
+        ],
+      },
+      {
+        title: "CBA Platform Alignment Summary",
+        content: "The platform's automated compliance framework provides continuous assessment that exceeds the periodic review DISR contemplates. Seven of ten guardrails are fully aligned; three have minor gaps with planned remediation.",
+        table: {
+          headers: ["DISR Guardrail", "AI-GOV Control(s)", "Compliance Status", "Notes"],
+          rows: [
+            ["1. Organisational Accountability", "AI-GOV-001", "Fully aligned", "Named ownership enforced at registration"],
+            ["2. Risk Management", "AI-GOV-001, AI-GOV-003", "Fully aligned", "Three-tier risk system with proportionate governance"],
+            ["3. Data Protection", "AI-GOV-005, AI-GOV-006", "Fully aligned", "PII detection, encryption, access controls"],
+            ["4. Testing", "AI-GOV-003, AI-GOV-006, AI-GOV-009", "Fully aligned", "Golden dataset framework with independent sign-off"],
+            ["5. Human Oversight", "AI-GOV-008", "Partially aligned", "Kill switches and monitoring; human-in-the-loop guidance needed"],
+            ["6. Transparency", "AI-GOV-001, AI-GOV-003", "Partially aligned", "Citation coverage tracked; disclosure enforcement gap"],
+            ["7. Contestability", "AI-GOV-008", "Partially aligned", "Audit trail supports review; AI-specific contestability process needed"],
+            ["8. Record Keeping", "AI-GOV-008, AI-GOV-009, AI-GOV-010", "Fully aligned", "100% trace coverage, automated evidence generation"],
+            ["9. Fairness", "AI-GOV-007", "Fully aligned", "Bias testing with contextualised fairness definitions"],
+            ["10. Conformity Assessment", "All", "Fully aligned", "Automated continuous assessment via compliance gates"],
+          ],
+        },
+      },
+    ] as DocumentSection[],
     controlMappings: [
       { controlId: "AI-GOV-001", requirement: "Accountability and ownership (Guardrail 1)", platformEnforcement: "Solution manifest requires named owner and contact; solution registry provides portfolio-wide accountability visibility" },
       { controlId: "AI-GOV-003", requirement: "Testing AI systems (Guardrail 4)", platformEnforcement: "Evaluation harness provides automated, repeatable testing against golden datasets with documented pass/fail criteria" },
@@ -1735,7 +2011,7 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
       { controlId: "AI-GOV-008", requirement: "Record keeping (Guardrail 9)", platformEnforcement: "Complete audit trails maintained automatically; evidence export generates structured compliance packages on demand" },
     ],
     approvalAuthority: "Department of Industry, Science and Resources (DISR)",
-    relatedDocuments: ["cba-group-ai-policy", "cba-responsible-ai-principles", "apra-cps-230"],
+    relatedDocuments: ["cba-group-ai-policy", "cba-responsible-ai-principles", "apra-cps-230", "apra-cps-234", "cba-ai-testing-framework"],
   },
 };
 

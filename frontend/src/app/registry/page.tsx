@@ -6,14 +6,17 @@ import { Clock, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 
 const STALE_THRESHOLD_DAYS = 7;
 
-function getDaysAgo(dateStr: string): number {
+function getDaysAgo(dateStr: string): number | null {
+  if (!dateStr) return null;
   const tested = new Date(dateStr.replace(" AEST", ""));
-  const now = new Date("2026-04-12T12:00:00");
+  if (isNaN(tested.getTime())) return null;
+  const now = new Date("2026-04-13T12:00:00");
   return Math.floor((now.getTime() - tested.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 function formatLastTested(dateStr: string): string {
   const days = getDaysAgo(dateStr);
+  if (days === null) return "Never";
   if (days === 0) return "Today";
   if (days === 1) return "Yesterday";
   return `${days}d ago`;
@@ -40,7 +43,7 @@ export default function RegistryPage() {
           </div>
           {solutions.map((solution) => {
             const daysAgo = getDaysAgo(solution.lastTested);
-            const isStale = daysAgo >= STALE_THRESHOLD_DAYS;
+            const isStale = daysAgo === null || daysAgo >= STALE_THRESHOLD_DAYS;
 
             return (
               <Link
