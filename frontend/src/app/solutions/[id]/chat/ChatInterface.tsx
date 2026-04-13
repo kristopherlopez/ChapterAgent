@@ -226,13 +226,13 @@ const FRAMEWORKS: { value: Framework; label: string; description: string }[] = [
 ];
 
 const OPENROUTER_MODELS = [
-  { value: "google/gemini-2.5-flash-preview", label: "Gemini 2.5 Flash" },
-  { value: "google/gemini-2.5-pro-preview", label: "Gemini 2.5 Pro" },
-  { value: "meta-llama/llama-4-maverick", label: "Llama 4 Maverick" },
-  { value: "meta-llama/llama-4-scout", label: "Llama 4 Scout" },
-  { value: "mistralai/mistral-medium-3", label: "Mistral Medium 3" },
-  { value: "qwen/qwen3-235b-a22b", label: "Qwen3 235B" },
-  { value: "deepseek/deepseek-r1", label: "DeepSeek R1" },
+  { value: "anthropic/claude-opus-4.6", label: "Claude Opus 4.6" },
+  { value: "deepseek/deepseek-r1", label: "DeepSeek R2" },
+  { value: "google/gemini-3-flash-preview", label: "Gemini 3.0 Flash" },
+  { value: "openai/gpt-5.4", label: "GPT-5.4" },
+  { value: "x-ai/grok-4.20", label: "Grok 4.2" },
+  { value: "minimax/minimax-m2.7", label: "MiniMax M2.7" },
+  { value: "anthropic/claude-sonnet-4.6", label: "Claude Sonnet 4.6" },
 ];
 
 async function fetchAgentResponse(

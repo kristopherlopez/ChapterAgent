@@ -30,7 +30,7 @@ class LangChainGenerator(BaseGenerator):
     framework = "langchain-openrouter"
 
     def __init__(self, *, model: str | None = None, temperature: float = 0.1):
-        self.model = model or os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash-preview")
+        self.model = model or os.getenv("OPENROUTER_MODEL", "anthropic/claude-opus-4.6")
         self.temperature = temperature
 
     def _get_llm(self) -> ChatOpenAI:
