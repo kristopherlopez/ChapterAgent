@@ -9,10 +9,10 @@ export default function GuardrailResults({ guardrails }: { guardrails: Guardrail
       </div>
       <div className="divide-y divide-zinc-100">
         {guardrails.map((g) => (
-          <div key={g.name} className="grid grid-cols-[1fr_80px_1fr] items-center gap-4 px-6 py-3">
+          <div key={g.name} className="grid grid-cols-[1fr_80px_80px_80px] items-center gap-4 px-6 py-3">
             <p className="text-sm text-zinc-700">{g.name}</p>
+            <p className="text-sm text-zinc-500 col-span-2">{g.detail}</p>
             <HealthBadge status={g.result} />
-            <p className="text-sm text-zinc-500">{g.detail}</p>
           </div>
         ))}
       </div>

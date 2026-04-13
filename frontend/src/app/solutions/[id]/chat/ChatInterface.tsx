@@ -215,13 +215,13 @@ const SUGGESTED_QUESTIONS = [
   "How does CBA's performance compare to Westpac?",
 ];
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 type Framework = "openai" | "claude" | "langchain";
 
 const FRAMEWORKS: { value: Framework; label: string; description: string }[] = [
-  { value: "openai", label: "OpenAI SDK", description: "GPT-4o via OpenAI" },
-  { value: "claude", label: "Claude SDK", description: "Claude Sonnet via Anthropic" },
+  { value: "openai", label: "OpenAI Agent SDK", description: "GPT-4o via OpenAI" },
+  { value: "claude", label: "Claude Agent SDK", description: "Claude Sonnet via Anthropic" },
   { value: "langchain", label: "LangChain", description: "Gemini Flash via OpenRouter" },
 ];
 

@@ -52,6 +52,22 @@ export const solutions: SolutionSummary[] = [
     ],
   },
   {
+    id: "governance-policy-qa",
+    name: "Governance Policy Agent",
+    description:
+      "Answers questions about CBA's AI governance policies, frameworks, and standards with source citations",
+    category: "ai",
+    owner: "Chapter Platform Team",
+    riskTier: "Internal",
+    guardrailsSummary: "Not evaluated",
+    evalScore: 0,
+    gateResult: "pending",
+    health: "pending",
+    lastRun: "",
+    lastTested: "",
+    healthHistory: [],
+  },
+  {
     id: "agentic-model-validation",
     name: "Model Validation Agent",
     description:
@@ -181,13 +197,24 @@ export const solutionDetails: Record<string, SolutionDetail> = {
     evaluation: [],
     complianceGate: {
       gate: "Deployment Gate",
-      result: "pending" as HealthStatus,
+      result: "warn",
       reason: "No evaluation has been run yet.",
       timestamp: "",
     },
   },
-  "agentic-model-validation": {
+  "governance-policy-qa": {
     ...solutions[1],
+    guardrails: [],
+    evaluation: [],
+    complianceGate: {
+      gate: "Deployment Gate",
+      result: "pending",
+      reason: "Solution registered. Awaiting corpus build-out and first evaluation run.",
+      timestamp: "",
+    },
+  },
+  "agentic-model-validation": {
+    ...solutions[2],
     guardrails: [
       { name: "Scope Containment", result: "pass", detail: "0 out-of-scope responses" },
       { name: "PII Detection", result: "pass", detail: "0 PII instances found" },
@@ -206,7 +233,7 @@ export const solutionDetails: Record<string, SolutionDetail> = {
     },
   },
   "multi-platform-agent": {
-    ...solutions[2],
+    ...solutions[3],
     guardrails: [
       { name: "Scope Containment", result: "pass", detail: "0 out-of-scope responses" },
       { name: "PII Detection", result: "fail", detail: "3 PII instances detected in responses" },
@@ -227,7 +254,7 @@ export const solutionDetails: Record<string, SolutionDetail> = {
     },
   },
   "credit-default-scorer": {
-    ...solutions[3],
+    ...solutions[4],
     guardrails: [
       { name: "Discrimination Check", result: "pass", detail: "Demographic parity diff: 0.03 (threshold: 0.05)" },
       { name: "Calibration Check", result: "pass", detail: "Brier score: 0.17 (threshold: 0.20)" },
@@ -253,7 +280,7 @@ export const solutionDetails: Record<string, SolutionDetail> = {
     },
   },
   "credit-approval-scorer": {
-    ...solutions[4],
+    ...solutions[5],
     guardrails: [
       { name: "Proxy Discrimination Check", result: "fail", detail: "Feature A8 approval rate disparity: 89.6% (threshold: 15%). Human review required." },
       { name: "Calibration Check", result: "pass", detail: "Hosmer-Lemeshow p: 0.08 (threshold: 0.05)" },
@@ -974,8 +1001,8 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
 
 // --- Component Catalog ---
 
-const allSolutionIds = ["cba-annual-report-qa", "agentic-model-validation", "risk-classification-agent", "credit-default-scorer", "credit-approval-scorer"];
-const aiSolutionIds = ["cba-annual-report-qa", "agentic-model-validation", "risk-classification-agent"];
+const allSolutionIds = ["cba-annual-report-qa", "governance-policy-qa", "agentic-model-validation", "risk-classification-agent", "credit-default-scorer", "credit-approval-scorer"];
+const aiSolutionIds = ["cba-annual-report-qa", "governance-policy-qa", "agentic-model-validation", "risk-classification-agent"];
 
 export const catalogComponents: CatalogComponent[] = [
   // Guardrails (8)

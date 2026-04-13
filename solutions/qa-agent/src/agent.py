@@ -8,12 +8,9 @@ import time
 from pathlib import Path
 from typing import Any
 
-try:
-    from solutions.qa_agent.src.generate import QAGenerator, QAResponse
-    from solutions.qa_agent.src.retrieve import HybridRetriever, RetrievedChunk
-except ImportError:
-    from generate import QAGenerator, QAResponse  # type: ignore[no-redef]
-    from retrieve import HybridRetriever, RetrievedChunk  # type: ignore[no-redef]
+from generate_openai import QAGenerator
+from retrieve import HybridRetriever, RetrievedChunk
+from schema import QAResponse
 
 
 def _create_generator(framework: str = "openai") -> QAGenerator:
@@ -27,20 +24,10 @@ def _create_generator(framework: str = "openai") -> QAGenerator:
     if framework == "openai":
         return QAGenerator()
     elif framework == "claude":
-        try:
-            from solutions.qa_agent.src.generate_claude import (
-                ClaudeAgentGenerator,
-            )
-        except ImportError:
-            from generate_claude import ClaudeAgentGenerator  # type: ignore[no-redef]
+        from generate_claude import ClaudeAgentGenerator
         return ClaudeAgentGenerator()
     elif framework == "langchain":
-        try:
-            from solutions.qa_agent.src.generate_langchain import (
-                LangChainQAGenerator,
-            )
-        except ImportError:
-            from generate_langchain import LangChainQAGenerator  # type: ignore[no-redef]
+        from generate_langchain import LangChainQAGenerator
         return LangChainQAGenerator()
     else:
         raise ValueError(

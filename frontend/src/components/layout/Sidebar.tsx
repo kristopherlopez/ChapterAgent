@@ -30,7 +30,9 @@ function HealthDot({ health }: { health: string }) {
       ? "bg-emerald-400"
       : health === "warn"
         ? "bg-amber-400"
-        : "bg-red-400";
+        : health === "pending"
+          ? "bg-zinc-300"
+          : "bg-red-400";
   return <span className={`w-2 h-2 rounded-full ${color} shrink-0`} />;
 }
 

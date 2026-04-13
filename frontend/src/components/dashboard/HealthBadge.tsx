@@ -1,5 +1,5 @@
 import { HealthStatus } from "@/lib/types";
-import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Clock } from "lucide-react";
 
 const config: Record<HealthStatus, { icon: typeof CheckCircle2; label: string; className: string }> = {
   pass: {
@@ -16,6 +16,11 @@ const config: Record<HealthStatus, { icon: typeof CheckCircle2; label: string; c
     icon: XCircle,
     label: "FAIL",
     className: "text-red-700 bg-red-50 border-red-200",
+  },
+  pending: {
+    icon: Clock,
+    label: "PENDING",
+    className: "text-zinc-500 bg-zinc-50 border-zinc-200",
   },
 };
 

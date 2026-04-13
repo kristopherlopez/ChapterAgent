@@ -22,7 +22,7 @@ qa-agent/
   src/
     ingest.py           # Chunk and embed documents into ChromaDB
     retrieve.py         # Hybrid retrieval (vector + keyword)
-    generate.py         # Answer generation with citations
+    generate_openai.py  # Answer generation — OpenAI Agent SDK
     agent.py            # Full pipeline orchestrator
 ```
 

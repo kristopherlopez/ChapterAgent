@@ -27,22 +27,13 @@ from typing import Any
 
 from pydantic import BaseModel
 
-try:
-    from solutions.qa_agent.src.generate import (
-        SYSTEM_PROMPT,
-        AnswerPayload,
-        Citation,
-        QAResponse,
-    )
-    from solutions.qa_agent.src.retrieve import RetrievedChunk
-except ImportError:
-    from generate import (  # type: ignore[no-redef]
-        SYSTEM_PROMPT,
-        AnswerPayload,
-        Citation,
-        QAResponse,
-    )
-    from retrieve import RetrievedChunk  # type: ignore[no-redef]
+from retrieve import RetrievedChunk
+from schema import (
+    SYSTEM_PROMPT,
+    AnswerPayload,
+    Citation,
+    QAResponse,
+)
 
 
 def _build_page_index(pages_dir: Path) -> list[dict[str, Any]]:

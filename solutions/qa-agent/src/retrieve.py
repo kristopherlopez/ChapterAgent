@@ -50,10 +50,7 @@ class HybridRetriever:
             pass
 
         # Slow path: full ingestion
-        try:
-            from solutions.qa_agent.src.ingest import ingest_knowledge_base
-        except ImportError:
-            from ingest import ingest_knowledge_base  # type: ignore[no-redef]
+        from ingest import ingest_knowledge_base
 
         collection = ingest_knowledge_base(
             knowledge_base_dir,

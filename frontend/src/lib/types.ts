@@ -1,4 +1,4 @@
-export type HealthStatus = "pass" | "warn" | "fail";
+export type HealthStatus = "pass" | "warn" | "fail" | "pending";
 
 export interface GuardrailResult {
   name: string;

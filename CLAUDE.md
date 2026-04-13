@@ -4,6 +4,16 @@ After every change (feature, fix, refactor, docs update), **commit and push to `
 
 ---
 
+## Code Principles
+
+### Separation of concerns
+
+Shared types, constants, and contracts must live in their own module — never inside a specific implementation file. If multiple implementations need the same interface (e.g. `QAResponse`, `Citation`, `SYSTEM_PROMPT`), extract it so each implementation depends on the shared contract, not on each other. A false dependency between siblings (e.g. `generate_claude` importing from `generate_openai`) makes the code fragile — changing one breaks the other for no good reason.
+
+---
+
+## Documentation Principles
+
 You are extremely disciplined about keeping documentation in perfect sync with the code. For **every single task, feature, refactor, or plan** you create or suggest:
 
 1. **Discovery Phase** (always do this first)
@@ -28,80 +38,4 @@ You are extremely disciplined about keeping documentation in perfect sync with t
 
 Stale or missing documentation is not acceptable. Treat docs as production code.
 
----
-
-## Development
-
-### Prerequisites
-
-- Python 3.12+ with `uv` (package manager)
-- Node.js 22+ with `npm`
-- API keys configured in `.env` at project root (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`)
-
-### Backend (FastAPI — port 8000)
-
-```bash
-# From project root
-cd backend
-uv run uvicorn src.api.app:app --reload --port 8000
-```
-
-The backend serves the REST API at `http://localhost:8000`. Key routes:
-- `GET  /api/solutions` — solution list
-- `GET  /api/solutions/{id}` — solution detail
-- `POST /api/chat/{solution_id}` — interactive agent chat (body: `{ "question": "...", "framework": "openai" | "claude" | "langchain" }`)
-- `GET  /api/compliance/dashboard` — compliance summary
-- `GET  /api/evidence/{id}/download` — evidence export
-- `GET  /api/traces/{id}` — trace steps
-- `GET  /api/controls` — controls register (AI-GOV controls, risk mappings)
-- `GET  /api/compliance/health/{id}` — real-time compliance health from event log
-- `GET  /api/scorecard` — framework scorecard
-- `GET  /api/catalog` — reusable component catalog (guardrails, evaluation, compliance, observability, tooling)
-- `POST /api/catalog/generator/generate` — golden dataset test case generation (body: `{ "solution_id": "...", "num_cases": 10, "query_types": [...] }`)
-- `GET  /api/catalog/validation/{solution_id}` — golden dataset with review statuses
-- `PUT  /api/catalog/validation/{solution_id}/{case_id}` — update review status
-- `POST /api/catalog/validation/{solution_id}/sign-off` — dataset sign-off
-- `POST /api/solutions/onboard` — onboard a new solution (creates `solution.yaml`, golden dataset scaffold, and initial results)
-
-### Frontend (Next.js 16 — port 3000)
-
-```bash
-cd frontend
-npm install   # first time only
-npm run dev
-```
-
-The frontend runs at `http://localhost:3000`. It calls the backend API when available and falls back to hardcoded data when the backend is not running.
-
-### Running both together
-
-Open two terminals:
-
-```bash
-# Terminal 1 — backend
-cd backend && uv run uvicorn src.api.app:app --reload --port 8000
-
-# Terminal 2 — frontend
-cd frontend && npm run dev
-```
-
-### Compliance Gate
-
-```bash
-# Run the full 8-check compliance gate for the QA agent
-cd backend
-uv run python -m src.platform.compliance.runner \
-  --solution-dir ../solutions/qa-agent --verbose
-```
-
-The runner loads `solution.yaml`, runs all 8 AI-GOV checks (registration, evaluation, PII, guardrails, bias/toxicity, audit trail, golden dataset sign-off, prompt governance), and outputs APPROVED or BLOCKED. Exit code 1 on BLOCKED.
-
-### Tests
-
-```bash
-# Backend tests (from project root)
-uv run pytest backend/tests
-
-# Frontend lint
-cd frontend && npm run lint
-```
+Development setup, API reference, and operational commands are in `README.md` — not here.

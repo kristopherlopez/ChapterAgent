@@ -56,13 +56,10 @@ def extract_pdfs(
         return list(sorted(markdown_dir.glob("*.md")))
 
     try:
-        from solutions.qa_agent.src.extract import extract_all_pdfs
+        from extract import extract_all_pdfs
     except ImportError:
-        try:
-            from extract import extract_all_pdfs  # type: ignore[no-redef]
-        except ImportError:
-            print(f"Warning: extract module unavailable, skipping PDF extraction")
-            return list(sorted(markdown_dir.glob("*.md")))
+        print("Warning: extract module unavailable, skipping PDF extraction")
+        return list(sorted(markdown_dir.glob("*.md")))
 
     # Clear existing markdown before re-extracting
     for old_md in markdown_dir.glob("*.md"):
