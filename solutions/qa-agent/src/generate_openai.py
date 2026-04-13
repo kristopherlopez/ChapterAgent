@@ -135,13 +135,35 @@ class OpenAIGenerator(BaseGenerator):
             result = Runner.run_sync(agent, question, max_turns=self.max_turns)
             answer_text = result.final_output or ""
 
-            # Extract reasoning/thinking traces
+            # Extract thinking from agent activity (tool calls + reasoning)
             thinking = []
             for item in result.to_input_list():
-                if isinstance(item, dict) and item.get("type") == "reasoning":
-                    for s in item.get("summary", []):
-                        if isinstance(s, dict) and s.get("text"):
-                            thinking.append(s["text"])
+                if isinstance(item, dict):
+                    item_type = item.get("type", "")
+                    if item_type == "reasoning":
+                        for s in item.get("summary", []):
+                            if isinstance(s, dict) and s.get("text"):
+                                thinking.append(s["text"])
+                    elif item_type == "function_call":
+                        name = item.get("name", "")
+                        args = item.get("arguments", "")
+                        if name == "list_pages":
+                            thinking.append("Browsing Annual Report table of contents")
+                        elif name == "read_page":
+                            try:
+                                import json as _json
+                                a = _json.loads(args) if isinstance(args, str) else args
+                                fname = a.get("filename", "")
+                                thinking.append(f"Reading {fname.replace('.md', '').replace('-', ' ')}")
+                            except Exception:
+                                thinking.append("Reading a page from the Annual Report")
+                        elif name == "cite_source":
+                            try:
+                                import json as _json
+                                a = _json.loads(args) if isinstance(args, str) else args
+                                thinking.append(f"Citing p.{a.get('page', '?')} — {a.get('section', '')}")
+                            except Exception:
+                                thinking.append("Recording a citation")
 
             token_usage = {}
             if hasattr(result, "raw_responses") and result.raw_responses:
