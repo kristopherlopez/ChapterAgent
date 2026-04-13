@@ -75,18 +75,6 @@ export default function Sidebar() {
         </div>
 
         <Link
-          href="/registry"
-          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-            pathname === "/registry"
-              ? "bg-zinc-900 text-white"
-              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-          }`}
-        >
-          <ClipboardList className="w-4 h-4" />
-          Solution Registry
-        </Link>
-
-        <Link
           href="/onboard"
           className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
             pathname.startsWith("/onboard")
@@ -96,6 +84,18 @@ export default function Sidebar() {
         >
           <Plus className="w-4 h-4" />
           Onboard Solution
+        </Link>
+
+        <Link
+          href="/registry"
+          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+            pathname === "/registry"
+              ? "bg-zinc-900 text-white"
+              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+          }`}
+        >
+          <ClipboardList className="w-4 h-4" />
+          Solution Registry
         </Link>
 
         <Link
