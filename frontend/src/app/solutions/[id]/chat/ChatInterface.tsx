@@ -7,7 +7,6 @@ import {
   ShieldAlert,
   BookOpen,
   Clock,
-  Loader2,
   Activity,
   Sparkles,
   ChevronDown,
@@ -298,37 +297,6 @@ function StepIcon({ type }: { type: ThinkingStep["type"] }) {
   }
 }
 
-function LiveThinkingSteps({ steps }: { steps: ThinkingStep[] }) {
-  return (
-    <div className="space-y-3 py-2">
-      {steps.map((step, i) => (
-        <div key={i} className="flex items-start gap-3">
-          <StepIcon type={step.type} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-zinc-500 leading-relaxed">{step.text}</p>
-            {step.results && step.results.length > 0 && (
-              <div className="mt-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg overflow-hidden">
-                {step.results.map((r, j) => (
-                  <div
-                    key={j}
-                    className="px-3 py-2 text-xs text-zinc-400 border-b border-zinc-700/30 last:border-b-0"
-                  >
-                    {r}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      ))}
-      <div className="flex items-center gap-3">
-        <Loader2 className="w-4 h-4 text-zinc-400 animate-spin shrink-0" />
-        <p className="text-sm text-zinc-400">Working...</p>
-      </div>
-    </div>
-  );
-}
-
 function CollapsedThinking({
   steps,
   summary,
@@ -521,8 +489,6 @@ export default function ChatInterface({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [liveSteps, setLiveSteps] = useState<ThinkingStep[]>([]);
-  const liveStepsRef = useRef<ThinkingStep[]>([]);
   const [selectedResponse, setSelectedResponse] = useState<AgentResponse | null>(null);
   const [framework, setFramework] = useState<Framework>("openai");
   const [langchainModel, setLangchainModel] = useState(OPENROUTER_MODELS[0].value);
@@ -531,7 +497,7 @@ export default function ChatInterface({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping, liveSteps]);
+  }, [messages, isTyping]);
 
   async function handleSend(question?: string) {
     const text = question || input.trim();
@@ -545,114 +511,42 @@ export default function ChatInterface({
 
     setIsTyping(true);
     setSelectedResponse(null);
-    setLiveSteps([]);
-    liveStepsRef.current = [];
 
     const model = framework === "langchain" ? langchainModel : undefined;
+    let response = await fetchAgentResponse(solutionId, text, framework, model);
+    if (!response) {
+      response = matchResponse(text);
+      const delay = Math.min(response.latencyMs, 2000);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
 
-    // Try streaming endpoint first
-    const streamUrl = new URL(`${API_BASE}/api/chat/${solutionId}/stream`);
-    streamUrl.searchParams.set("question", text);
-    streamUrl.searchParams.set("framework", framework);
-    if (model) streamUrl.searchParams.set("model", model);
-
-    let streamed = false;
-    try {
-      const response = await new Promise<AgentResponse | null>((resolve) => {
-        const es = new EventSource(streamUrl.toString());
-        let resolved = false;
-
-        es.addEventListener("thinking", (e) => {
-          const data = JSON.parse(e.data);
-          const step: ThinkingStep = { type: "thinking", text: data.text };
-          liveStepsRef.current = [...liveStepsRef.current, step];
-          setLiveSteps([...liveStepsRef.current]);
-        });
-
-        es.addEventListener("tool_call", (e) => {
-          const data = JSON.parse(e.data);
-          const step: ThinkingStep = {
-            type: "tool_call",
-            text: data.description || data.name,
-            results: data.results,
-          };
-          liveStepsRef.current = [...liveStepsRef.current, step];
-          setLiveSteps([...liveStepsRef.current]);
-        });
-
-        es.addEventListener("complete", (e) => {
-          const data = JSON.parse(e.data);
-          resolved = true;
-          es.close();
-          resolve({
-            text: data.text,
-            citations: data.citations || [],
-            guardrails: data.guardrails || [],
-            thinking: data.thinking || [],
-            latencyMs: data.latencyMs,
-            blocked: data.blocked,
-          });
-        });
-
-        es.addEventListener("error", () => {
-          es.close();
-          if (!resolved) resolve(null);
-        });
-
-        es.onerror = () => {
-          es.close();
-          if (!resolved) resolve(null);
-        };
+    // Build thinking steps from response
+    const steps: ThinkingStep[] = [];
+    if (response.thinking?.length) {
+      for (const t of response.thinking) {
+        steps.push({ type: "thinking", text: t });
+      }
+    }
+    if (response.citations.length > 0) {
+      steps.push({
+        type: "tool_call",
+        text: `Retrieved ${response.citations.length} source${response.citations.length !== 1 ? "s" : ""} from the Annual Report`,
+        results: response.citations.map((c) => `p.${c.page} — ${c.section}`),
       });
-
-      if (response) {
-        streamed = true;
-        const steps = liveStepsRef.current.length > 0
-          ? [...liveStepsRef.current]
-          : response.thinking.map((t) => ({ type: "thinking" as const, text: t }));
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "agent",
-            content: response.text,
-            response,
-            thinkingSteps: steps.length > 0 ? steps : undefined,
-            timestamp: new Date(),
-          },
-        ]);
-        setSelectedResponse(response);
-      }
-    } catch {
-      // streaming failed, fall through
     }
 
-    // Fallback to non-streaming
-    if (!streamed) {
-      let response = await fetchAgentResponse(solutionId, text, framework, model);
-      if (!response) {
-        response = matchResponse(text);
-        const delay = Math.min(response.latencyMs, 2000);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-      const steps = response.thinking?.length
-        ? response.thinking.map((t) => ({ type: "thinking" as const, text: t }))
-        : undefined;
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "agent",
-          content: response.text,
-          response,
-          thinkingSteps: steps,
-          timestamp: new Date(),
-        },
-      ]);
-      setSelectedResponse(response);
-    }
-
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "agent",
+        content: response.text,
+        response,
+        thinkingSteps: steps.length > 0 ? steps : undefined,
+        timestamp: new Date(),
+      },
+    ]);
+    setSelectedResponse(response);
     setIsTyping(false);
-    setLiveSteps([]);
-    liveStepsRef.current = [];
     inputRef.current?.focus();
   }
 
@@ -748,15 +642,9 @@ export default function ChatInterface({
             ))}
 
             {isTyping && (
-              <div>
-                {liveSteps.length > 0 ? (
-                  <LiveThinkingSteps steps={liveSteps} />
-                ) : (
-                  <div className="flex items-center gap-3 py-2">
-                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-                    <p className="text-sm text-zinc-400">Thinking...</p>
-                  </div>
-                )}
+              <div className="flex items-center gap-3 py-2">
+                <Sparkles className="w-4 h-4 text-amber-500 shrink-0 animate-pulse" />
+                <p className="text-sm text-zinc-500">Thinking...</p>
               </div>
             )}
 
