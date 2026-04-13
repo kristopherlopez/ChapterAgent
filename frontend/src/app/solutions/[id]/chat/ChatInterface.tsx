@@ -531,7 +531,7 @@ export default function ChatInterface({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping, liveThinking]);
+  }, [messages, isTyping, liveSteps]);
 
   async function handleSend(question?: string) {
     const text = question || input.trim();
