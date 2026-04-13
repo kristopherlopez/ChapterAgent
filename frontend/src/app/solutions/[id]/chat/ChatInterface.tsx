@@ -446,6 +446,8 @@ export default function ChatInterface({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [liveThinking, setLiveThinking] = useState<string[]>([]);
+  const [liveToolCalls, setLiveToolCalls] = useState<string[]>([]);
   const [selectedResponse, setSelectedResponse] = useState<AgentResponse | null>(null);
   const [framework, setFramework] = useState<Framework>("openai");
   const [langchainModel, setLangchainModel] = useState(OPENROUTER_MODELS[0].value);
@@ -454,7 +456,7 @@ export default function ChatInterface({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [messages, isTyping, liveThinking]);
 
   async function handleSend(question?: string) {
     const text = question || input.trim();
@@ -468,26 +470,98 @@ export default function ChatInterface({
 
     setIsTyping(true);
     setSelectedResponse(null);
+    setLiveThinking([]);
+    setLiveToolCalls([]);
 
     const model = framework === "langchain" ? langchainModel : undefined;
-    let response = await fetchAgentResponse(solutionId, text, framework, model);
-    if (!response) {
-      response = matchResponse(text);
-      const delay = Math.min(response.latencyMs, 2000);
-      await new Promise((resolve) => setTimeout(resolve, delay));
+
+    // Try streaming endpoint first
+    const streamUrl = new URL(`${API_BASE}/api/chat/${solutionId}/stream`);
+    streamUrl.searchParams.set("question", text);
+    streamUrl.searchParams.set("framework", framework);
+    if (model) streamUrl.searchParams.set("model", model);
+
+    let streamed = false;
+    try {
+      const response = await new Promise<AgentResponse | null>((resolve) => {
+        const es = new EventSource(streamUrl.toString());
+        let resolved = false;
+
+        es.addEventListener("thinking", (e) => {
+          const data = JSON.parse(e.data);
+          setLiveThinking((prev) => [...prev, data.text]);
+        });
+
+        es.addEventListener("tool_call", (e) => {
+          const data = JSON.parse(e.data);
+          setLiveToolCalls((prev) => [...prev, data.name]);
+        });
+
+        es.addEventListener("complete", (e) => {
+          const data = JSON.parse(e.data);
+          resolved = true;
+          es.close();
+          resolve({
+            text: data.text,
+            citations: data.citations || [],
+            guardrails: data.guardrails || [],
+            thinking: data.thinking || [],
+            latencyMs: data.latencyMs,
+            blocked: data.blocked,
+          });
+        });
+
+        es.addEventListener("error", () => {
+          es.close();
+          if (!resolved) resolve(null);
+        });
+
+        es.onerror = () => {
+          es.close();
+          if (!resolved) resolve(null);
+        };
+      });
+
+      if (response) {
+        streamed = true;
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "agent",
+            content: response.text,
+            response,
+            timestamp: new Date(),
+          },
+        ]);
+        setSelectedResponse(response);
+      }
+    } catch {
+      // streaming failed, fall through
     }
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "agent",
-        content: response.text,
-        response,
-        timestamp: new Date(),
-      },
-    ]);
-    setSelectedResponse(response);
+    // Fallback to non-streaming
+    if (!streamed) {
+      let response = await fetchAgentResponse(solutionId, text, framework, model);
+      if (!response) {
+        response = matchResponse(text);
+        const delay = Math.min(response.latencyMs, 2000);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "agent",
+          content: response.text,
+          response,
+          timestamp: new Date(),
+        },
+      ]);
+      setSelectedResponse(response);
+    }
+
     setIsTyping(false);
+    setLiveThinking([]);
+    setLiveToolCalls([]);
     inputRef.current?.focus();
   }
 
@@ -578,9 +652,35 @@ export default function ChatInterface({
             ))}
 
             {isTyping && (
-              <div className="flex items-center gap-2 text-sm text-zinc-400">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Agent is thinking...
+              <div className="space-y-2">
+                {liveThinking.length > 0 && (
+                  <div className="bg-violet-50 border border-violet-100 rounded-2xl rounded-bl-md px-5 py-4 space-y-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Brain className="w-3.5 h-3.5 text-violet-500" />
+                      <span className="text-xs font-medium text-violet-600 uppercase tracking-wider">
+                        Thinking
+                      </span>
+                    </div>
+                    {liveThinking.map((step, i) => (
+                      <p key={i} className="text-xs text-violet-700 leading-relaxed">
+                        {step}
+                      </p>
+                    ))}
+                  </div>
+                )}
+                {liveToolCalls.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pl-1">
+                    {liveToolCalls.map((name, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-sm text-zinc-400">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {liveThinking.length > 0 ? "Generating answer..." : "Agent is thinking..."}
+                </div>
               </div>
             )}
 
