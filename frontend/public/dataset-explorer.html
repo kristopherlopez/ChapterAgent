@@ -143,10 +143,14 @@
 </head>
 <body>
 
-<div class="topbar">
+<div class="topbar" id="topbar">
   <h1>Dataset Explorer</h1>
   <span class="badge">ML Solutions</span>
 </div>
+<script>
+  // Hide topbar when embedded in an iframe
+  try { if (window.self !== window.top) document.getElementById('topbar').style.display = 'none'; } catch(e) {}
+</script>
 
 <div class="selector">
   <label>Dataset:</label>

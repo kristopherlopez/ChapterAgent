@@ -137,15 +137,17 @@ export default function Sidebar() {
           Component Catalog
         </Link>
 
-        <a
-          href="/dataset-explorer.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+        <Link
+          href="/datasets"
+          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+            pathname === "/datasets"
+              ? "bg-zinc-900 text-white"
+              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+          }`}
         >
           <Database className="w-4 h-4" />
           Dataset Explorer
-        </a>
+        </Link>
 
         {/* AI Solutions */}
         <div className="pt-4 pb-2">
