@@ -8,26 +8,30 @@ import time
 from pathlib import Path
 from typing import Any
 
-from generate_claude import ClaudeGenerator
-from generate_langchain import LangChainGenerator
-from generate_openai import OpenAIGenerator
 from retrieve import HybridRetriever, RetrievedChunk
 from schema import BaseGenerator, QAResponse
 
-GENERATORS: dict[str, type[BaseGenerator]] = {
-    "openai": OpenAIGenerator,
-    "claude": ClaudeGenerator,
-    "langchain": LangChainGenerator,
-}
+FRAMEWORK_NAMES = ("openai", "claude", "langchain")
 
 
 def _create_generator(framework: str = "openai", **kwargs: Any) -> BaseGenerator:
-    """Factory: create the right generator for the chosen framework."""
-    cls = GENERATORS.get(framework)
-    if cls is None:
+    """Factory: create the right generator for the chosen framework.
+
+    Imports are lazy so only the requested framework's dependencies must be installed.
+    """
+    if framework == "openai":
+        from generate_openai import OpenAIGenerator
+        cls = OpenAIGenerator
+    elif framework == "claude":
+        from generate_claude import ClaudeGenerator
+        cls = ClaudeGenerator
+    elif framework == "langchain":
+        from generate_langchain import LangChainGenerator
+        cls = LangChainGenerator
+    else:
         raise ValueError(
             f"Unknown framework: {framework!r}. "
-            f"Use one of: {', '.join(GENERATORS)}."
+            f"Use one of: {', '.join(FRAMEWORK_NAMES)}."
         )
     return cls(**kwargs) if kwargs else cls()
 
@@ -47,13 +51,13 @@ class QAAgent:
         self,
         *,
         retriever: HybridRetriever,
-        generator: QAGenerator | None = None,
+        generator: BaseGenerator | None = None,
         topic_graph: dict[str, Any] | None = None,
         scope_level: int = 1,
         refusal_message: str = "I can only answer questions about CBA's 2025 Annual Report.",
     ):
         self.retriever = retriever
-        self.generator = generator or QAGenerator()
+        self.generator = generator or _create_generator("openai")
         self.topic_graph = topic_graph
         self.scope_level = scope_level
         self.refusal_message = refusal_message
