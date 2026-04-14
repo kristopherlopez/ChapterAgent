@@ -13,7 +13,7 @@ An AI governance platform that automates compliance, guardrails, and evaluation 
 |                     Unified Portal (Next.js)                      |
 |  Compliance dashboard | Solution detail | Evidence export        |
 |  Solution registry    | Trace view      | Dataset explorer       |
-|  Framework scorecard  | Field catalogue |                        |
+|  Field catalogue      |                 |                        |
 +------------------------------------------------------------------+
          |
          v
@@ -175,7 +175,6 @@ cd frontend && npm run lint
 | `GET` | `/api/evidence/{id}/download` | Evidence export |
 | `GET` | `/api/traces/{id}` | Execution trace steps |
 | `GET` | `/api/controls` | Controls register |
-| `GET` | `/api/scorecard` | Framework scorecard |
 | `GET` | `/api/catalog` | Reusable component catalog |
 | `POST` | `/api/catalog/generator/generate` | Generate golden dataset test cases |
 | `POST` | `/api/solutions/onboard` | Onboard a new solution |

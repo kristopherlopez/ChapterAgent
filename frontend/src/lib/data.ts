@@ -1,7 +1,6 @@
 import type {
   SolutionSummary,
   SolutionDetail,
-  FrameworkScore,
   TraceStep,
   GovernanceDocument,
   GovernanceDocumentDetail,
@@ -67,66 +66,6 @@ export const solutions: SolutionSummary[] = [
     lastRun: "",
     lastTested: "",
     healthHistory: [],
-  },
-  {
-    id: "agentic-model-validation",
-    name: "Model Validation Agent",
-    description:
-      "LLM agent that reads model documentation, runs validation checks, and drafts findings",
-    category: "ai",
-    owner: "Risk Modelling Squad",
-    riskTier: "High",
-    guardrailsSummary: "4/4 PASS",
-    evalScore: 0.88,
-    gateResult: "pass",
-    health: "pass",
-    lastRun: "2026-04-10 14:35 AEST",
-    lastTested: "2026-04-10 14:35 AEST",
-    healthHistory: [
-      { date: "2026-03-29", status: "pass" },
-      { date: "2026-03-30", status: "pass" },
-      { date: "2026-03-31", status: "fail" },
-      { date: "2026-04-01", status: "fail" },
-      { date: "2026-04-02", status: "pass" },
-      { date: "2026-04-03", status: "pass" },
-      { date: "2026-04-04", status: "pass" },
-      { date: "2026-04-05", status: "pass" },
-      { date: "2026-04-06", status: "warn" },
-      { date: "2026-04-07", status: "pass" },
-      { date: "2026-04-08", status: "pass" },
-      { date: "2026-04-09", status: "pass" },
-      { date: "2026-04-10", status: "pass" },
-    ],
-  },
-  {
-    id: "multi-platform-agent",
-    name: "Multi-Platform Agent",
-    description:
-      "Same agent implemented across 3 frameworks for comparative evaluation",
-    category: "ai",
-    owner: "Chapter Platform Team",
-    riskTier: "Medium",
-    guardrailsSummary: "5/6 FAIL",
-    evalScore: 0.72,
-    gateResult: "fail",
-    health: "fail",
-    lastRun: "2026-04-10 14:38 AEST",
-    lastTested: "2026-04-10 14:38 AEST",
-    healthHistory: [
-      { date: "2026-03-29", status: "pass" },
-      { date: "2026-03-30", status: "pass" },
-      { date: "2026-03-31", status: "warn" },
-      { date: "2026-04-01", status: "warn" },
-      { date: "2026-04-02", status: "fail" },
-      { date: "2026-04-03", status: "fail" },
-      { date: "2026-04-04", status: "fail" },
-      { date: "2026-04-05", status: "fail" },
-      { date: "2026-04-06", status: "fail" },
-      { date: "2026-04-07", status: "fail" },
-      { date: "2026-04-08", status: "fail" },
-      { date: "2026-04-09", status: "fail" },
-      { date: "2026-04-10", status: "fail" },
-    ],
   },
   {
     id: "credit-default-scorer",
@@ -214,48 +153,8 @@ export const solutionDetails: Record<string, SolutionDetail> = {
       timestamp: "",
     },
   },
-  "agentic-model-validation": {
-    ...solutions[2],
-    guardrails: [
-      { name: "Scope Containment", result: "pass", detail: "0 out-of-scope responses" },
-      { name: "PII Detection", result: "pass", detail: "0 PII instances found" },
-      { name: "Faithfulness Check", result: "pass", detail: "Score: 0.91" },
-      { name: "Bias Scan", result: "pass", detail: "Score: 0.01" },
-    ],
-    evaluation: [
-      { metric: "Faithfulness", score: 0.90, threshold: 0.85, status: "pass" },
-      { metric: "Answer Relevancy", score: 0.88, threshold: 0.80, status: "pass" },
-    ],
-    complianceGate: {
-      gate: "Deployment Gate",
-      result: "pass",
-      reason: "All guardrails passed, evaluation scores above thresholds",
-      timestamp: "2026-04-10 14:35 AEST",
-    },
-  },
-  "multi-platform-agent": {
-    ...solutions[3],
-    guardrails: [
-      { name: "Scope Containment", result: "pass", detail: "0 out-of-scope responses" },
-      { name: "PII Detection", result: "fail", detail: "3 PII instances detected in responses" },
-      { name: "Faithfulness Check", result: "pass", detail: "Score: 0.78" },
-      { name: "Bias Scan", result: "pass", detail: "Score: 0.04" },
-      { name: "Toxicity Scan", result: "pass", detail: "Score: 0.01" },
-      { name: "Citation Presence", result: "warn", detail: "72% responses cited" },
-    ],
-    evaluation: [
-      { metric: "Faithfulness", score: 0.72, threshold: 0.80, status: "fail" },
-      { metric: "Answer Relevancy", score: 0.75, threshold: 0.75, status: "pass" },
-    ],
-    complianceGate: {
-      gate: "Deployment Gate",
-      result: "fail",
-      reason: "PII guardrail failure — 3 instances detected. Faithfulness below threshold (0.72 < 0.80).",
-      timestamp: "2026-04-10 14:38 AEST",
-    },
-  },
   "credit-default-scorer": {
-    ...solutions[4],
+    ...solutions[2],
     guardrails: [
       { name: "Discrimination Check", result: "pass", detail: "Demographic parity diff: 0.03 (threshold: 0.05)" },
       { name: "Calibration Check", result: "pass", detail: "Brier score: 0.17 (threshold: 0.20)" },
@@ -281,7 +180,7 @@ export const solutionDetails: Record<string, SolutionDetail> = {
     },
   },
   "credit-approval-scorer": {
-    ...solutions[5],
+    ...solutions[3],
     guardrails: [
       { name: "Proxy Discrimination Check", result: "fail", detail: "Feature A8 approval rate disparity: 89.6% (threshold: 15%). Human review required." },
       { name: "Calibration Check", result: "pass", detail: "Hosmer-Lemeshow p: 0.08 (threshold: 0.05)" },
@@ -306,36 +205,6 @@ export const solutionDetails: Record<string, SolutionDetail> = {
   },
 };
 
-export const frameworkScores: FrameworkScore[] = [
-  {
-    framework: "Claude Agent SDK",
-    evalScore: 0.89,
-    guardrailsPass: "6/6",
-    latencyAvgMs: 1200,
-    tokenUsageAvg: 1650,
-    costPerRun: 0.003,
-    gateResult: "pass",
-  },
-  {
-    framework: "OpenAI Agents SDK",
-    evalScore: 0.85,
-    guardrailsPass: "6/6",
-    latencyAvgMs: 1400,
-    tokenUsageAvg: 1920,
-    costPerRun: 0.004,
-    gateResult: "pass",
-  },
-  {
-    framework: "LangChain / LangGraph",
-    evalScore: 0.72,
-    guardrailsPass: "5/6",
-    latencyAvgMs: 1800,
-    tokenUsageAvg: 2100,
-    costPerRun: 0.005,
-    gateResult: "fail",
-  },
-];
-
 export const solutionTraces: Record<string, TraceStep[]> = {
   "cba-annual-report-qa": [
     { step: 1, label: "Query received", durationMs: 0 },
@@ -344,22 +213,6 @@ export const solutionTraces: Record<string, TraceStep[]> = {
     { step: 4, label: "LLM generation (OpenAI gpt-4o)", durationMs: 1340, detail: "Tokens: 1,847 | Cost: $0.0034 | Citations: 1" },
     { step: 5, label: "Guardrail pipeline", durationMs: 187, detail: "8/8 passed | Faithfulness: 0.94 | PII: clean | Scope: pass" },
     { step: 6, label: "Response returned", durationMs: 1659, detail: "Total end-to-end latency" },
-  ],
-  "agentic-model-validation": [
-    { step: 1, label: "Workflow initiated", durationMs: 0 },
-    { step: 2, label: "Document ingestion", durationMs: 230, detail: "Model doc parsed, 12 sections extracted" },
-    { step: 3, label: "Validation check 1: completeness", durationMs: 890, detail: "Tokens: 2,100 | All required sections present" },
-    { step: 4, label: "Validation check 2: methodology", durationMs: 1120, detail: "Tokens: 2,450 | 2 findings flagged" },
-    { step: 5, label: "Findings draft generation", durationMs: 1560, detail: "Tokens: 3,200 | 2 findings drafted" },
-    { step: 6, label: "Guardrail checks", durationMs: 145, detail: "4/4 passed" },
-    { step: 7, label: "Workflow complete", durationMs: 3945, detail: "Total end-to-end" },
-  ],
-  "multi-platform-agent": [
-    { step: 1, label: "Query received", durationMs: 0 },
-    { step: 2, label: "Context retrieval", durationMs: 95, detail: "3 chunks retrieved" },
-    { step: 3, label: "LLM generation (LangChain)", durationMs: 1800, detail: "Tokens: 2,100 | Cost: $0.005" },
-    { step: 4, label: "Guardrail checks", durationMs: 210, detail: "5/6 — PII FAIL" },
-    { step: 5, label: "Response blocked", durationMs: 2105, detail: "PII detected, response not delivered" },
   ],
   "credit-default-scorer": [
     { step: 1, label: "Scoring request received", durationMs: 0 },
@@ -2017,8 +1870,8 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
 
 // --- Component Catalog ---
 
-const allSolutionIds = ["cba-annual-report-qa", "governance-policy-qa", "agentic-model-validation", "risk-classification-agent", "credit-default-scorer", "credit-approval-scorer"];
-const aiSolutionIds = ["cba-annual-report-qa", "governance-policy-qa", "agentic-model-validation", "risk-classification-agent"];
+const allSolutionIds = ["cba-annual-report-qa", "governance-policy-qa", "risk-classification-agent", "credit-default-scorer", "credit-approval-scorer"];
+const aiSolutionIds = ["cba-annual-report-qa", "governance-policy-qa", "risk-classification-agent"];
 
 export const catalogComponents: CatalogComponent[] = [
   // Guardrails (8)
@@ -2193,7 +2046,7 @@ export const catalogComponents: CatalogComponent[] = [
     type: "observability",
     description: "Validates that endpoint responses include compliant execution traces. Supports two patterns: inline traces (endpoint returns trace in response body — used for demo) and OpenTelemetry sidecar (production pattern for orgs where the Chapter doesn't control endpoint schemas).",
     interface: { squadProvides: "Inline: trace field in JSON response matching platform schema. OTel: spans pushed to platform collector with solution.id and step.type attributes", componentReturns: "Validation result with matched/missing trace labels and completeness score" },
-    adoption: ["agentic-model-validation", "risk-classification-agent"],
+    adoption: ["risk-classification-agent"],
     status: "active",
   },
   // Tooling (2)

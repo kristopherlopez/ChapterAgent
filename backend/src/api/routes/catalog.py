@@ -62,7 +62,6 @@ class SignOffRequest(BaseModel):
 GUARDRAIL_COMPONENTS: list[dict[str, Any]] = [
     {"id": "guardrail-scope-adherence", "name": "Scope Adherence", "description": "Enforces topic boundaries using a configurable topic graph with 3 strictness levels", "interface": {"squad_provides": "Topic graph JSON, scope level (1-3), refusal message", "component_returns": "pass/warn/fail with boundary violation detail"}},
     {"id": "guardrail-pii-scan", "name": "PII Detection", "description": "Scans agent output for personally identifiable information using NER-based detection", "interface": {"squad_provides": "Agent output text", "component_returns": "pass/fail with detected PII entities and types"}},
-    {"id": "guardrail-faithfulness", "name": "Faithfulness", "description": "Validates every claim in the response is supported by retrieved context", "interface": {"squad_provides": "Agent output, context chunks, threshold", "component_returns": "pass/fail with faithfulness score and unsupported claims"}},
     {"id": "guardrail-bias", "name": "Bias Detection", "description": "Monitors for demographic and language bias in agent outputs", "interface": {"squad_provides": "Agent output text", "component_returns": "pass/warn/fail with bias score and flagged phrases"}},
     {"id": "guardrail-toxicity", "name": "Toxicity Filter", "description": "Screens agent output for harmful, offensive, or toxic content", "interface": {"squad_provides": "Agent output text", "component_returns": "pass/fail with toxicity score"}},
     {"id": "guardrail-citation-coverage", "name": "Citation Coverage", "description": "Verifies response includes proper source citations for factual claims", "interface": {"squad_provides": "Agent output with citation markers, threshold", "component_returns": "pass/fail with coverage ratio"}},
@@ -156,7 +155,6 @@ def _get_validation_state(solution_id: str) -> dict[str, Any]:
     # Handle ID-to-directory mapping
     dir_map = {
         "cba-annual-report-qa": "qa-agent",
-        "agentic-model-validation": "validation-agent",
         "risk-classification-agent": "classification-agent",
         "credit-default-scorer": "credit-default-scorer",
         "credit-approval-scorer": "credit-approval-scorer",
@@ -226,7 +224,6 @@ def generate_test_cases(req: GenerationRequest) -> dict[str, Any]:
     """
     dir_map = {
         "cba-annual-report-qa": "qa-agent",
-        "agentic-model-validation": "validation-agent",
         "risk-classification-agent": "classification-agent",
         "credit-default-scorer": "credit-default-scorer",
         "credit-approval-scorer": "credit-approval-scorer",

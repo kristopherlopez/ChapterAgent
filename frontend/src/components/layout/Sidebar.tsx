@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   Shield,
   ShieldCheck,
-  BarChart3,
   LayoutDashboard,
   ClipboardList,
   FileText,
@@ -19,7 +18,6 @@ import { solutions } from "@/lib/data";
 
 const navItems = [
   { href: "/", label: "Compliance Health", icon: LayoutDashboard },
-  { href: "/scorecard", label: "Framework Scorecard", icon: BarChart3 },
 ];
 
 const aiSolutions = solutions.filter((s) => s.category === "ai");

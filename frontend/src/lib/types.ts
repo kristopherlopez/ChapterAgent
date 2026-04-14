@@ -56,16 +56,6 @@ export interface SolutionDetail extends SolutionSummary {
   complianceGate: ComplianceGate;
 }
 
-export interface FrameworkScore {
-  framework: string;
-  evalScore: number;
-  guardrailsPass: string;
-  latencyAvgMs: number;
-  tokenUsageAvg: number;
-  costPerRun: number;
-  gateResult: HealthStatus;
-}
-
 export type DocumentType = "policy" | "standard" | "framework" | "guideline";
 export type DocumentStatus = "active" | "draft" | "under-review";
 

@@ -86,11 +86,3 @@ class TestTracesAPI:
         assert len(data) >= 1
 
 
-class TestScorecardAPI:
-    def test_get_scorecard(self, client):
-        response = client.get("/api/scorecard")
-        assert response.status_code == 200
-        data = response.json()
-        assert isinstance(data, list)
-        assert len(data) == 3
-        assert data[0]["framework"] == "Claude Agent SDK"

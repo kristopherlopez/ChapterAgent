@@ -36,7 +36,6 @@ ruff check src/
 | GET | `/api/traces/{id}` | Default execution trace |
 | GET | `/api/traces/{id}/scenarios` | List all trace scenarios |
 | GET | `/api/traces/{id}/{run_id}` | Specific trace run |
-| GET | `/api/scorecard` | Framework comparison scorecard |
 
 ## Platform Core
 

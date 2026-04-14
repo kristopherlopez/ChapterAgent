@@ -3,7 +3,7 @@
  * Falls back to hardcoded data if the backend is unavailable.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function fetchJSON<T>(path: string): Promise<T> {
   const controller = new AbortController();
@@ -25,7 +25,6 @@ async function fetchJSON<T>(path: string): Promise<T> {
 import type {
   SolutionSummary,
   SolutionDetail,
-  FrameworkScore,
   TraceStep,
   CatalogComponent,
   GenerationResult,
@@ -38,10 +37,6 @@ export async function fetchSolutions(): Promise<SolutionSummary[]> {
 
 export async function fetchSolutionDetail(id: string): Promise<SolutionDetail> {
   return fetchJSON<SolutionDetail>(`/api/solutions/${id}`);
-}
-
-export async function fetchFrameworkScores(): Promise<FrameworkScore[]> {
-  return fetchJSON<FrameworkScore[]>("/api/scorecard");
 }
 
 export async function fetchTraceSteps(id: string): Promise<TraceStep[]> {
