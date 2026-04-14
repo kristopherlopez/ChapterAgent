@@ -64,18 +64,22 @@ def _get_agent(framework: str, model: str | None = None):
     solution_dir = SOLUTIONS_DIR / "qa-agent"
     src_dir = solution_dir / "src"
 
-    # Import agent.py from the hyphenated directory via importlib
-    if "qa_agent_module" not in sys.modules:
-        spec = importlib.util.spec_from_file_location(
-            "qa_agent_module", src_dir / "agent.py",
-            submodule_search_locations=[str(src_dir)],
-        )
-        mod = importlib.util.module_from_spec(spec)
-        sys.modules["qa_agent_module"] = mod
-        # Ensure sibling imports (generate, retrieve) resolve from src_dir
-        if str(src_dir) not in sys.path:
-            sys.path.insert(0, str(src_dir))
-        spec.loader.exec_module(mod)
+    # Clear solution modules so prompt/code changes take effect
+    for mod_name in [k for k in sys.modules if k in (
+        "qa_agent_module", "schema", "generate_openai", "generate_claude",
+        "generate_langchain", "retrieve",
+    )]:
+        del sys.modules[mod_name]
+
+    spec = importlib.util.spec_from_file_location(
+        "qa_agent_module", src_dir / "agent.py",
+        submodule_search_locations=[str(src_dir)],
+    )
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["qa_agent_module"] = mod
+    if str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+    spec.loader.exec_module(mod)
 
     mod = sys.modules["qa_agent_module"]
     DemoQAAgent = mod.DemoQAAgent
@@ -196,8 +200,11 @@ async def chat(solution_id: str, req: ChatRequest):
         regeneration_passed=not blocked if regenerated else None,
     )
 
-    # When blocked, replace answer with a friendly redirect
-    display_text = response.answer.text
+    # Normalize citations to footnote format
+    from schema import BaseGenerator
+    display_text = BaseGenerator.format_answer_with_footnotes(
+        response.answer.text, response.citations,
+    )
     if blocked:
         scope_failed = any(
             g.result == "fail" and "Scope" in g.name for g in guardrail_results
@@ -347,8 +354,13 @@ async def _stream_chat(
     total_ms = int((time.perf_counter() - start) * 1000)
     blocked = any(g.result == "fail" for g in guardrail_results)
 
-    # When blocked, replace the answer with a friendly redirect
-    display_text = answer_text
+    # Normalize citations to footnote format
+    from schema import BaseGenerator, Citation as SchemaCitation
+    display_text = BaseGenerator.format_answer_with_footnotes(
+        answer_text,
+        [SchemaCitation(page=c.page, section=c.section, quote=c.quote)
+         for c in citations] if citations else [],
+    )
     if blocked:
         scope_failed = any(
             g.result == "fail" and "Scope" in g.name for g in guardrail_results

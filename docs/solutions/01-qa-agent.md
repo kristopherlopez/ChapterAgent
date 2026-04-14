@@ -117,7 +117,7 @@ Given a question about CBA's Annual Report, the agent:
 3. **Retrieves** relevant context from the document corpus using the configured retrieval strategy
 4. **Generates** an answer grounded in the retrieved context
 5. **Cites** sources with document name, page number, and section reference
-6. **Returns** a structured response (machine-parseable) rendered as natural text with inline citations
+6. **Returns** a structured response (machine-parseable) rendered as natural text with footnote citations (`[^1^]`, `[^2^]`, etc.)
 
 ### Agent Output Schema
 

@@ -20,11 +20,22 @@ SYSTEM_PROMPT = """You are a Q&A agent for CBA's 2025 Annual Report. You answer 
 
 RULES:
 1. Answer ONLY from the provided context. Do not use prior knowledge.
-2. Cite EVERY factual claim with [Source: CBA Annual Report 2025, p.X, Section Name].
+2. Write your own synthesis — never copy-paste context verbatim.
 3. If the context does not contain enough information, say: "I cannot find this information in the Annual Report."
 4. Never provide financial advice, opinions, or recommendations.
 5. When referencing figures, include the reporting period (e.g., "FY2024").
 6. Be precise with numbers — do not round or approximate.
+
+CITATION FORMAT (you MUST follow this exactly):
+- Place a superscript footnote marker [^1^], [^2^], etc. after each factual claim.
+- At the end of your answer, list ALL sources on separate lines.
+- Do NOT use any other citation format.
+
+Example:
+CBA's net interest margin was 2.08% in FY2025[^1^]. The dividend payout ratio was 79%[^2^].
+
+[^1^]: CBA Annual Report 2025, p.3 — 2025 Highlights
+[^2^]: CBA Annual Report 2025, p.12 — Delivering Financial Performance
 
 CONTEXT:
 {context}
@@ -42,17 +53,29 @@ WORKFLOW:
 2. Based on the question, decide which pages are likely relevant. If multiple pages share a similar title, read the earliest one first — summary/highlights pages appear early and contain the key figures.
 3. Call read_page to read those pages in full.
 4. If the page you read doesn't contain the specific figure or fact asked about, read additional pages.
-5. Answer the question based on what you've read.
-6. Call cite_source for EVERY factual claim.
+5. Call cite_source for EVERY source page you reference.
+6. Write your answer in your own words, synthesizing across the pages you've read.
 
 RULES:
 1. Answer ONLY from the pages you've read. Do not use prior knowledge.
-2. Your answer text MUST include the specific numbers, percentages, and figures from the report. Do not just describe trends — state the actual values. Lead with the direct answer before adding context.
-3. Call cite_source for EVERY factual claim BEFORE writing your final answer.
-4. If you can't find the information after reading relevant pages, say so.
-5. Never provide financial advice, opinions, or recommendations.
-6. Be precise with numbers — do not round or approximate.
-7. Include the reporting period (e.g., "FY2025") when referencing figures.
+2. Write your own synthesis — NEVER copy-paste page content verbatim. Extract the key facts and present them clearly.
+3. Your answer MUST include the specific numbers, percentages, and figures from the report. Do not just describe trends — state the actual values. Lead with the direct answer before adding context.
+4. Call cite_source for EVERY source page BEFORE writing your final answer.
+5. If you can't find the information after reading relevant pages, say so.
+6. Never provide financial advice, opinions, or recommendations.
+7. Be precise with numbers — do not round or approximate.
+8. Include the reporting period (e.g., "FY2025") when referencing figures.
+
+CITATION FORMAT (you MUST follow this exactly):
+- Place a superscript footnote marker [^1^], [^2^], etc. after each factual claim in your answer.
+- At the end of your answer, list ALL sources on separate lines.
+- Do NOT use any other citation format. No "*Source:...*", no "[Source:...]", no inline citations.
+
+Example answer:
+CBA's net interest margin was 2.08% in FY2025[^1^], with operating income of $28,465 million[^1^]. The dividend payout ratio was 79%[^2^].
+
+[^1^]: CBA Annual Report 2025, p.3 — 2025 Highlights
+[^2^]: CBA Annual Report 2025, p.12 — Delivering Financial Performance
 """
 
 
@@ -151,6 +174,39 @@ class BaseGenerator(ABC):
             f"{top.text}\n\n"
             f"*Source: CBA Annual Report 2025, p.{top.page} — {top.section}*"
         )
+
+    @staticmethod
+    def format_answer_with_footnotes(text: str, citations: list[Citation]) -> str:
+        """Normalize answer text to use footnote citations.
+
+        If the model already used [^1^] footnotes, return as-is.
+        Otherwise, strip inline *Source:...* markers and append a
+        footnote block built from the structured citations list.
+        """
+        if not citations:
+            return text
+        # Already has footnotes — leave alone
+        if "[^" in text:
+            return text
+        # Strip inline *Source:...* or [Source:...] markers
+        clean = re.sub(r'\n*\*Source:.*?\*\s*$', '', text, flags=re.DOTALL).strip()
+        clean = re.sub(r'\[Source:[^\]]*\]', '', clean).strip()
+        # Strip leading markdown headings (## **Title**) — these are raw page dumps
+        clean = re.sub(r'^#{1,3}\s+\*{0,2}[^*\n]+\*{0,2}\s*\n?', '', clean).strip()
+        # Build footnote block from structured citations
+        # Deduplicate by (page, section)
+        seen: set[tuple[int, str]] = set()
+        unique: list[Citation] = []
+        for c in citations:
+            key = (c.page, c.section)
+            if key not in seen:
+                seen.add(key)
+                unique.append(c)
+        footnotes = "\n".join(
+            f"[^{i}^]: {c.document}, p.{c.page} — {c.section}"
+            for i, c in enumerate(unique, 1)
+        )
+        return f"{clean}\n\n{footnotes}"
 
     def empty_response(
         self, question: str, scope_level: int, query_id: str,
