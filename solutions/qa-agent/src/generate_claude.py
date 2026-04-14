@@ -11,8 +11,10 @@ import anyio
 from claude_agent_sdk import (
     AssistantMessage,
     ClaudeAgentOptions,
+    TextBlock,
     ThinkingBlock,
     ThinkingConfigEnabled,
+    ToolUseBlock,
     query,
     tool,
 )
@@ -147,9 +149,17 @@ class ClaudeGenerator(BaseGenerator):
         sdk_tools = self._build_tools(citations)
 
         try:
-            answer_text, token_usage, thinking = anyio.from_thread.run(
-                self._run_agent, question, sdk_tools,
-            )
+            import asyncio
+            loop = asyncio.new_event_loop()
+            try:
+                answer_text, token_usage, thinking = loop.run_until_complete(
+                    self._run_agent(question, sdk_tools),
+                )
+            finally:
+                loop.close()
+            if not answer_text or not answer_text.strip():
+                answer_text = self.fallback_answer(chunks)
+                citations = self.extract_citations(chunks)
         except Exception as e:
             answer_text = self.fallback_answer(chunks)
             citations = self.extract_citations(chunks)
@@ -180,7 +190,9 @@ class ClaudeGenerator(BaseGenerator):
             model=self.model,
             max_turns=self.max_turns,
             system_prompt=AGENT_SYSTEM_PROMPT,
-            tools=sdk_tools,
+            mcp_servers={
+                "qa_tools": {"type": "sdk", "name": "qa_tools", "instance": sdk_tools},
+            },
             permission_mode="auto",
             thinking=ThinkingConfigEnabled(type="enabled", budget_tokens=5000),
         )
@@ -188,13 +200,24 @@ class ClaudeGenerator(BaseGenerator):
         answer_text = ""
         token_usage: dict = {}
         thinking: list[str] = []
+        # Track the last assistant text — only the final one is the answer;
+        # intermediate TextBlocks may be tool-use preambles.
+        last_assistant_text = ""
 
         async for message in query(prompt=question, options=options):
-            # Capture thinking blocks from assistant messages
+            # Capture thinking and text blocks from assistant messages
             if isinstance(message, AssistantMessage) and message.content:
+                # Check if this message contains tool use (intermediate turn)
+                has_tool_use = any(
+                    isinstance(b, ToolUseBlock) for b in message.content
+                )
                 for block in message.content:
                     if isinstance(block, ThinkingBlock) and block.thinking:
                         thinking.append(block.thinking)
+                    elif isinstance(block, TextBlock) and block.text and not has_tool_use:
+                        # Only capture text from messages that don't also contain
+                        # tool calls — those are the final answer, not preamble.
+                        last_assistant_text = block.text
             if hasattr(message, "result") and message.result:
                 answer_text = message.result
             if hasattr(message, "usage") and message.usage:
@@ -206,6 +229,11 @@ class ClaudeGenerator(BaseGenerator):
                 token_usage["cost_usd"] = message.total_cost_usd
             if hasattr(message, "num_turns"):
                 token_usage["agent_turns"] = message.num_turns
+
+        # Prefer ResultMessage.result; fall back to last assistant TextBlock
+        if not answer_text and last_assistant_text:
+            answer_text = last_assistant_text
+
 
         return answer_text, token_usage, thinking
 
