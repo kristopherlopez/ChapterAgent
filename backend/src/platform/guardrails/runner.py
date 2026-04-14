@@ -67,7 +67,7 @@ class GuardrailRunner:
                     refusal_message=refusal_message,
                 ),
                 PIIGuardrail(),
-                FaithfulnessGuardrail(threshold=faithfulness_threshold),
+                FaithfulnessGuardrail(threshold=faithfulness_threshold, use_deepeval=False),
                 BiasGuardrail(),
                 ToxicityGuardrail(),
                 CitationCoverageGuardrail(threshold=citation_coverage_threshold),
