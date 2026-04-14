@@ -348,7 +348,7 @@ async def _stream_evaluation(
     })
 
 
-@router.post("/evaluate/{solution_id}/run")
+@router.get("/evaluate/{solution_id}/run")
 async def run_evaluation(
     solution_id: str,
     framework: str = Query(default="openai"),
