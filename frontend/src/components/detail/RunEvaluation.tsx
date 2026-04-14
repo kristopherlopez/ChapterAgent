@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 type Phase =
   | "idle"
@@ -107,7 +107,7 @@ export default function RunEvaluation({
         }))
       );
 
-      const url = `${API_BASE}/api/evaluate/${solutionId}/run?framework=${fw}&limit=${limit}&judge=gpt-4o-mini`;
+      const url = `${API_BASE}/api/evaluate/${solutionId}/run?framework=${fw}&limit=${limit}&judge=gpt-5.4`;
       const eventSource = new EventSource(url);
 
       eventSource.addEventListener("status", (e) => {

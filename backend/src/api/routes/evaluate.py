@@ -353,7 +353,7 @@ async def run_evaluation(
     solution_id: str,
     framework: str = Query(default="openai"),
     limit: int = Query(default=3, ge=1, le=50),
-    judge: str = Query(default="gpt-4o-mini"),
+    judge: str = Query(default="gpt-5.4"),
 ):
     """Run evaluation with SSE streaming progress."""
     if solution_id != "cba-annual-report-qa":
