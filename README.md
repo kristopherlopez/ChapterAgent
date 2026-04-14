@@ -12,7 +12,8 @@ An AI governance platform that automates compliance, guardrails, and evaluation 
 +------------------------------------------------------------------+
 |                     Unified Portal (Next.js)                      |
 |  Compliance dashboard | Solution detail | Evidence export        |
-|  Solution registry    | Trace view      | Framework scorecard    |
+|  Solution registry    | Trace view      | Dataset explorer       |
+|  Framework scorecard  | Field catalogue |                        |
 +------------------------------------------------------------------+
          |
          v

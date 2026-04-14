@@ -139,6 +139,40 @@
 
     /* Loading */
     .loading { text-align: center; padding: 60px; color: #a1a1aa; font-size: 14px; }
+
+    /* Field Catalogue */
+    .fc-group { margin-bottom: 24px; }
+    .fc-group:last-child { margin-bottom: 0; }
+    .fc-group-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+      padding-bottom: 8px; border-bottom: 1px solid #e4e4e7;
+    }
+    .fc-group-header h4 { font-size: 13px; font-weight: 600; }
+    .fc-group-badge {
+      font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+    }
+    .fc-badge-raw { background: #f0f9ff; color: #0369a1; }
+    .fc-badge-v1 { background: #fdf4ff; color: #a21caf; }
+    .fc-badge-v2 { background: #fff7ed; color: #c2410c; }
+    .fc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .fc-table th {
+      text-align: left; padding: 8px 10px; font-weight: 500; color: #71717a;
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+      background: #fafafa; border-bottom: 1px solid #e4e4e7;
+    }
+    .fc-table td { padding: 8px 10px; border-bottom: 1px solid #f4f4f5; vertical-align: top; }
+    .fc-table tr:hover td { background: #fafafa; }
+    .fc-formula { font-family: "SF Mono", "Fira Code", monospace; font-size: 11px; color: #6d28d9; background: #f5f3ff; padding: 2px 6px; border-radius: 3px; }
+    .fc-encoding { font-family: "SF Mono", "Fira Code", monospace; font-size: 11px; color: #475569; }
+    .fc-source { font-size: 11px; color: #71717a; }
+    .fc-desc { font-size: 12px; color: #3f3f46; }
+    .fc-filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .fc-filter-btn {
+      padding: 4px 12px; border-radius: 4px; border: 1px solid #e4e4e7;
+      background: #fff; font-size: 12px; cursor: pointer; transition: all 0.15s;
+    }
+    .fc-filter-btn:hover { border-color: #a1a1aa; }
+    .fc-filter-btn.active { background: #18181b; color: #fff; border-color: #18181b; }
   </style>
 </head>
 <body>
@@ -202,6 +236,33 @@ const DATASETS = {
       "Binary categoricals (A1, A8, A9, A11) are proxy discrimination candidates",
       "Small dataset (690 records) — bootstrap CI required for reliable metrics",
     ],
+    fieldCatalogue: [
+      { group: "Binary Categorical", origin: "raw", fields: [
+        { name: "A1", type: "Binary", desc: "Anonymised binary feature", encoding: {b:0, a:1}, governance: "proxy" },
+        { name: "A8", type: "Binary", desc: "Anonymised binary feature", encoding: {t:1, f:0}, governance: "proxy" },
+        { name: "A9", type: "Binary", desc: "Anonymised binary feature", encoding: {t:1, f:0}, governance: "proxy" },
+        { name: "A11", type: "Binary", desc: "Anonymised binary feature", encoding: {t:1, f:0}, governance: "proxy" },
+      ]},
+      { group: "Multi-class Categorical", origin: "raw", fields: [
+        { name: "A4", type: "Categorical", desc: "Anonymised categorical (4 classes)", encoding: {u:0, y:1, l:2, t:3} },
+        { name: "A5", type: "Categorical", desc: "Anonymised categorical (3 classes)", encoding: {g:0, p:1, gg:2} },
+        { name: "A6", type: "Categorical", desc: "Anonymised categorical (14 classes)", encoding: "c,d,cc,i,j,k,m,r,q,w,x,e,aa,ff → 0-13" },
+        { name: "A12", type: "Categorical", desc: "Anonymised categorical (3 classes)", encoding: {s:0, g:1, p:2} },
+      ]},
+      { group: "Continuous (Primary)", origin: "raw", fields: [
+        { name: "A2", type: "Continuous", desc: "Anonymised continuous feature" },
+        { name: "A3", type: "Continuous", desc: "Anonymised continuous feature" },
+        { name: "A7", type: "Continuous", desc: "Anonymised continuous feature" },
+      ]},
+      { group: "Continuous (Secondary)", origin: "raw", fields: [
+        { name: "A10", type: "Continuous", desc: "Anonymised continuous feature" },
+        { name: "A13", type: "Continuous", desc: "Anonymised continuous feature" },
+        { name: "A14", type: "Continuous", desc: "Anonymised continuous feature" },
+      ]},
+      { group: "Target", origin: "raw", fields: [
+        { name: "A15", type: "Binary", desc: "Credit approval decision", encoding: {"0":"Denied", "1":"Approved"} },
+      ]},
+    ],
   },
   taiwan: {
     name: "Taiwan Credit Card Default",
@@ -221,6 +282,77 @@ const DATASETS = {
       "4 known protected attributes: SEX, EDUCATION, MARRIAGE, AGE",
       "30,000 records — sufficient for reliable statistical metrics",
       "Gender (SEX) is the primary fairness concern — direct discrimination testing possible",
+    ],
+    fieldCatalogue: [
+      { group: "Demographic", origin: "raw", fields: [
+        { name: "SEX", type: "Binary", desc: "Gender (1=Male, 2=Female)", governance: "protected" },
+        { name: "EDUCATION", type: "Categorical", desc: "Education level (1=Grad school, 2=University, 3=High school, 4=Other)", governance: "protected" },
+        { name: "MARRIAGE", type: "Categorical", desc: "Marital status (1=Married, 2=Single, 3=Other)", governance: "protected" },
+        { name: "AGE", type: "Continuous", desc: "Age in years", governance: "protected" },
+      ]},
+      { group: "Credit", origin: "raw", fields: [
+        { name: "LIMIT_BAL", type: "Continuous", desc: "Credit limit (NT$)" },
+      ]},
+      { group: "Payment History", origin: "raw", fields: [
+        { name: "PAY_0", type: "Ordinal", desc: "Repayment status — Sep (−1=paid full, 0=revolving, 1+=months late)" },
+        { name: "PAY_2", type: "Ordinal", desc: "Repayment status — Aug" },
+        { name: "PAY_3", type: "Ordinal", desc: "Repayment status — Jul" },
+        { name: "PAY_4", type: "Ordinal", desc: "Repayment status — Jun" },
+        { name: "PAY_5", type: "Ordinal", desc: "Repayment status — May" },
+        { name: "PAY_6", type: "Ordinal", desc: "Repayment status — Apr" },
+      ]},
+      { group: "Bill Amounts", origin: "raw", fields: [
+        { name: "BILL_AMT1", type: "Continuous", desc: "Bill statement amount — Sep (NT$)" },
+        { name: "BILL_AMT2", type: "Continuous", desc: "Bill statement amount — Aug (NT$)" },
+        { name: "BILL_AMT3", type: "Continuous", desc: "Bill statement amount — Jul (NT$)" },
+        { name: "BILL_AMT4", type: "Continuous", desc: "Bill statement amount — Jun (NT$)" },
+        { name: "BILL_AMT5", type: "Continuous", desc: "Bill statement amount — May (NT$)" },
+        { name: "BILL_AMT6", type: "Continuous", desc: "Bill statement amount — Apr (NT$)" },
+      ]},
+      { group: "Payment Amounts", origin: "raw", fields: [
+        { name: "PAY_AMT1", type: "Continuous", desc: "Payment amount — Sep (NT$)" },
+        { name: "PAY_AMT2", type: "Continuous", desc: "Payment amount — Aug (NT$)" },
+        { name: "PAY_AMT3", type: "Continuous", desc: "Payment amount — Jul (NT$)" },
+        { name: "PAY_AMT4", type: "Continuous", desc: "Payment amount — Jun (NT$)" },
+        { name: "PAY_AMT5", type: "Continuous", desc: "Payment amount — May (NT$)" },
+        { name: "PAY_AMT6", type: "Continuous", desc: "Payment amount — Apr (NT$)" },
+      ]},
+      { group: "Balance & Utilisation", origin: "engineered", version: "V1", fields: [
+        { name: "UNPAID_BAL1–6", type: "Continuous", desc: "Outstanding debt each month", formula: "BILL_AMTn − PAY_AMTn", sourceFields: ["BILL_AMT1-6", "PAY_AMT1-6"] },
+        { name: "UTIL_RATIO1–6", type: "Continuous", desc: "Credit utilisation per month", formula: "BILL_AMTn / LIMIT_BAL", sourceFields: ["BILL_AMT1-6", "LIMIT_BAL"] },
+        { name: "PAY_RATIO1–6", type: "Continuous", desc: "Fraction of bill paid (capped at 1.0)", formula: "min(PAY_AMTn / BILL_AMTn, 1.0)", sourceFields: ["PAY_AMT1-6", "BILL_AMT1-6"] },
+        { name: "BAL_TREND", type: "Continuous", desc: "Slope of unpaid balance over 6 months (positive = growing debt)", formula: "linreg_slope(UNPAID_BAL1..6)", sourceFields: ["UNPAID_BAL1-6"] },
+        { name: "AVG_UTIL", type: "Continuous", desc: "Mean utilisation across 6 months", formula: "mean(UTIL_RATIO1..6)", sourceFields: ["UTIL_RATIO1-6"] },
+      ]},
+      { group: "Delinquency Patterns", origin: "engineered", version: "V2", fields: [
+        { name: "MONTHS_DELINQUENT", type: "Count", desc: "Number of months with late payment (PAY > 0)", formula: "count(PAY_n > 0)", sourceFields: ["PAY_0-6"] },
+        { name: "MAX_DELAY", type: "Ordinal", desc: "Worst delinquency severity across 6 months", formula: "max(PAY_0..PAY_6)", sourceFields: ["PAY_0-6"] },
+        { name: "DELINQUENCY_TREND", type: "Continuous", desc: "Slope of payment status (positive = worsening)", formula: "linreg_slope(PAY_0..PAY_6)", sourceFields: ["PAY_0-6"] },
+        { name: "CONSECUTIVE_LATE", type: "Count", desc: "Longest streak of consecutive late payments", formula: "max_streak(PAY_n > 0)", sourceFields: ["PAY_0-6"] },
+        { name: "REVOLVING_COUNT", type: "Count", desc: "Months with revolving balance (PAY = 0)", formula: "count(PAY_n == 0)", sourceFields: ["PAY_0-6"] },
+        { name: "FULL_PAY_COUNT", type: "Count", desc: "Months paid in full (PAY = −1)", formula: "count(PAY_n == −1)", sourceFields: ["PAY_0-6"] },
+      ]},
+      { group: "Volatility", origin: "engineered", version: "V2", fields: [
+        { name: "BILL_VOLATILITY", type: "Continuous", desc: "Std deviation of 6-month bill amounts", formula: "std(BILL_AMT1..6)", sourceFields: ["BILL_AMT1-6"] },
+        { name: "PAY_VOLATILITY", type: "Continuous", desc: "Std deviation of 6-month payment amounts", formula: "std(PAY_AMT1..6)", sourceFields: ["PAY_AMT1-6"] },
+        { name: "BILL_RANGE", type: "Continuous", desc: "Spread between max and min bill amounts", formula: "max(BILL_AMT) − min(BILL_AMT)", sourceFields: ["BILL_AMT1-6"] },
+      ]},
+      { group: "Capacity / Headroom", origin: "engineered", version: "V2", fields: [
+        { name: "AVAILABLE_CREDIT", type: "Continuous", desc: "Remaining credit on most recent statement", formula: "LIMIT_BAL − BILL_AMT1", sourceFields: ["LIMIT_BAL", "BILL_AMT1"] },
+        { name: "AVAILABLE_CREDIT_RATIO", type: "Continuous", desc: "Available credit as fraction of limit", formula: "(LIMIT_BAL − BILL_AMT1) / LIMIT_BAL", sourceFields: ["LIMIT_BAL", "BILL_AMT1"] },
+        { name: "HEADROOM_TREND", type: "Continuous", desc: "Slope of available credit over 6 months", formula: "linreg_slope(LIMIT_BAL − BILL_AMTn)", sourceFields: ["LIMIT_BAL", "BILL_AMT1-6"] },
+      ]},
+      { group: "Behavioral Signals", origin: "engineered", version: "V2", fields: [
+        { name: "MIN_PAY_FLAG", type: "Count", desc: "Months where payment < 5% of bill (minimum-payment behaviour)", formula: "count(PAY_AMTn / BILL_AMTn < 0.05)", sourceFields: ["PAY_AMT1-6", "BILL_AMT1-6"] },
+        { name: "OVERPAY_COUNT", type: "Count", desc: "Months where payment exceeds bill", formula: "count(PAY_AMTn > BILL_AMTn)", sourceFields: ["PAY_AMT1-6", "BILL_AMT1-6"] },
+      ]},
+      { group: "Interactions", origin: "engineered", version: "V2", fields: [
+        { name: "UTIL_X_MAX_DELAY", type: "Continuous", desc: "Compounding risk — high utilisation × severe delinquency", formula: "AVG_UTIL × MAX_DELAY", sourceFields: ["AVG_UTIL", "MAX_DELAY"] },
+        { name: "HEADROOM_X_DELINQUENT", type: "Continuous", desc: "Low headroom combined with high delinquency", formula: "(1 − AVAILABLE_CREDIT_RATIO) × MONTHS_DELINQUENT", sourceFields: ["AVAILABLE_CREDIT_RATIO", "MONTHS_DELINQUENT"] },
+      ]},
+      { group: "Target", origin: "raw", fields: [
+        { name: "default_payment_next_month", type: "Binary", desc: "Default in following month (1=Default, 0=No default)" },
+      ]},
     ],
   },
 };
@@ -365,6 +497,9 @@ function renderAll() {
     html += `<div class="tab" onclick="switchTab(this,'tab-fairness')">Fairness Analysis</div>`;
   }
   html += `<div class="tab" onclick="switchTab(this,'tab-data')">Raw Data</div>`;
+  if (meta.fieldCatalogue) {
+    html += `<div class="tab" onclick="switchTab(this,'tab-catalogue')">Field Catalogue</div>`;
+  }
   html += `</div>`;
 
   // --- Tab: Feature Summary ---
@@ -412,6 +547,13 @@ function renderAll() {
   html += `<div class="tab-content" id="tab-data">`;
   html += renderDataTable();
   html += `</div>`;
+
+  // --- Tab: Field Catalogue ---
+  if (meta.fieldCatalogue) {
+    html += `<div class="tab-content" id="tab-catalogue"><div class="card-body">`;
+    html += renderFieldCatalogue(meta.fieldCatalogue);
+    html += `</div></div>`;
+  }
 
   html += `</div>`; // close card
   document.getElementById('main-content').innerHTML = html;
@@ -589,6 +731,94 @@ function goPage(page) {
   currentPage = page;
   const tabContent = document.getElementById('tab-data');
   tabContent.innerHTML = renderDataTable();
+}
+
+// =========================================================================
+// Field Catalogue
+// =========================================================================
+let activeCatalogueFilter = 'all';
+
+function renderFieldCatalogue(catalogue) {
+  const hasEngineered = catalogue.some(g => g.origin === 'engineered');
+
+  let html = `<div class="fc-filter-row">`;
+  html += `<button class="fc-filter-btn active" onclick="filterCatalogue('all',this)">All Fields</button>`;
+  html += `<button class="fc-filter-btn" onclick="filterCatalogue('raw',this)">Raw</button>`;
+  if (hasEngineered) {
+    html += `<button class="fc-filter-btn" onclick="filterCatalogue('v1',this)">Engineered V1</button>`;
+    html += `<button class="fc-filter-btn" onclick="filterCatalogue('v2',this)">Engineered V2</button>`;
+  }
+  html += `</div>`;
+
+  html += `<div id="fc-groups">`;
+  catalogue.forEach(group => {
+    const dataOrigin = group.origin === 'engineered' ? group.version.toLowerCase() : 'raw';
+    const badgeClass = group.origin === 'raw' ? 'fc-badge-raw' : (group.version === 'V1' ? 'fc-badge-v1' : 'fc-badge-v2');
+    const badgeLabel = group.origin === 'raw' ? 'Raw' : `Engineered ${group.version}`;
+
+    html += `<div class="fc-group" data-origin="${dataOrigin}">`;
+    html += `<div class="fc-group-header">`;
+    html += `<h4>${group.group}</h4>`;
+    html += `<span class="fc-group-badge ${badgeClass}">${badgeLabel}</span>`;
+    html += `<span style="font-size:11px;color:#a1a1aa;margin-left:auto;">${group.fields.length} field${group.fields.length !== 1 ? 's' : ''}</span>`;
+    html += `</div>`;
+
+    html += `<table class="fc-table"><thead><tr>`;
+    html += `<th>Field</th><th>Type</th><th>Description</th>`;
+    if (group.origin === 'engineered') {
+      html += `<th>Formula</th><th>Source Fields</th>`;
+    } else {
+      const hasEncoding = group.fields.some(f => f.encoding);
+      if (hasEncoding) html += `<th>Encoding</th>`;
+    }
+    html += `<th style="width:70px;"></th>`;
+    html += `</tr></thead><tbody>`;
+
+    group.fields.forEach(f => {
+      html += `<tr>`;
+      html += `<td><strong>${f.name}</strong></td>`;
+      html += `<td>${f.type}</td>`;
+      html += `<td class="fc-desc">${f.desc}</td>`;
+
+      if (group.origin === 'engineered') {
+        html += `<td>${f.formula ? `<span class="fc-formula">${f.formula}</span>` : '—'}</td>`;
+        html += `<td class="fc-source">${f.sourceFields ? f.sourceFields.join(', ') : '—'}</td>`;
+      } else {
+        const hasEncoding = group.fields.some(fi => fi.encoding);
+        if (hasEncoding) {
+          if (f.encoding) {
+            const enc = typeof f.encoding === 'string' ? f.encoding : Object.entries(f.encoding).map(([k,v]) => `${k}→${v}`).join(', ');
+            html += `<td><span class="fc-encoding">${enc}</span></td>`;
+          } else {
+            html += `<td>—</td>`;
+          }
+        }
+      }
+
+      let flag = '';
+      if (f.governance === 'proxy') flag = '<span class="flag flag-fail">PROXY</span>';
+      if (f.governance === 'protected') flag = '<span class="flag flag-fail">PROTECTED</span>';
+      html += `<td>${flag}</td>`;
+
+      html += `</tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+  });
+  html += `</div>`;
+
+  return html;
+}
+
+function filterCatalogue(filter, btn) {
+  activeCatalogueFilter = filter;
+  btn.parentElement.querySelectorAll('.fc-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#fc-groups .fc-group').forEach(g => {
+    const origin = g.dataset.origin;
+    if (filter === 'all') { g.style.display = ''; }
+    else { g.style.display = origin === filter ? '' : 'none'; }
+  });
 }
 
 // =========================================================================
