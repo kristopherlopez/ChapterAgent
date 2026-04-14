@@ -116,7 +116,17 @@ _compliance_logger = ComplianceLogger(solution_id="cba-annual-report-qa")
 
 
 def _get_context(agent, question, response):
-    """Extract context texts for guardrail evaluation."""
+    """Extract context texts for guardrail evaluation.
+
+    Prefers the actual page content the agent read (stored in metadata by
+    agentic generators) over re-retrieving chunks, which may not contain
+    all the information the agent used to form its answer.
+    """
+    # Prefer pages the agent actually read (agentic generators store these)
+    pages_read = response.metadata.get("pages_read")
+    if pages_read:
+        return pages_read
+    # Fall back to retriever chunks
     if hasattr(agent, 'retriever'):
         chunks = agent.retriever.retrieve(question, top_k=5)
         return [c.text for c in chunks]

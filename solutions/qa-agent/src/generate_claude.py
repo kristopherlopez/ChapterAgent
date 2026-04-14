@@ -71,8 +71,8 @@ class ClaudeGenerator(BaseGenerator):
             self._page_index = self.build_page_index(self._get_pages_dir())
         return self._page_index
 
-    def _build_tools(self, citations: list[Citation]) -> list:
-        """Build SDK tools with closures over pages_dir and citations."""
+    def _build_tools(self, citations: list[Citation], pages_read: list[str]) -> list:
+        """Build SDK tools with closures over pages_dir, citations, and pages_read."""
         pages_dir = self._get_pages_dir()
         page_index = self._get_page_index()
 
@@ -107,6 +107,7 @@ class ClaudeGenerator(BaseGenerator):
                 content = page_path.read_text(encoding="utf-8", errors="replace")
                 if len(content) > 15000:
                     content = content[:15000] + "\n\n[... page truncated]"
+                pages_read.append(content)
                 return {"content": content}
             except Exception as e:
                 return {"error": str(e)}
@@ -146,7 +147,8 @@ class ClaudeGenerator(BaseGenerator):
 
         citations: list[Citation] = []
         thinking: list[str] = []
-        sdk_tools = self._build_tools(citations)
+        pages_read: list[str] = []
+        sdk_tools = self._build_tools(citations, pages_read)
 
         try:
             import asyncio
@@ -181,6 +183,7 @@ class ClaudeGenerator(BaseGenerator):
                 token_usage=token_usage,
                 retrieval_strategy="agentic_full_page",
                 pages_available=len(self._get_page_index()),
+                pages_read=pages_read,
             ),
         )
 

@@ -94,6 +94,7 @@ class OpenAIGenerator(BaseGenerator):
         pages_dir = self._get_pages_dir()
         page_index = self._get_page_index()
         citations: list[Citation] = []
+        pages_read: list[str] = []
 
         try:
             @function_tool
@@ -115,6 +116,7 @@ class OpenAIGenerator(BaseGenerator):
                     content = page_path.read_text(encoding="utf-8", errors="replace")
                     if len(content) > 15000:
                         content = content[:15000] + "\n\n[... page truncated]"
+                    pages_read.append(content)
                     return content
                 except Exception as e:
                     return json.dumps({"error": str(e)})
@@ -197,6 +199,7 @@ class OpenAIGenerator(BaseGenerator):
                 token_usage=token_usage,
                 retrieval_strategy="agentic_full_page",
                 pages_available=len(self._get_page_index()),
+                pages_read=pages_read,
             ),
         )
 
