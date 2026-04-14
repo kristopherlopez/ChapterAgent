@@ -6,6 +6,10 @@ import logging
 import os
 import re
 
+# Set DeepEval timeout before it's imported — its settings singleton reads
+# os.environ at construction time, so this must happen first.
+os.environ.setdefault("DEEPEVAL_PER_ATTEMPT_TIMEOUT_SECONDS_OVERRIDE", "300")
+
 from src.platform.guardrails.base import Guardrail, GuardrailResult
 
 logger = logging.getLogger(__name__)
