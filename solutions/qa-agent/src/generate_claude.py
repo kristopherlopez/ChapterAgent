@@ -148,17 +148,11 @@ class ClaudeGenerator(BaseGenerator):
         citations: list[Citation] = []
         thinking: list[str] = []
         pages_read: list[str] = []
-        sdk_tools = self._build_tools(citations, pages_read)
 
         try:
-            import asyncio
-            loop = asyncio.new_event_loop()
-            try:
-                answer_text, token_usage, thinking = loop.run_until_complete(
-                    self._run_agent(question, sdk_tools),
-                )
-            finally:
-                loop.close()
+            answer_text, token_usage, thinking = self._run_agent_direct(
+                question, citations, pages_read,
+            )
             if not answer_text or not answer_text.strip():
                 answer_text = self.fallback_answer(chunks)
                 citations = self.extract_citations(chunks)
@@ -187,56 +181,115 @@ class ClaudeGenerator(BaseGenerator):
             ),
         )
 
-    async def _run_agent(self, question: str, sdk_tools: list) -> tuple[str, dict, list[str]]:
-        """Run the Claude Agent SDK query loop. Returns (answer, token_usage, thinking)."""
-        options = ClaudeAgentOptions(
-            model=self.model,
-            max_turns=self.max_turns,
-            system_prompt=AGENT_SYSTEM_PROMPT,
-            mcp_servers={
-                "qa_tools": {"type": "sdk", "name": "qa_tools", "instance": sdk_tools},
+    def _run_agent_direct(
+        self,
+        question: str,
+        citations: list[Citation],
+        pages_read: list[str],
+    ) -> tuple[str, dict, list[str]]:
+        """Run agentic tool-use loop via the Anthropic API directly.
+
+        This avoids the Claude Agent SDK CLI subprocess, which has issues
+        with SDK MCP tool discovery on some platforms.
+        """
+        pages_dir = self._get_pages_dir()
+        page_index = self._get_page_index()
+        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+        # Define tools as Anthropic API tool schemas
+        tools = [
+            {
+                "name": "list_pages",
+                "description": "List all pages in the CBA Annual Report with page numbers and section titles.",
+                "input_schema": {"type": "object", "properties": {}, "required": []},
             },
-            permission_mode="auto",
-            thinking=ThinkingConfigEnabled(type="enabled", budget_tokens=5000),
-        )
+            {
+                "name": "read_page",
+                "description": "Read a full page from the CBA Annual Report by filename.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {"filename": {"type": "string"}},
+                    "required": ["filename"],
+                },
+            },
+            {
+                "name": "cite_source",
+                "description": "Record a citation for a factual claim in your answer.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "page": {"type": "integer"},
+                        "section": {"type": "string"},
+                        "quote": {"type": "string"},
+                    },
+                    "required": ["page", "section", "quote"],
+                },
+            },
+        ]
 
-        answer_text = ""
-        token_usage: dict = {}
-        thinking: list[str] = []
-        # Track the last assistant text — only the final one is the answer;
-        # intermediate TextBlocks may be tool-use preambles.
-        last_assistant_text = ""
-
-        async for message in query(prompt=question, options=options):
-            # Capture thinking and text blocks from assistant messages
-            if isinstance(message, AssistantMessage) and message.content:
-                # Check if this message contains tool use (intermediate turn)
-                has_tool_use = any(
-                    isinstance(b, ToolUseBlock) for b in message.content
+        def _handle_tool(name: str, args: dict) -> str:
+            if name == "list_pages":
+                return "\n".join(
+                    f"p.{e['page']:>3}  {e['title']:<60}  [{e['file']}]"
+                    for e in page_index
                 )
-                for block in message.content:
-                    if isinstance(block, ThinkingBlock) and block.thinking:
-                        thinking.append(block.thinking)
-                    elif isinstance(block, TextBlock) and block.text and not has_tool_use:
-                        # Only capture text from messages that don't also contain
-                        # tool calls — those are the final answer, not preamble.
-                        last_assistant_text = block.text
-            if hasattr(message, "result") and message.result:
-                answer_text = message.result
-            if hasattr(message, "usage") and message.usage:
-                token_usage = {
-                    "input_tokens": getattr(message.usage, "input_tokens", 0),
-                    "output_tokens": getattr(message.usage, "output_tokens", 0),
-                }
-            if hasattr(message, "total_cost_usd"):
-                token_usage["cost_usd"] = message.total_cost_usd
-            if hasattr(message, "num_turns"):
-                token_usage["agent_turns"] = message.num_turns
+            elif name == "read_page":
+                page_path = pages_dir / args["filename"]
+                if not page_path.exists():
+                    return json.dumps({"error": f"Not found: {args['filename']}"})
+                content = page_path.read_text(encoding="utf-8", errors="replace")
+                content = content[:15000] if len(content) > 15000 else content
+                pages_read.append(content)
+                return content
+            elif name == "cite_source":
+                citations.append(Citation(
+                    page=args["page"], section=args["section"], quote=args["quote"],
+                ))
+                return f"Citation recorded: p.{args['page']}"
+            return json.dumps({"error": f"Unknown tool: {name}"})
 
-        # Prefer ResultMessage.result; fall back to last assistant TextBlock
-        if not answer_text and last_assistant_text:
-            answer_text = last_assistant_text
+        messages = [{"role": "user", "content": question}]
+        thinking: list[str] = []
+        token_usage: dict = {"input_tokens": 0, "output_tokens": 0}
 
+        for _turn in range(self.max_turns):
+            response = client.messages.create(
+                model=self.model,
+                max_tokens=4096,
+                temperature=0.1,
+                system=AGENT_SYSTEM_PROMPT,
+                tools=tools,
+                messages=messages,
+            )
+            token_usage["input_tokens"] += response.usage.input_tokens
+            token_usage["output_tokens"] += response.usage.output_tokens
+
+            # Collect thinking and text
+            tool_uses = []
+            answer_text = ""
+            for block in response.content:
+                if block.type == "text":
+                    answer_text = block.text
+                elif block.type == "tool_use":
+                    tool_uses.append(block)
+                elif block.type == "thinking" and hasattr(block, "thinking"):
+                    thinking.append(block.thinking)
+
+            # If no tool calls, we have the final answer
+            if not tool_uses:
+                return answer_text, token_usage, thinking
+
+            # Process tool calls and continue
+            messages.append({"role": "assistant", "content": response.content})
+            tool_results = []
+            for tu in tool_uses:
+                result = _handle_tool(tu.name, tu.input)
+                tool_results.append({
+                    "type": "tool_result",
+                    "tool_use_id": tu.id,
+                    "content": result,
+                })
+            messages.append({"role": "user", "content": tool_results})
 
         return answer_text, token_usage, thinking
 
