@@ -789,12 +789,7 @@ export default function ChatInterface({
 
             {isTyping && (
               <div className="py-2 space-y-2">
-                {liveThinkingSteps.length === 0 ? (
-                  <div className="flex items-center gap-3">
-                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0 animate-pulse" />
-                    <p className="text-sm text-zinc-500">Thinking...</p>
-                  </div>
-                ) : (
+                {liveThinkingSteps.length > 0 && (
                   <>
                     {/* Thinking steps and tool calls — plain lines, no box */}
                     {liveThinkingSteps
@@ -828,9 +823,21 @@ export default function ChatInterface({
                     })()}
                   </>
                 )}
-                <div className="flex items-center gap-3 mt-1">
-                  <Activity className="w-3 h-3 text-emerald-500 shrink-0 animate-pulse" />
-                  <p className="text-xs text-zinc-400">Processing...</p>
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                  <p className="text-sm text-zinc-500">Thinking</p>
+                  <span className="flex items-center gap-0.5 mt-0.5">
+                    {[0, 1, 2].map((i) => (
+                      <span
+                        key={i}
+                        className="w-1 h-1 rounded-full bg-zinc-400"
+                        style={{
+                          animation: "bounce-dot 1.2s ease-in-out infinite",
+                          animationDelay: `${i * 0.2}s`,
+                        }}
+                      />
+                    ))}
+                  </span>
                 </div>
               </div>
             )}
