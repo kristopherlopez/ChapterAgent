@@ -29,7 +29,7 @@ class FaithfulnessGuardrail(Guardrail):
         threshold: float = 0.90,
         prerecorded_score: float | None = None,
         use_deepeval: bool = True,
-        model: str = "gpt-4o-mini",
+        model: str = "gpt-5.4",
     ):
         self.threshold = threshold
         self._prerecorded_score = prerecorded_score
