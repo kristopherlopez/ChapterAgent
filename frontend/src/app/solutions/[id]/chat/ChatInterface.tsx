@@ -747,7 +747,14 @@ export default function ChatInterface({
                       )}
                     </div>
                     <div className="px-5 pb-4 text-sm text-zinc-800 leading-relaxed [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-3 [&_h2]:mb-1 [&_p]:mb-2 [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_sup]:text-[0.7em] [&_sup]:align-super [&_sub]:text-[0.7em] [&_sub]:align-sub [&_section.footnotes]:mt-4 [&_section.footnotes]:pt-3 [&_section.footnotes]:border-t [&_section.footnotes]:border-zinc-200 [&_section.footnotes]:text-xs [&_section.footnotes]:text-zinc-500">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{msg.content.replace(/^(#{1,3}\s+\*\*[^*]+\*\*)\s*/gm, "$1\n\n")}</ReactMarkdown>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
+                          h2: ({ id, ...props }) =>
+                            id === "footnote-label" ? null : <h2 id={id} {...props} />,
+                        }}
+                      >{msg.content.replace(/^(#{1,3}\s+\*\*[^*]+\*\*)\s*/gm, "$1\n\n")}</ReactMarkdown>
                     </div>
                     {msg.response && (
                       <div className="px-5 pb-3 flex items-center gap-3">
