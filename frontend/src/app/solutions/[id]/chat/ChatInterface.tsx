@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import {
   Send,
   ShieldCheck,
@@ -235,7 +236,7 @@ const SUGGESTED_QUESTIONS = [
   "How does CBA's performance compare to Westpac?",
 ];
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 type Framework = "openai" | "claude" | "langchain";
 
@@ -255,29 +256,102 @@ const OPENROUTER_MODELS = [
   { value: "anthropic/claude-sonnet-4.6", label: "Claude Sonnet 4.6" },
 ];
 
-async function fetchAgentResponse(
+interface StreamCallbacks {
+  onThinking: (text: string) => void;
+  onToolCall: (name: string, description: string, results?: string[]) => void;
+  onComplete: (response: AgentResponse) => void;
+  onError: (message: string) => void;
+}
+
+async function fetchAgentResponseStreaming(
   solutionId: string,
   question: string,
   framework: Framework = "openai",
   model?: string,
-): Promise<AgentResponse | null> {
+  callbacks?: StreamCallbacks,
+): Promise<AgentResponse> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
+  const body: Record<string, unknown> = { question, framework };
+  if (model) body.model = model;
+
+  let res: Response;
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60_000);
-    const body: Record<string, unknown> = { question, framework };
-    if (model) body.model = model;
-    const res = await fetch(`${API_BASE}/api/chat/${solutionId}`, {
+    res = await fetch(`${API_BASE}/api/chat/${solutionId}/stream`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
       signal: controller.signal,
     });
+  } catch (err) {
     clearTimeout(timeout);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
+    throw new Error(
+      `Cannot reach backend at ${API_BASE} — is the server running?`,
+    );
   }
+  clearTimeout(timeout);
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Backend returned ${res.status}: ${text}`);
+  }
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("Response body is not readable");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let finalResponse: AgentResponse | null = null;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    let eventType = "";
+    for (const line of lines) {
+      if (line.startsWith("event: ")) {
+        eventType = line.slice(7).trim();
+      } else if (line.startsWith("data: ") && eventType) {
+        try {
+          const data = JSON.parse(line.slice(6));
+          if (eventType === "error") {
+            const msg = data.message || "Unknown backend error";
+            callbacks?.onError(msg);
+            throw new Error(msg);
+          } else if (eventType === "thinking" && callbacks) {
+            callbacks.onThinking(data.text);
+          } else if (eventType === "tool_call" && callbacks) {
+            callbacks.onToolCall(data.name, data.description, data.results);
+          } else if (eventType === "complete") {
+            finalResponse = {
+              text: data.text,
+              citations: data.citations || [],
+              guardrails: data.guardrails || [],
+              thinking: data.thinking || [],
+              latencyMs: data.latencyMs || 0,
+              blocked: data.blocked || false,
+            };
+            callbacks?.onComplete(finalResponse);
+          }
+        } catch (err) {
+          if (err instanceof Error && err.message !== "Unknown backend error") {
+            // Re-throw SSE error events, skip malformed JSON
+            if (eventType === "error") throw err;
+          }
+        }
+        eventType = "";
+      }
+    }
+  }
+
+  if (!finalResponse) {
+    throw new Error("Stream ended without a complete response");
+  }
+  return finalResponse;
 }
 
 /* ------------------------------------------------------------------ */
@@ -308,7 +382,9 @@ function CollapsedThinking({
 
   if (steps.length === 0) return null;
 
-  const headerText = summary || `Analysed and cited ${steps.filter((s) => s.type === "tool_call").length} sources`;
+  const readPages = steps.filter((s) => s.type === "tool_call" && s.text.startsWith("Reading "));
+  const otherSteps = steps.filter((s) => !(s.type === "tool_call" && s.text.startsWith("Reading ")));
+  const headerText = summary || `Analysed and cited ${readPages.length || steps.filter((s) => s.type === "tool_call").length} sources`;
 
   return (
     <div className="mb-3">
@@ -327,19 +403,20 @@ function CollapsedThinking({
       </button>
       {isExpanded && (
         <div className="mt-3 space-y-2.5 pl-1">
-          {steps.map((step, i) => (
+          {otherSteps.map((step, i) => (
             <div key={i} className="flex items-start gap-2.5">
               <StepIcon type={step.type} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-zinc-500 leading-relaxed">{step.text}</p>
                 {step.results && step.results.length > 0 && (
-                  <div className="mt-1.5 bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden">
+                  <div className="mt-1.5 bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden max-h-52 overflow-y-auto">
                     {step.results.map((r, j) => (
                       <div
                         key={j}
-                        className="px-3 py-1.5 text-xs text-zinc-500 border-b border-zinc-100 last:border-b-0"
+                        className="px-3 py-2 text-xs text-zinc-500 border-b border-zinc-100 last:border-b-0 flex items-center gap-2"
                       >
-                        {r}
+                        <FileText className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        <span className="truncate">{r}</span>
                       </div>
                     ))}
                   </div>
@@ -347,6 +424,25 @@ function CollapsedThinking({
               </div>
             </div>
           ))}
+          {readPages.length > 0 && (
+            <div className="ml-[26px]">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <p className="text-xs text-zinc-500 font-medium">Sources found</p>
+                <span className="text-xs text-zinc-400">{readPages.length} pages</span>
+              </div>
+              <div className="bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden max-h-52 overflow-y-auto">
+                {readPages.map((s, j) => (
+                  <div
+                    key={j}
+                    className="px-3 py-2 text-xs text-zinc-500 border-b border-zinc-100 last:border-b-0 flex items-center gap-2"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                    <span className="truncate">{s.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="flex items-start gap-2.5">
             <CheckCircle2 className="w-4 h-4 text-zinc-400 shrink-0" />
             <p className="text-xs text-zinc-500">Done</p>
@@ -492,12 +588,13 @@ export default function ChatInterface({
   const [selectedResponse, setSelectedResponse] = useState<AgentResponse | null>(null);
   const [framework, setFramework] = useState<Framework>("openai");
   const [langchainModel, setLangchainModel] = useState(OPENROUTER_MODELS[0].value);
+  const [liveThinkingSteps, setLiveThinkingSteps] = useState<ThinkingStep[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [messages, isTyping, liveThinkingSteps]);
 
   async function handleSend(question?: string) {
     const text = question || input.trim();
@@ -511,43 +608,82 @@ export default function ChatInterface({
 
     setIsTyping(true);
     setSelectedResponse(null);
+    setLiveThinkingSteps([]);
 
     const model = framework === "langchain" ? langchainModel : undefined;
-    let response = await fetchAgentResponse(solutionId, text, framework, model);
-    if (!response) {
-      response = matchResponse(text);
-      const delay = Math.min(response.latencyMs, 2000);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
 
-    // Build thinking steps from response
-    const steps: ThinkingStep[] = [];
-    if (response.thinking?.length) {
-      for (const t of response.thinking) {
-        steps.push({ type: "thinking", text: t });
+    try {
+      const response = await fetchAgentResponseStreaming(
+        solutionId,
+        text,
+        framework,
+        model,
+        {
+          onThinking: (step) => {
+            setLiveThinkingSteps((prev) => [
+              ...prev,
+              { type: "thinking", text: step },
+            ]);
+          },
+          onToolCall: (_name, description, results) => {
+            setLiveThinkingSteps((prev) => [
+              ...prev,
+              { type: "tool_call", text: description, results },
+            ]);
+          },
+          onComplete: () => {},
+          onError: () => {},
+        },
+      );
+
+      // Use streamed thinking steps if available; fall back to building from response
+      let steps: ThinkingStep[] = [];
+      // Capture the live steps before they get cleared
+      setLiveThinkingSteps((prev) => { steps = [...prev]; return prev; });
+
+      // If streaming didn't produce steps, build from response data
+      if (steps.length === 0) {
+        if (response.thinking?.length) {
+          for (const t of response.thinking) {
+            steps.push({ type: "thinking", text: t });
+          }
+        }
+        if (response.citations.length > 0) {
+          steps.push({
+            type: "tool_call",
+            text: `Retrieved ${response.citations.length} source${response.citations.length !== 1 ? "s" : ""} from the Annual Report`,
+            results: response.citations.map((c) => `p.${c.page} — ${c.section}`),
+          });
+        }
       }
-    }
-    if (response.citations.length > 0) {
-      steps.push({
-        type: "tool_call",
-        text: `Retrieved ${response.citations.length} source${response.citations.length !== 1 ? "s" : ""} from the Annual Report`,
-        results: response.citations.map((c) => `p.${c.page} — ${c.section}`),
-      });
-    }
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "agent",
-        content: response.text,
-        response,
-        thinkingSteps: steps.length > 0 ? steps : undefined,
-        timestamp: new Date(),
-      },
-    ]);
-    setSelectedResponse(response);
-    setIsTyping(false);
-    inputRef.current?.focus();
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "agent",
+          content: response.text,
+          response,
+          thinkingSteps: steps.length > 0 ? steps : undefined,
+          timestamp: new Date(),
+        },
+      ]);
+      setSelectedResponse(response);
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "An unknown error occurred";
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "agent",
+          content: `**Error:** ${errorMsg}`,
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+      setLiveThinkingSteps([]);
+      inputRef.current?.focus();
+    }
   }
 
   const showWelcome = messages.length === 0;
@@ -608,8 +744,8 @@ export default function ChatInterface({
                         <CollapsedThinking steps={msg.thinkingSteps} summary={msg.thinkingSummary} />
                       )}
                     </div>
-                    <div className="px-5 pb-4 text-sm text-zinc-800 leading-relaxed">
-                      {msg.content}
+                    <div className="px-5 pb-4 text-sm text-zinc-800 leading-relaxed [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-3 [&_h2]:mb-1 [&_p]:mb-2 [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1">
+                      <ReactMarkdown>{msg.content.replace(/^(#{1,3}\s+\*\*[^*]+\*\*)\s*/gm, "$1\n\n")}</ReactMarkdown>
                     </div>
                     {msg.response && (
                       <div className="px-5 pb-3 flex items-center gap-3">
@@ -642,9 +778,78 @@ export default function ChatInterface({
             ))}
 
             {isTyping && (
-              <div className="flex items-center gap-3 py-2">
-                <Sparkles className="w-4 h-4 text-amber-500 shrink-0 animate-pulse" />
-                <p className="text-sm text-zinc-500">Thinking...</p>
+              <div className="py-2 space-y-2">
+                {liveThinkingSteps.length === 0 ? (
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0 animate-pulse" />
+                    <p className="text-sm text-zinc-500">Thinking...</p>
+                  </div>
+                ) : (
+                  <>
+                    {liveThinkingSteps
+                      .filter((s) => !(s.type === "tool_call" && s.text.startsWith("Reading ")))
+                      .map((step, i) => (
+                      <div key={i} className="animate-in fade-in slide-in-from-bottom-1 duration-300">
+                        <div className="flex items-start gap-2.5">
+                          <StepIcon type={step.type} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-sm text-zinc-600">{step.text}</p>
+                              {step.results && step.results.length > 0 && (
+                                <span className="text-xs text-zinc-400 shrink-0">
+                                  {step.results.length} results
+                                </span>
+                              )}
+                            </div>
+                            {step.results && step.results.length > 0 && (
+                              <div className="mt-1.5 bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden max-h-52 overflow-y-auto">
+                                {step.results.map((r, j) => (
+                                  <div
+                                    key={j}
+                                    className="px-3 py-2 text-xs text-zinc-600 border-b border-zinc-100 last:border-b-0 flex items-center gap-2 animate-in fade-in duration-200"
+                                  >
+                                    <FileText className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                    <span className="truncate">{r}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {/* Accumulate read_page calls into a live sources box */}
+                    {(() => {
+                      const readPages = liveThinkingSteps.filter(
+                        (s) => s.type === "tool_call" && s.text.startsWith("Reading ")
+                      );
+                      if (readPages.length === 0) return null;
+                      return (
+                        <div className="ml-[26px] mt-1">
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <p className="text-xs text-zinc-500 font-medium">Sources found</p>
+                            <span className="text-xs text-zinc-400">{readPages.length} pages</span>
+                          </div>
+                          <div className="bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden max-h-52 overflow-y-auto">
+                            {readPages.map((s, j) => (
+                              <div
+                                key={j}
+                                className="px-3 py-2 text-xs text-zinc-600 border-b border-zinc-100 last:border-b-0 flex items-center gap-2 animate-in fade-in duration-200"
+                              >
+                                <BookOpen className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                <span className="truncate">{s.text}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
+                <div className="flex items-center gap-3 mt-1">
+                  <Activity className="w-3 h-3 text-emerald-500 shrink-0 animate-pulse" />
+                  <p className="text-xs text-zinc-400">Processing...</p>
+                </div>
               </div>
             )}
 
