@@ -15,8 +15,15 @@ from sklearn.ensemble import GradientBoostingClassifier
 try:
     from solutions.credit_default_scorer.src.data import (
         ALL_FEATURES,
+        BALANCE_TREND_FEATURES,
+        BILL_AMOUNT_FEATURES,
+        CREDIT_FEATURES,
+        PAYMENT_HISTORY_FEATURES,
+        PAYMENT_RATIO_FEATURES,
         PROTECTED_ATTRIBUTES,
         TARGET,
+        UTILISATION_FEATURES,
+        engineer_features,
         load_dataset,
         prepare_splits,
         risk_band,
@@ -28,9 +35,25 @@ try:
         top_contributors,
     )
 except ImportError:
-    from data import ALL_FEATURES, PROTECTED_ATTRIBUTES, TARGET, load_dataset, prepare_splits, risk_band  # type: ignore[no-redef]
+    from data import (  # type: ignore[no-redef]
+        ALL_FEATURES, BALANCE_TREND_FEATURES, BILL_AMOUNT_FEATURES,
+        CREDIT_FEATURES, PAYMENT_HISTORY_FEATURES, PAYMENT_RATIO_FEATURES,
+        PROTECTED_ATTRIBUTES, TARGET, UTILISATION_FEATURES,
+        engineer_features, load_dataset, prepare_splits, risk_band,
+    )
     from evaluate import run_evaluation  # type: ignore[no-redef]
     from explain import compute_shap_values, shap_coverage, top_contributors  # type: ignore[no-redef]
+
+
+# Production feature set — step 8 ratio features (ablation + experiment winner)
+PRODUCTION_FEATURES = (
+    PAYMENT_HISTORY_FEATURES
+    + CREDIT_FEATURES
+    + BILL_AMOUNT_FEATURES
+    + UTILISATION_FEATURES
+    + PAYMENT_RATIO_FEATURES
+    + BALANCE_TREND_FEATURES
+)
 
 
 # ---------------------------------------------------------------------------
@@ -96,10 +119,10 @@ class CreditDefaultScorer:
         model: GradientBoostingClassifier | None = None,
         feature_names: list[str] | None = None,
         baseline_probability: float = 0.22,
-        model_version: str = "1.0.0",
+        model_version: str = "2.0.0",
     ):
         self.model = model
-        self.feature_names = feature_names or list(ALL_FEATURES)
+        self.feature_names = feature_names or list(PRODUCTION_FEATURES)
         self.baseline_probability = baseline_probability
         self.model_version = model_version
         self._scoring_counter = 0
@@ -137,19 +160,19 @@ class CreditDefaultScorer:
         df = load_dataset(dataset_path)
         splits = prepare_splits(df)
 
-        self.feature_names = splits["feature_names"]
+        self.feature_names = list(PRODUCTION_FEATURES)
         self.baseline_probability = float(splits["y_train"].mean())
 
         self.model = GradientBoostingClassifier(
-            n_estimators=100,
+            n_estimators=200,
             max_depth=5,
-            learning_rate=0.1,
+            learning_rate=0.05,
             subsample=0.8,
             random_state=42,
         )
 
         start = time.perf_counter()
-        self.model.fit(splits["X_train"], splits["y_train"])
+        self.model.fit(splits["X_train"][self.feature_names], splits["y_train"])
         train_ms = (time.perf_counter() - start) * 1000
 
         return {
@@ -186,8 +209,10 @@ class CreditDefaultScorer:
         scoring_id = self._next_scoring_id()
         start = time.perf_counter()
 
-        # Build feature vector
-        row = pd.DataFrame([{f: features.get(f, 0) for f in self.feature_names}])
+        # Build feature vector — engineer derived features from raw inputs
+        raw_row = pd.DataFrame([features])
+        enriched = engineer_features(raw_row)
+        row = pd.DataFrame([{f: enriched.iloc[0].get(f, 0) for f in self.feature_names}])
         prob = float(self.model.predict_proba(row)[:, 1][0])
         band, recommendation = risk_band(prob)
 
@@ -233,7 +258,7 @@ class CreditDefaultScorer:
             metadata={
                 "model_version": self.model_version,
                 "model_type": "GradientBoostingClassifier",
-                "training_date": "2026-04-01",
+                "training_date": "2026-04-14",
                 "inference_latency_ms": round(inference_ms, 1),
             },
         )
@@ -266,7 +291,7 @@ class CreditDefaultScorer:
         df = load_dataset(dataset_path)
         splits = prepare_splits(df)
 
-        X_test = splits["X_test"]
+        X_test = splits["X_test"][self.feature_names]
         y_test = splits["y_test"].values
         protected_test = splits["protected_test"]
 

@@ -3,8 +3,8 @@ solution:
   id: "credit-default-scorer"
   type: "scoring"
   category: "ml"
-  version: "1.0.0"
-  description: "Predicts credit card default probability using customer payment history and demographics"
+  version: "2.0.0"
+  description: "Predicts credit card default probability using payment history, credit limit, bill amounts, and engineered ratio features — no demographics"
 
 owner: "Chapter Platform Team"
 risk_tier: "production_internal"
@@ -12,15 +12,42 @@ risk_tier: "production_internal"
 dataset:
   source: "UCI Machine Learning Repository — Taiwan Credit Card Default"
   records: 30000
-  features: 23
+  raw_features: 23
+  engineered_features: 14
+  model_features: 27
   target: "default_payment_next_month"
   protected_attributes: ["SEX", "EDUCATION", "MARRIAGE", "AGE"]
+  feature_groups:
+    - name: "payment_history"
+      features: ["PAY_0", "PAY_2", "PAY_3", "PAY_4", "PAY_5", "PAY_6"]
+    - name: "credit"
+      features: ["LIMIT_BAL"]
+    - name: "bill_amounts"
+      features: ["BILL_AMT1", "BILL_AMT2", "BILL_AMT3", "BILL_AMT4", "BILL_AMT5", "BILL_AMT6"]
+    - name: "utilisation_ratios"
+      features: ["UTIL_RATIO1", "UTIL_RATIO2", "UTIL_RATIO3", "UTIL_RATIO4", "UTIL_RATIO5", "UTIL_RATIO6"]
+      derived_from: "BILL_AMT / LIMIT_BAL"
+    - name: "payment_ratios"
+      features: ["PAY_RATIO1", "PAY_RATIO2", "PAY_RATIO3", "PAY_RATIO4", "PAY_RATIO5", "PAY_RATIO6"]
+      derived_from: "PAY_AMT / BILL_AMT (capped at 1.0)"
+    - name: "balance_trend"
+      features: ["BAL_TREND", "AVG_UTIL"]
+      derived_from: "Linear slope of unpaid balance; mean utilisation"
+  excluded:
+    - "PAY_AMT1..6 — raw payment amounts add noise (ablation step 4)"
+    - "SEX, EDUCATION, MARRIAGE, AGE — demographics cost fairness without meaningful AUC gain"
 
 model:
   type: "GradientBoostingClassifier"
   framework: "scikit-learn"
   explainability: "SHAP"
   training_split: 0.7
+  hyperparameters:
+    n_estimators: 200
+    max_depth: 5
+    learning_rate: 0.05
+    subsample: 0.8
+    random_state: 42
 
 guardrails:
   discrimination:

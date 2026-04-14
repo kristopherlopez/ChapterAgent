@@ -495,20 +495,23 @@ Deeper domain features: delinquency patterns from payment status codes, spending
 
 ## Model Selection Analysis
 
-Eight studies were conducted to systematically arrive at the optimal production model. All experiments are tracked in MLflow with full artifacts.
+Ten studies were conducted to systematically arrive at the optimal production model. All experiments are tracked in MLflow with full artifacts.
 
 ### Study Summary
 
 | # | Study | MLflow Experiment | Key Finding |
 |---|-------|-------------------|-------------|
 | 1 | Feature group ablation | `credit-default-ablation` | Payment history + credit + bills = sweet spot. Payment amounts add noise. |
-| 1b | Engineered feature ablation | `credit-default-ablation` (steps 6-9) | Derived features (unpaid balance, utilisation, payment ratios, trend) tested against and alongside raw features. |
+| 1b | Engineered feature ablation | `credit-default-ablation` (steps 6-16) | V1 ratio features (step 8) are the best. V2 features (delinquency, volatility, capacity) add marginal lift. |
 | 2 | Skip payment amounts | `credit-default-ablation` (step 6) | 17 features (no PAY_AMT) achieves best single-split AUC (0.7765). |
-| 3 | Model comparison | `credit-default-model-comparison` | GBM wins on AUC. Logistic regression fails four-fifths rule. |
+| 3 | Model comparison v1 | `credit-default-model-comparison` | GBM wins on AUC. Logistic regression fails four-fifths rule. |
 | 4 | Threshold tuning | `credit-default-threshold-tuning` | Best F1 at threshold 0.25. Default 0.50 too conservative. |
-| 5 | Hyperparameter sweep | `credit-default-hyperparam-sweep` | `lr=0.05` beats `lr=0.10`. Deeper trees and higher lr both hurt. |
+| 5 | Hyperparameter sweep v1 | `credit-default-hyperparam-sweep` | `lr=0.05` beats `lr=0.10`. Deeper trees and higher lr both hurt. |
 | 6 | Cross-validation stability | `credit-default-cv-stability` | AUC stable (0.783 +/- 0.007). DI with all demographics fails every fold. |
 | 7 | Individual demographics | `credit-default-demographic-interaction` | SEX is the problem feature. EDUCATION adds AUC. MARRIAGE improves fairness. |
+| 8 | Hyperparameter sweep v2 | `credit-default-hyperparam-v2` | Re-tuning on step 8 features: 200 trees, lr=0.05 → AUC 0.7817. |
+| 9 | Feature selection | `credit-default-feature-selection` | All 27 features contribute — pruning only hurts. |
+| 10 | Model comparison v2 | `credit-default-model-comparison-v2` | sklearn GBM (0.7806) beats XGBoost and LightGBM variants. |
 
 ### The Three Candidate Models
 
@@ -516,16 +519,17 @@ Based on the studies, three candidate configurations were evaluated under 5-fold
 
 | Candidate | Features | AUC | Brier | DemParity | DI Ratio | DI Pass Rate |
 |-----------|----------|-----|-------|-----------|----------|-------------|
-| **A: No demographics** | 13 (PAY + LIMIT + BILL) | 0.7812 +/- 0.008 | 0.1345 | 0.0193 | 0.826 +/- 0.020 | **5/5 folds** |
+| A: Raw only, no demographics | 13 (PAY + LIMIT + BILL) | 0.7812 +/- 0.008 | 0.1345 | 0.0193 | 0.826 +/- 0.020 | 5/5 folds |
 | B: + EDUCATION, MARRIAGE | 15 | 0.7823 +/- 0.007 | 0.1340 | 0.0186 | 0.819 +/- 0.017 | 4/5 folds |
-| C: All demographics | 17 | 0.7829 +/- 0.007 | 0.1340 | 0.0286 | 0.762 +/- 0.022 | **0/5 folds** |
+| C: All demographics | 17 | 0.7829 +/- 0.007 | 0.1340 | 0.0286 | 0.762 +/- 0.022 | 0/5 folds |
+| **D: Ratio features + tuned HP** | **27 (PAY + LIMIT + BILL + engineered ratios)** | **0.7817** | **0.1357** | **0.0141** | **0.930** | **PASS** |
 
-### Decision: Candidate A — 13 Features, No Demographics
+### Decision: Candidate D — 27 Features, Ratio Engineered, Tuned Hyperparameters (v2.0.0)
 
 **Selected configuration:**
 - **Model:** GradientBoostingClassifier
-- **Hyperparameters:** `n_estimators=100, max_depth=5, learning_rate=0.05, subsample=0.8`
-- **Features (13):** PAY_0, PAY_2..PAY_6, LIMIT_BAL, BILL_AMT1..BILL_AMT6
+- **Hyperparameters:** `n_estimators=200, max_depth=5, learning_rate=0.05, subsample=0.8`
+- **Features (27):** PAY_0..PAY_6, LIMIT_BAL, BILL_AMT1..6, UTIL_RATIO1..6, PAY_RATIO1..6, BAL_TREND, AVG_UTIL
 - **Threshold:** 0.25 (optimised for F1)
 
 **Why this model:**
@@ -554,17 +558,17 @@ Based on the studies, three candidate configurations were evaluated under 5-fold
 | Deeper trees (depth 7) | Overfits — lower AUC and worse DI than depth 5. |
 | Threshold 0.50 | Only catches 36% of defaults. Precision is high (66%) but too many defaults slip through. |
 
-### Production Metrics (CV-Validated)
+### Production Metrics (v2.0.0 — Holdout Set)
 
-| Metric | Value | Threshold | Status |
-|--------|-------|-----------|--------|
-| AUC-ROC | 0.781 +/- 0.008 | >= 0.70 | PASS |
-| Gini | 0.563 +/- 0.016 | >= 0.40 | PASS |
-| Brier Score | 0.135 +/- 0.002 | <= 0.20 | PASS |
-| ECE | 0.013 +/- 0.003 | <= 0.05 | PASS |
-| Demographic Parity Diff | 0.019 +/- 0.002 | <= 0.05 | PASS |
-| Disparate Impact Ratio | 0.826 +/- 0.020 | >= 0.80 | PASS (5/5) |
-| SHAP Coverage | 100% | 100% | PASS |
+| Metric | v1.0.0 (13 raw) | v2.0.0 (27 engineered) | Threshold | Status |
+|--------|-----------------|------------------------|-----------|--------|
+| AUC-ROC | 0.773 | **0.782** | >= 0.70 | PASS |
+| Gini | 0.546 | **0.564** | >= 0.40 | PASS |
+| Brier Score | 0.137 | **0.136** | <= 0.20 | PASS |
+| ECE | 0.013 | **0.011** | <= 0.05 | PASS |
+| Demographic Parity Diff | 0.013 | **0.014** | <= 0.05 | PASS |
+| Disparate Impact Ratio | 0.952 | **0.930** | >= 0.80 | PASS |
+| SHAP Coverage | 100% | 100% | 100% | PASS |
 
 ## What It Demonstrates
 
