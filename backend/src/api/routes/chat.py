@@ -196,8 +196,27 @@ async def chat(solution_id: str, req: ChatRequest):
         regeneration_passed=not blocked if regenerated else None,
     )
 
+    # When blocked, replace answer with a friendly redirect
+    display_text = response.answer.text
+    if blocked:
+        scope_failed = any(
+            g.result == "fail" and "Scope" in g.name for g in guardrail_results
+        )
+        if scope_failed:
+            display_text = (
+                "That question is outside the scope of this tool. "
+                "I can only answer questions about CBA's 2025 Annual Report — "
+                "try asking about financial performance, dividends, sustainability, "
+                "or other topics covered in the report."
+            )
+        else:
+            display_text = (
+                "I'm unable to answer that question. "
+                "Please try rephrasing or ask something about CBA's 2025 Annual Report."
+            )
+
     return ChatResponse(
-        text=response.answer.text,
+        text=display_text,
         citations=[
             CitationOut(
                 document=c.document,
@@ -206,7 +225,7 @@ async def chat(solution_id: str, req: ChatRequest):
                 quote=c.quote,
             )
             for c in response.citations
-        ],
+        ] if not blocked else [],
         guardrails=[
             GuardrailOut(
                 name=g.name,
@@ -328,12 +347,31 @@ async def _stream_chat(
     total_ms = int((time.perf_counter() - start) * 1000)
     blocked = any(g.result == "fail" for g in guardrail_results)
 
+    # When blocked, replace the answer with a friendly redirect
+    display_text = answer_text
+    if blocked:
+        scope_failed = any(
+            g.result == "fail" and "Scope" in g.name for g in guardrail_results
+        )
+        if scope_failed:
+            display_text = (
+                "That question is outside the scope of this tool. "
+                "I can only answer questions about CBA's 2025 Annual Report — "
+                "try asking about financial performance, dividends, sustainability, "
+                "or other topics covered in the report."
+            )
+        else:
+            display_text = (
+                "I'm unable to answer that question. "
+                "Please try rephrasing or ask something about CBA's 2025 Annual Report."
+            )
+
     yield sse("complete", {
-        "text": answer_text,
+        "text": display_text,
         "citations": [
             {"document": c.document, "page": c.page, "section": c.section, "quote": c.quote}
             for c in citations
-        ],
+        ] if not blocked else [],
         "guardrails": [
             {"name": g.name, "status": g.result, "detail": g.detail}
             for g in guardrail_results
