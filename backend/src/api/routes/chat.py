@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from typing import AsyncIterator
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -222,8 +222,8 @@ async def _stream_chat(
     model: str | None,
 ) -> AsyncIterator[str]:
     """Stream chat response with real-time thinking traces via SSE."""
-    import importlib.util
     import sys
+    import traceback
 
     def sse(event: str, data: dict) -> str:
         return f"event: {event}\ndata: {json.dumps(data)}\n\n"
@@ -235,67 +235,83 @@ async def _stream_chat(
     if str(src_dir) not in sys.path:
         sys.path.insert(0, str(src_dir))
 
-    # Import what we need from the agents
-    from retrieve import HybridRetriever
-    from schema import Citation
-
-    # Get retriever (cached via _get_agent's side effect of adding src to path)
-    agent = _get_agent(framework, model)
+    try:
+        agent = _get_agent(framework, model)
+    except Exception as exc:
+        yield sse("error", {"message": f"Failed to initialise agent: {exc}"})
+        return
 
     yield sse("status", {"phase": "thinking"})
 
-    # Framework-specific streaming
+    # For OpenAI framework, use the real streaming path that emits
+    # individual tool_call events as the agent reads pages
     if framework == "openai":
-        answer_text, citations, thinking, token_usage = await _stream_openai(
-            question, agent, src_dir, sse_callback=lambda e, d: None,
-            yield_events=[],
-        )
-        # Re-run with actual yielding
-        events: list[str] = []
-        answer_text, citations, thinking, token_usage = await _run_openai_streamed(
-            question, agent, events,
-        )
-        for ev in events:
-            yield ev
+        try:
+            collected_events: list[str] = []
+            answer_text, citations, thinking, token_usage = (
+                await _run_openai_streamed(question, agent, collected_events)
+            )
+            # Flush collected SSE events to the client
+            for ev in collected_events:
+                yield ev
+                await asyncio.sleep(0)
+        except Exception as exc:
+            tb = traceback.format_exc()
+            yield sse("error", {"message": f"Generation failed: {exc}\n{tb}"})
+            return
     else:
-        # For Claude and LangChain, use the existing generate() and return thinking
-        response = await agent.answer(question)
-        answer_text = response.answer.text
-        citations = response.citations
-        thinking = response.thinking
-        token_usage = response.metadata.get("token_usage", {})
-        # Emit thinking steps
-        for step in thinking:
-            yield sse("thinking", {"text": step})
-        # Emit a tool_call event for the retrieval strategy
-        strategy = response.metadata.get("retrieval_strategy", "hybrid")
-        if strategy == "agentic_full_page":
-            pages = response.metadata.get("pages_available", 0)
-            yield sse("tool_call", {
-                "name": "read_page",
-                "description": f"Read {len(citations)} pages from the Annual Report",
-            })
-        elif citations:
-            yield sse("tool_call", {
-                "name": "retrieve",
-                "description": f"Retrieved {len(citations)} relevant passages",
-            })
+        try:
+            def _run_sync():
+                """Run the agent in a thread — answer() is async in signature
+                but only performs sync work internally."""
+                loop = asyncio.new_event_loop()
+                try:
+                    return loop.run_until_complete(agent.answer(question))
+                finally:
+                    loop.close()
+
+            response = await asyncio.to_thread(_run_sync)
+            answer_text = response.answer.text
+            citations = response.citations
+            thinking = response.thinking
+            token_usage = response.metadata.get("token_usage", {})
+
+            # Emit thinking steps
+            for step in thinking:
+                yield sse("thinking", {"text": step})
+                await asyncio.sleep(0)
+
+            # Emit individual source reads instead of a summary
+            for c in citations:
+                page_label = f"p.{c.page} — {c.section}" if hasattr(c, 'section') else f"p.{c.page}"
+                yield sse("tool_call", {
+                    "name": "read_page",
+                    "description": f"Reading {page_label}",
+                })
+                await asyncio.sleep(0)
+        except Exception as exc:
+            tb = traceback.format_exc()
+            yield sse("error", {"message": f"Generation failed: {exc}\n{tb}"})
+            return
 
     # Run guardrails
-    runner = _get_guardrail_runner()
-    context_texts = None
-    if hasattr(agent, 'retriever'):
-        chunks = agent.retriever.retrieve(question, top_k=5)
-        context_texts = [c.text for c in chunks]
+    try:
+        runner = _get_guardrail_runner()
+        context_texts = None
+        if hasattr(agent, 'retriever'):
+            chunks = agent.retriever.retrieve(question, top_k=5)
+            context_texts = [c.text for c in chunks]
 
-    guardrail_results = await runner.run_all(
-        input=question, output=answer_text, context=context_texts,
-    )
+        guardrail_results = await runner.run_all(
+            input=question, output=answer_text, context=context_texts,
+        )
+    except Exception as exc:
+        yield sse("error", {"message": f"Guardrail evaluation failed: {exc}"})
+        return
 
     total_ms = int((time.perf_counter() - start) * 1000)
     blocked = any(g.result == "fail" for g in guardrail_results)
 
-    # Send final complete response
     yield sse("complete", {
         "text": answer_text,
         "citations": [
@@ -457,18 +473,13 @@ async def _run_openai_streamed(
 
 
 @router.post("/chat/{solution_id}/stream")
-async def chat_stream(
-    solution_id: str,
-    framework: str = Query(default="openai"),
-    question: str = Query(...),
-    model: str | None = Query(default=None),
-):
+async def chat_stream(solution_id: str, req: ChatRequest):
     """Stream chat response with real-time thinking traces."""
     if solution_id != "cba-annual-report-qa":
         raise HTTPException(status_code=404, detail="Solution not found")
 
     return StreamingResponse(
-        _stream_chat(solution_id, question, framework, model),
+        _stream_chat(solution_id, req.question, req.framework, req.model),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
