@@ -394,7 +394,8 @@ function CollapsedThinking({
 
   const sourceSteps = steps.filter(isSourceStep);
   const traceSteps = steps.filter((s) => !isSourceStep(s) && !isCiteStep(s));
-  const headerText = summary || `Analysed and cited ${sourceSteps.length || steps.filter((s) => s.type === "tool_call").length} sources`;
+  const sourceCount = sourceSteps.length || steps.filter((s) => s.type === "tool_call").length;
+  const headerText = summary || `Analysed and cited ${sourceCount} source${sourceCount !== 1 ? "s" : ""}`;
 
   // Insert the sources box after the last tool_call that isn't a source/cite
   // (i.e. after browsing TOC / before final thinking steps)

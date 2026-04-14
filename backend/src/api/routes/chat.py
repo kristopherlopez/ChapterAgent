@@ -317,13 +317,23 @@ async def _stream_chat(
             thinking = response.thinking
             token_usage = response.metadata.get("token_usage", {})
 
+            # Capture pages the agent read for guardrail context
+            meta_pages = response.metadata.get("pages_read")
+            if meta_pages:
+                streamed_context = meta_pages
+
             # Emit thinking steps
             for step in thinking:
                 yield sse("thinking", {"text": step})
                 await asyncio.sleep(0)
 
-            # Emit individual source reads instead of a summary
+            # Emit individual source reads (deduplicated by page+section)
+            seen_pages: set[tuple[int, str]] = set()
             for c in citations:
+                key = (c.page, c.section if hasattr(c, 'section') else "")
+                if key in seen_pages:
+                    continue
+                seen_pages.add(key)
                 page_label = f"p.{c.page} — {c.section}" if hasattr(c, 'section') else f"p.{c.page}"
                 yield sse("tool_call", {
                     "name": "read_page",
