@@ -26,7 +26,8 @@ def compute_shap_values(
     if max_samples and len(X) > max_samples:
         X = X.sample(n=max_samples, random_state=42)
 
-    if model_type in ("GradientBoostingClassifier", "RandomForestClassifier", "XGBClassifier"):
+    if model_type in ("GradientBoostingClassifier", "RandomForestClassifier",
+                       "XGBClassifier", "LGBMClassifier"):
         explainer = shap.TreeExplainer(model)
     elif model_type in ("LogisticRegression",):
         explainer = shap.LinearExplainer(model, X)

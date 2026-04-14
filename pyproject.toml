@@ -25,6 +25,8 @@ dependencies = [
     "numba>=0.60",
     "scipy>=1.14",
     "matplotlib>=3.9",
+    "xgboost>=2.1",
+    "lightgbm>=4.5",
 ]
 
 [project.optional-dependencies]
