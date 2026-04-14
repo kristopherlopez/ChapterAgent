@@ -28,17 +28,23 @@ from sklearn.ensemble import GradientBoostingClassifier
 # Handle imports whether run as module or standalone script
 try:
     from solutions.credit_default_scorer.src.data import (
+        ALL_ENGINEERED_V2_FEATURES,
         BALANCE_TREND_FEATURES,
+        BEHAVIORAL_FEATURES,
         BILL_AMOUNT_FEATURES,
+        CAPACITY_FEATURES,
         CREDIT_FEATURES,
+        DELINQUENCY_PATTERN_FEATURES,
         DEMOGRAPHIC_FEATURES,
         ENGINEERED_FEATURES,
+        INTERACTION_FEATURES,
         PAYMENT_AMOUNT_FEATURES,
         PAYMENT_HISTORY_FEATURES,
         PAYMENT_RATIO_FEATURES,
         PROTECTED_ATTRIBUTES,
         UNPAID_BALANCE_FEATURES,
         UTILISATION_FEATURES,
+        VOLATILITY_FEATURES,
         load_dataset,
         prepare_splits,
     )
@@ -48,17 +54,23 @@ try:
 except ImportError:
     sys.path.insert(0, str(Path(__file__).parent))
     from data import (  # type: ignore[no-redef]
+        ALL_ENGINEERED_V2_FEATURES,
         BALANCE_TREND_FEATURES,
+        BEHAVIORAL_FEATURES,
         BILL_AMOUNT_FEATURES,
+        CAPACITY_FEATURES,
         CREDIT_FEATURES,
+        DELINQUENCY_PATTERN_FEATURES,
         DEMOGRAPHIC_FEATURES,
         ENGINEERED_FEATURES,
+        INTERACTION_FEATURES,
         PAYMENT_AMOUNT_FEATURES,
         PAYMENT_HISTORY_FEATURES,
         PAYMENT_RATIO_FEATURES,
         PROTECTED_ATTRIBUTES,
         UNPAID_BALANCE_FEATURES,
         UTILISATION_FEATURES,
+        VOLATILITY_FEATURES,
         load_dataset,
         prepare_splits,
     )
@@ -126,6 +138,49 @@ ABLATION_STEPS: list[tuple[str, list[str], list[list[str]], str]] = [
         ["payment_history", "credit", "bill_amounts", "payment_amounts", "engineered"],
         [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, PAYMENT_AMOUNT_FEATURES, ENGINEERED_FEATURES],
         "All raw features plus all engineered features — does combining raw and derived signals improve over either alone?",
+    ),
+    # --- V2 engineered features: delinquency patterns, volatility, capacity, behavioral, interactions ---
+    (
+        "step10_delinquency_patterns",
+        ["payment_history", "credit", "bill_amounts", "delinquency_patterns"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, DELINQUENCY_PATTERN_FEATURES],
+        "Delinquency patterns (months late, max delay, streaks, revolving count) make the payment history signal explicit.",
+    ),
+    (
+        "step11_plus_volatility",
+        ["payment_history", "credit", "bill_amounts", "delinquency_patterns", "volatility"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, DELINQUENCY_PATTERN_FEATURES, VOLATILITY_FEATURES],
+        "Spending and payment volatility — erratic behavior signals instability beyond levels.",
+    ),
+    (
+        "step12_plus_capacity",
+        ["payment_history", "credit", "bill_amounts", "delinquency_patterns", "volatility", "capacity"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, DELINQUENCY_PATTERN_FEATURES, VOLATILITY_FEATURES, CAPACITY_FEATURES],
+        "Credit headroom and its trajectory — shrinking available credit compounds risk.",
+    ),
+    (
+        "step13_plus_behavioral",
+        ["payment_history", "credit", "bill_amounts", "delinquency_patterns", "volatility", "capacity", "behavioral"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, DELINQUENCY_PATTERN_FEATURES, VOLATILITY_FEATURES, CAPACITY_FEATURES, BEHAVIORAL_FEATURES],
+        "Behavioral signals (minimum payment, overpayment patterns) — how customers pay matters as much as when.",
+    ),
+    (
+        "step14_plus_interactions",
+        ["payment_history", "credit", "bill_amounts", "delinquency_patterns", "volatility", "capacity", "behavioral", "interactions"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, DELINQUENCY_PATTERN_FEATURES, VOLATILITY_FEATURES, CAPACITY_FEATURES, BEHAVIORAL_FEATURES, INTERACTION_FEATURES],
+        "Interaction features (util x delay, headroom x delinquent) — multiplicative risk signals.",
+    ),
+    (
+        "step15_best_v1_plus_v2",
+        ["payment_history", "credit", "bill_amounts", "utilisation", "payment_ratio", "balance_trend", "delinquency_patterns", "volatility", "capacity", "behavioral", "interactions"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, UTILISATION_FEATURES, PAYMENT_RATIO_FEATURES, BALANCE_TREND_FEATURES, DELINQUENCY_PATTERN_FEATURES, VOLATILITY_FEATURES, CAPACITY_FEATURES, BEHAVIORAL_FEATURES, INTERACTION_FEATURES],
+        "Best V1 engineered (ratio features) combined with all V2 features — the full engineered feature set without raw payment amounts.",
+    ),
+    (
+        "step16_kitchen_sink",
+        ["payment_history", "credit", "bill_amounts", "payment_amounts", "engineered", "all_v2"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, PAYMENT_AMOUNT_FEATURES, ENGINEERED_FEATURES, ALL_ENGINEERED_V2_FEATURES],
+        "Everything — all raw features plus all V1 and V2 engineered features. Maximum signal, maximum noise risk.",
     ),
 ]
 
@@ -198,12 +253,14 @@ def run_ablation(
     *,
     experiment_name: str = "credit-default-ablation",
 ) -> pd.DataFrame:
-    """Run the full ablation study — 9 steps logged to MLflow.
+    """Run the full ablation study — 16 steps logged to MLflow.
 
-    Steps 1-5: incremental raw feature groups.
-    Steps 6-9: engineered feature combinations (unpaid balance, utilisation,
-    payment ratio, balance trend) to test whether derived signals improve
-    over raw features.
+    Steps 1-5:   incremental raw feature groups.
+    Steps 6-9:   V1 engineered features (unpaid balance, utilisation,
+                 payment ratio, balance trend).
+    Steps 10-14: V2 engineered features (delinquency patterns, volatility,
+                 capacity, behavioral signals, interactions).
+    Steps 15-16: combined V1+V2 and kitchen sink.
 
     Returns a summary DataFrame comparing all steps.
     """

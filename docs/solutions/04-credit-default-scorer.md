@@ -429,12 +429,45 @@ Engineered features are derived from raw bill and payment data to test whether d
 | BAL_TREND | Linear slope of UNPAID_BAL over 6 months | Debt trajectory (positive = growing) |
 | AVG_UTIL | Mean of UTIL_RATIO across 6 months | Overall credit utilisation |
 
-| Step | Features | Feature Count | Hypothesis |
-|------|----------|---------------|------------|
-| 6. Engineered on best raw | PAY + LIMIT + BILL + all engineered | 33 | Do derived signals beat raw payment amounts? |
-| 7. Unpaid balance only | PAY + LIMIT + BILL + UNPAID_BAL | 19 | Simplest engineered feature — net debt without raw payment amounts |
-| 8. Ratio-based only | PAY + LIMIT + BILL + UTIL + PAY_RATIO + trend | 27 | Normalised signals without raw amounts |
-| 9. All raw + engineered | PAY + LIMIT + BILL + PAY_AMT + all engineered | 39 | Does combining raw and derived improve over either alone? |
+| Step | Features | Count | AUC | Gini | Brier | DemParity | DI Ratio |
+|------|----------|-------|-----|------|-------|-----------|----------|
+| 6. All V1 engineered on best raw | PAY + LIMIT + BILL + all V1 engineered | 33 | 0.779 | 0.557 | 0.137 | 0.014 | 0.947 |
+| 7. Unpaid balance only | PAY + LIMIT + BILL + UNPAID_BAL | 19 | 0.773 | 0.545 | 0.138 | 0.013 | 0.962 |
+| 8. Ratio-based only | PAY + LIMIT + BILL + UTIL + PAY_RATIO + trend | 27 | 0.779 | 0.558 | 0.136 | 0.014 | 0.908 |
+| 9. All raw + V1 engineered | PAY + LIMIT + BILL + PAY_AMT + all V1 engineered | 39 | 0.777 | 0.554 | 0.137 | 0.013 | 0.937 |
+
+#### V2 Engineered Features (Steps 10-16)
+
+Deeper domain features: delinquency patterns from payment status codes, spending volatility, credit headroom, behavioral signals, and interaction terms.
+
+| Feature | Formula | Intuition |
+|---------|---------|-----------|
+| MONTHS_DELINQUENT | count(PAY > 0) | How many months late in 6-month window |
+| MAX_DELAY | max(PAY_0..PAY_6) | Worst delinquency severity |
+| DELINQUENCY_TREND | slope of PAY values | Improving vs deteriorating payment behaviour |
+| CONSECUTIVE_LATE | longest streak of PAY > 0 | Sustained vs sporadic delinquency |
+| REVOLVING_COUNT | count(PAY = 0) | Months using revolving credit (minimum payment) |
+| FULL_PAY_COUNT | count(PAY = -1) | Months paid in full |
+| BILL_VOLATILITY | std(BILL_AMT1..6) | Erratic spending signals instability |
+| PAY_VOLATILITY | std(PAY_AMT1..6) | Erratic payments = inconsistent cash flow |
+| BILL_RANGE | max - min of bills | Spending spikes |
+| AVAILABLE_CREDIT | LIMIT_BAL - BILL_AMT1 | Remaining credit headroom |
+| AVAILABLE_CREDIT_RATIO | (LIMIT - BILL) / LIMIT | Normalised headroom |
+| HEADROOM_TREND | slope of available credit | Shrinking headroom = growing risk |
+| MIN_PAY_FLAG | count(PAY_AMT/BILL_AMT < 5%) | Minimum-payment-only behaviour |
+| OVERPAY_COUNT | count(PAY_AMT > BILL_AMT) | Paying ahead = low risk |
+| UTIL_X_MAX_DELAY | AVG_UTIL * MAX_DELAY | High utilisation + late = multiplicative risk |
+| HEADROOM_X_DELINQUENT | (1 - headroom ratio) * months delinquent | Low headroom + late = compounding risk |
+
+| Step | Features | Count | AUC | Gini | Brier | DemParity | DI Ratio |
+|------|----------|-------|-----|------|-------|-----------|----------|
+| 10. Delinquency patterns | Base + delinquency patterns | 19 | 0.772 | 0.544 | 0.137 | 0.014 | 0.931 |
+| 11. + Volatility | + bill/payment volatility | 22 | 0.773 | 0.546 | 0.137 | 0.013 | 0.916 |
+| 12. + Capacity | + available credit, headroom | 25 | 0.776 | 0.552 | 0.137 | 0.016 | 0.933 |
+| 13. + Behavioral | + min pay, overpay counts | 27 | 0.777 | 0.554 | 0.137 | 0.014 | 0.929 |
+| 14. + Interactions | + util×delay, headroom×delinquent | 29 | 0.775 | 0.550 | 0.137 | 0.015 | 0.912 |
+| 15. Best V1 + all V2 | Ratio features + all V2 | 43 | 0.776 | 0.553 | 0.136 | 0.015 | 0.918 |
+| 16. Kitchen sink | All raw + V1 + V2 | 55 | 0.777 | 0.555 | 0.137 | 0.014 | 0.914 |
 
 ### Key Findings
 
@@ -448,13 +481,17 @@ Engineered features are derived from raw bill and payment data to test whether d
 
 5. **Demographics: the governance tradeoff** — Step 5 adds +0.003 AUC (marginal) but increases demographic parity difference from 0.014 to 0.021 and drops the disparate impact ratio from 0.942 to 0.892. The model is closer to the four-fifths rule threshold (0.80). **The AUC gain is not worth the fairness cost** — this is the governance insight the ablation is designed to surface.
 
-6. **Engineered features on best raw config (Step 6)** — Tests whether derived features (unpaid balance, utilisation ratios, payment ratios, balance trend) add signal on top of the best raw feature set (step 3). The hypothesis: domain-informed transformations like BILL_AMT - PAY_AMT capture interactions the model would otherwise need to learn from raw features.
+6. **V1 engineered features beat raw payment amounts** — Step 8 (ratio features, AUC 0.7789) and step 6 (all V1, AUC 0.7787) both outperform the best raw config (step 3, AUC 0.7732) by +0.006 — a meaningful lift. Unpaid balance alone (step 7, AUC 0.7726) matches raw payment amounts (step 4, AUC 0.7721), confirming `BILL - PAY` captures the same signal as 6 raw features in one.
 
-7. **Unpaid balance alone (Step 7)** — The simplest engineered feature (BILL - PAY) tested in isolation. If this single derived group matches or beats raw payment amounts (step 4), it confirms that the net-debt signal is what matters — not the raw amounts independently.
+7. **Delinquency patterns don't help GBM (Step 10)** — Adding explicit delinquency features (months late, max delay, streaks) to the base yields AUC 0.7721, identical to step 3. The tree model already learns these patterns from raw PAY codes through splits — making them explicit adds no lift.
 
-8. **Ratio-based features (Step 8)** — Utilisation ratios, payment ratios, and balance trend normalise the raw data by credit limit and bill size. Tests whether scale-invariant features help the model generalise better than raw amounts.
+8. **Capacity features provide the real V2 lift (Step 12)** — Available credit and headroom trend push AUC from 0.7728 (step 11) to 0.7762, a +0.003 jump. Knowing how much credit remains — and whether it's shrinking — adds signal the model can't easily derive from bill amounts alone.
 
-9. **All raw + all engineered (Step 9)** — The kitchen-sink test. Combines all raw features with all engineered features. If this doesn't materially beat the best subset, the extra features are noise — confirming that feature selection matters more than feature volume.
+9. **Behavioral signals add marginal lift (Step 13)** — Min-payment flags and overpay counts push AUC to 0.7771, but the gain is small (+0.001). The model already captures payment adequacy through utilisation and payment ratios.
+
+10. **Interaction features hurt (Step 14)** — Adding `UTIL × MAX_DELAY` and `HEADROOM × DELINQUENT` drops AUC from 0.7771 to 0.7752. GBM already captures interactions through tree depth — explicit interaction terms add noise.
+
+11. **Kitchen sink confirms: more features ≠ better model** — Step 16 (55 features, AUC 0.7772) doesn't beat step 8 (27 features, AUC 0.7789). The best model remains **step 8: ratio-based V1 features** — highest AUC, lowest Brier (0.1364), strong fairness (DI 0.908), no demographics.
 
 ## Model Selection Analysis
 

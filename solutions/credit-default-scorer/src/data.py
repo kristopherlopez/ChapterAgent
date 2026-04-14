@@ -32,6 +32,50 @@ ENGINEERED_FEATURES = (
     + BALANCE_TREND_FEATURES
 )
 
+# Delinquency pattern features — derived from PAY_0..PAY_6 status codes
+DELINQUENCY_PATTERN_FEATURES = [
+    "MONTHS_DELINQUENT",
+    "MAX_DELAY",
+    "DELINQUENCY_TREND",
+    "CONSECUTIVE_LATE",
+    "REVOLVING_COUNT",
+    "FULL_PAY_COUNT",
+]
+
+# Volatility features — spending and payment stability
+VOLATILITY_FEATURES = [
+    "BILL_VOLATILITY",
+    "PAY_VOLATILITY",
+    "BILL_RANGE",
+]
+
+# Capacity / headroom features — remaining credit and trajectory
+CAPACITY_FEATURES = [
+    "AVAILABLE_CREDIT",
+    "AVAILABLE_CREDIT_RATIO",
+    "HEADROOM_TREND",
+]
+
+# Behavioral signal features — payment patterns
+BEHAVIORAL_FEATURES = [
+    "MIN_PAY_FLAG",
+    "OVERPAY_COUNT",
+]
+
+# Interaction features — multiplicative risk signals
+INTERACTION_FEATURES = [
+    "UTIL_X_MAX_DELAY",
+    "HEADROOM_X_DELINQUENT",
+]
+
+ALL_ENGINEERED_V2_FEATURES = (
+    DELINQUENCY_PATTERN_FEATURES
+    + VOLATILITY_FEATURES
+    + CAPACITY_FEATURES
+    + BEHAVIORAL_FEATURES
+    + INTERACTION_FEATURES
+)
+
 ALL_FEATURES = (
     CREDIT_FEATURES
     + DEMOGRAPHIC_FEATURES
@@ -94,6 +138,90 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     if util_cols:
         df["AVG_UTIL"] = df[util_cols].mean(axis=1)
 
+    # --- Delinquency pattern features ---
+    pay_cols = [c for c in PAYMENT_HISTORY_FEATURES if c in df.columns]
+    if pay_cols:
+        pay_matrix = df[pay_cols].values
+
+        # Months delinquent: count of months with PAY > 0 (late)
+        df["MONTHS_DELINQUENT"] = (pay_matrix > 0).sum(axis=1)
+
+        # Max delay: worst delinquency severity
+        df["MAX_DELAY"] = pay_matrix.max(axis=1)
+
+        # Delinquency trend: slope of PAY values (positive = worsening)
+        x = np.arange(len(pay_cols), dtype=float)
+        x_centered = x - x.mean()
+        denom = (x_centered ** 2).sum()
+        if denom > 0:
+            df["DELINQUENCY_TREND"] = (pay_matrix * x_centered).sum(axis=1) / denom
+
+        # Consecutive late: longest streak of PAY > 0
+        is_late = (pay_matrix > 0).astype(int)
+        max_streak = np.zeros(len(df), dtype=int)
+        current_streak = np.zeros(len(df), dtype=int)
+        for col_idx in range(is_late.shape[1]):
+            current_streak = np.where(is_late[:, col_idx] == 1, current_streak + 1, 0)
+            max_streak = np.maximum(max_streak, current_streak)
+        df["CONSECUTIVE_LATE"] = max_streak
+
+        # Revolving count: months with PAY = 0 (revolving, not paying in full)
+        df["REVOLVING_COUNT"] = (pay_matrix == 0).sum(axis=1)
+
+        # Full pay count: months with PAY = -1 (paid in full)
+        df["FULL_PAY_COUNT"] = (pay_matrix == -1).sum(axis=1)
+
+    # --- Volatility features ---
+    bill_cols = [c for c in BILL_AMOUNT_FEATURES if c in df.columns]
+    pay_amt_cols = [c for c in PAYMENT_AMOUNT_FEATURES if c in df.columns]
+
+    if len(bill_cols) >= 2:
+        bill_matrix = df[bill_cols].values
+        df["BILL_VOLATILITY"] = bill_matrix.std(axis=1, ddof=1)
+        df["BILL_RANGE"] = bill_matrix.max(axis=1) - bill_matrix.min(axis=1)
+
+    if len(pay_amt_cols) >= 2:
+        df["PAY_VOLATILITY"] = df[pay_amt_cols].values.std(axis=1, ddof=1)
+
+    # --- Capacity / headroom features ---
+    if "LIMIT_BAL" in df.columns and "BILL_AMT1" in df.columns:
+        df["AVAILABLE_CREDIT"] = df["LIMIT_BAL"] - df["BILL_AMT1"]
+        df["AVAILABLE_CREDIT_RATIO"] = np.where(
+            df["LIMIT_BAL"] > 0,
+            (df["LIMIT_BAL"] - df["BILL_AMT1"]) / df["LIMIT_BAL"],
+            0.0,
+        )
+
+    # Headroom trend: slope of available credit over 6 months
+    if "LIMIT_BAL" in df.columns and len(bill_cols) == 6:
+        headroom_matrix = df["LIMIT_BAL"].values[:, np.newaxis] - df[bill_cols].values
+        x = np.arange(6, dtype=float)
+        x_centered = x - x.mean()
+        denom = (x_centered ** 2).sum()
+        if denom > 0:
+            df["HEADROOM_TREND"] = (headroom_matrix * x_centered).sum(axis=1) / denom
+
+    # --- Behavioral signal features ---
+    if len(bill_cols) == 6 and len(pay_amt_cols) == 6:
+        bill_matrix = df[bill_cols].values
+        pay_amt_matrix = df[pay_amt_cols].values
+
+        # Minimum payment flag: months where payment < 5% of bill (and bill > 0)
+        has_bill = bill_matrix > 0
+        ratio_matrix = np.where(has_bill, pay_amt_matrix / bill_matrix, 1.0)
+        df["MIN_PAY_FLAG"] = ((ratio_matrix < 0.05) & has_bill).sum(axis=1)
+
+        # Overpay count: months where payment exceeds bill
+        df["OVERPAY_COUNT"] = (pay_amt_matrix > bill_matrix).sum(axis=1)
+
+    # --- Interaction features ---
+    if "AVG_UTIL" in df.columns and "MAX_DELAY" in df.columns:
+        df["UTIL_X_MAX_DELAY"] = df["AVG_UTIL"] * df["MAX_DELAY"]
+
+    if "AVAILABLE_CREDIT_RATIO" in df.columns and "MONTHS_DELINQUENT" in df.columns:
+        # Low headroom * high delinquency = compounding risk
+        df["HEADROOM_X_DELINQUENT"] = (1 - df["AVAILABLE_CREDIT_RATIO"]) * df["MONTHS_DELINQUENT"]
+
     return df
 
 
@@ -148,7 +276,7 @@ def prepare_splits(
         protected_train, protected_test,
         feature_names
     """
-    feature_cols = [c for c in ALL_FEATURES + ENGINEERED_FEATURES if c in df.columns]
+    feature_cols = [c for c in ALL_FEATURES + ENGINEERED_FEATURES + ALL_ENGINEERED_V2_FEATURES if c in df.columns]
     X = df[feature_cols]
     y = df[TARGET]
 
