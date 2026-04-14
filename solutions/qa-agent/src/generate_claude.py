@@ -13,7 +13,6 @@ from claude_agent_sdk import (
     ClaudeAgentOptions,
     TextBlock,
     ThinkingBlock,
-    ThinkingConfigEnabled,
     ToolUseBlock,
     query,
     tool,
