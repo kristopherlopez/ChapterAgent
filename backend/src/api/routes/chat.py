@@ -245,12 +245,16 @@ async def _stream_chat(
 
     # For OpenAI framework, use the real streaming path that emits
     # individual tool_call events as the agent reads pages
+    streamed_context: list[str] | None = None
+
     if framework == "openai":
         try:
             collected_events: list[str] = []
-            answer_text, citations, thinking, token_usage = (
+            answer_text, citations, thinking, token_usage, pages_read = (
                 await _run_openai_streamed(question, agent, collected_events)
             )
+            if pages_read:
+                streamed_context = pages_read
             # Flush collected SSE events to the client
             for ev in collected_events:
                 yield ev
@@ -297,8 +301,9 @@ async def _stream_chat(
     # Run guardrails
     try:
         runner = _get_guardrail_runner()
-        context_texts = None
-        if hasattr(agent, 'retriever'):
+        # Prefer page content the agent actually read; fall back to chunk retrieval
+        context_texts = streamed_context
+        if not context_texts and hasattr(agent, 'retriever'):
             chunks = agent.retriever.retrieve(question, top_k=5)
             context_texts = [c.text for c in chunks]
 
@@ -330,8 +335,13 @@ async def _stream_chat(
 
 async def _run_openai_streamed(
     question: str, agent, events: list[str],
-) -> tuple[str, list, list[str], dict]:
-    """Run OpenAI agent with streaming, collecting events."""
+) -> tuple[str, list, list[str], dict, list[str]]:
+    """Run OpenAI agent with streaming, collecting events.
+
+    Returns (answer_text, citations, thinking, token_usage, pages_read)
+    where pages_read contains the text of every page the agent read
+    (used as guardrail context).
+    """
     from agents import Agent, Runner, function_tool
     from agents.items import ReasoningItem
     from schema import AGENT_SYSTEM_PROMPT, Citation
@@ -343,6 +353,7 @@ async def _run_openai_streamed(
 
     citations: list[Citation] = []
     thinking: list[str] = []
+    pages_read: list[str] = []
 
     has_pages = pages_dir.exists() and any(pages_dir.glob("*.md"))
 
@@ -366,7 +377,9 @@ async def _run_openai_streamed(
             if not p.exists():
                 return json.dumps({"error": f"Not found: {filename}"})
             content = p.read_text(encoding="utf-8", errors="replace")
-            return content[:15000] if len(content) > 15000 else content
+            content = content[:15000] if len(content) > 15000 else content
+            pages_read.append(content)
+            return content
 
         @function_tool
         def cite_source(page: int, section: str, quote: str) -> str:
@@ -469,7 +482,7 @@ async def _run_openai_streamed(
 
     token_usage = {}
 
-    return answer_text, citations, thinking, token_usage
+    return answer_text, citations, thinking, token_usage, pages_read
 
 
 @router.post("/chat/{solution_id}/stream")
