@@ -249,6 +249,7 @@ class ClaudeGenerator(BaseGenerator):
 
         messages = [{"role": "user", "content": question}]
         thinking: list[str] = []
+        answer_text = ""
         token_usage: dict = {"input_tokens": 0, "output_tokens": 0}
 
         for _turn in range(self.max_turns):
@@ -263,19 +264,23 @@ class ClaudeGenerator(BaseGenerator):
             token_usage["input_tokens"] += response.usage.input_tokens
             token_usage["output_tokens"] += response.usage.output_tokens
 
-            # Collect thinking and text
+            # Collect thinking, text, and tool calls
             tool_uses = []
-            answer_text = ""
+            turn_text = ""
             for block in response.content:
                 if block.type == "text":
-                    answer_text = block.text
+                    turn_text = block.text
                 elif block.type == "tool_use":
                     tool_uses.append(block)
                 elif block.type == "thinking" and hasattr(block, "thinking"):
                     thinking.append(block.thinking)
 
-            # If no tool calls, we have the final answer
+            # Only treat text as the final answer when there are no
+            # tool calls.  Intermediate turns often contain narration
+            # (e.g. "Let me look at …") that must not leak into the
+            # answer.
             if not tool_uses:
+                answer_text = turn_text
                 return answer_text, token_usage, thinking
 
             # Process tool calls and continue
@@ -290,7 +295,8 @@ class ClaudeGenerator(BaseGenerator):
                 })
             messages.append({"role": "user", "content": tool_results})
 
-        return answer_text, token_usage, thinking
+        # Max turns exhausted — use last turn's text as best-effort answer
+        return turn_text or answer_text, token_usage, thinking
 
     def _direct_fallback(
         self, question: str, chunks: list[RetrievedChunk],
