@@ -14,6 +14,7 @@ _CITATION_PATTERNS = [
     re.compile(r"p\.\s*\d+", re.IGNORECASE),
     re.compile(r"Page\s+\d+", re.IGNORECASE),
     re.compile(r"Section:?\s+[A-Z]", re.IGNORECASE),
+    re.compile(r"\[\d{1,3}(?:\s*,\s*\d{1,3})*\]"),   # [1], [12], [1, 2] (max 3 digits to exclude years)
 ]
 
 
