@@ -55,6 +55,7 @@ class GuardrailRunner:
         refusal_message: str = "I can only answer questions about CBA's 2024 Annual Report.",
         faithfulness_threshold: float = 0.90,
         citation_coverage_threshold: float = 0.95,
+        citations_count: int | None = None,
     ) -> GuardrailRunner:
         """Factory: build the guardrail runner for a Q&A agent."""
         return cls(
@@ -70,7 +71,10 @@ class GuardrailRunner:
                 FaithfulnessGuardrail(threshold=faithfulness_threshold, model="gpt-5.4"),
                 BiasGuardrail(),
                 ToxicityGuardrail(),
-                CitationCoverageGuardrail(threshold=citation_coverage_threshold),
+                CitationCoverageGuardrail(
+                    threshold=citation_coverage_threshold,
+                    citations_count=citations_count,
+                ),
                 TemporalAccuracyGuardrail(),
             ]
         )

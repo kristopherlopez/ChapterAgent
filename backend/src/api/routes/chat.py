@@ -95,7 +95,7 @@ def _get_agent(framework: str, model: str | None = None):
     return agent
 
 
-def _get_guardrail_runner() -> GuardrailRunner:
+def _get_guardrail_runner(citations_count: int | None = None) -> GuardrailRunner:
     """Build the guardrail runner for the QA agent."""
     import json
 
@@ -108,6 +108,7 @@ def _get_guardrail_runner() -> GuardrailRunner:
     return GuardrailRunner.for_qa_agent(
         scope_level=1,
         topic_graph=topic_graph,
+        citations_count=citations_count,
     )
 
 
@@ -137,7 +138,7 @@ async def chat(solution_id: str, req: ChatRequest):
     context_texts = _get_context(agent, req.question, response)
 
     # Run guardrails
-    runner = _get_guardrail_runner()
+    runner = _get_guardrail_runner(citations_count=len(response.citations))
     guardrail_results = await runner.run_all(
         input=req.question,
         output=response.answer.text,
@@ -300,7 +301,7 @@ async def _stream_chat(
 
     # Run guardrails
     try:
-        runner = _get_guardrail_runner()
+        runner = _get_guardrail_runner(citations_count=len(citations) if citations else None)
         # Prefer page content the agent actually read; fall back to chunk retrieval
         context_texts = streamed_context
         if not context_texts and hasattr(agent, 'retriever'):
@@ -479,6 +480,7 @@ async def _run_openai_streamed(
 
     if not answer_text and result.is_complete:
         answer_text = result.final_output_as(str) or ""
+
 
     token_usage = {}
 

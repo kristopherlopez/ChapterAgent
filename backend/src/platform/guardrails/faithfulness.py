@@ -103,9 +103,14 @@ class FaithfulnessGuardrail(Guardrail):
     @staticmethod
     def _heuristic_faithfulness(output: str, context: list[str]) -> float:
         """Word-overlap heuristic — fast fallback for when DeepEval is unavailable."""
-        # Strip citation markers: [Source:...], [1], [12], [1, 2]
+        # Strip citation markers and footnotes
         clean_output = re.sub(r'\[Source:[^\]]*\]', '', output)
         clean_output = re.sub(r'\[\d{1,3}(?:\s*,\s*\d{1,3})*\]', '', clean_output)
+        clean_output = re.sub(r'\[\^\d{1,3}\^\]', '', clean_output)  # [^1^]
+        clean_output = re.sub(r'\[\^\d{1,3}\]', '', clean_output)    # [^1]
+        # Remove footnote definition lines (e.g. "[^1^]: Source: ...")
+        clean_output = re.sub(r'^\[\^\d{1,3}\^\]:.*$', '', clean_output, flags=re.MULTILINE)
+        clean_output = re.sub(r'^\[\^\d{1,3}\]:.*$', '', clean_output, flags=re.MULTILINE)
         # Split on sentence boundaries but not on decimal points (e.g. 2.08%)
         sentences = [
             s.strip() for s in re.split(r'(?<!\d)\.(?!\d)|[!?]+', clean_output)
