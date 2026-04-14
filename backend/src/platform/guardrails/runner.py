@@ -7,7 +7,6 @@ import asyncio
 from src.platform.guardrails.base import Guardrail, GuardrailResult
 from src.platform.guardrails.bias import BiasGuardrail
 from src.platform.guardrails.citation_coverage import CitationCoverageGuardrail
-from src.platform.guardrails.faithfulness import FaithfulnessGuardrail
 from src.platform.guardrails.pii import PIIGuardrail
 from src.platform.guardrails.prompt_injection import PromptInjectionGuardrail
 from src.platform.guardrails.scope import ScopeGuardrail
@@ -53,7 +52,6 @@ class GuardrailRunner:
         topic_graph: dict | None = None,
         topic_graph_path: str | None = None,
         refusal_message: str = "I can only answer questions about CBA's 2025 Annual Report.",
-        faithfulness_threshold: float = 0.90,
         citation_coverage_threshold: float = 0.95,
         citations_count: int | None = None,
     ) -> GuardrailRunner:
@@ -68,7 +66,6 @@ class GuardrailRunner:
                     refusal_message=refusal_message,
                 ),
                 PIIGuardrail(),
-                FaithfulnessGuardrail(threshold=faithfulness_threshold, model="gpt-5.4"),
                 BiasGuardrail(),
                 ToxicityGuardrail(),
                 CitationCoverageGuardrail(
@@ -84,7 +81,6 @@ class GuardrailRunner:
 GUARDRAIL_REGISTRY: dict[str, type[Guardrail]] = {
     "scope_adherence": ScopeGuardrail,
     "pii_scan": PIIGuardrail,
-    "faithfulness": FaithfulnessGuardrail,
     "bias": BiasGuardrail,
     "toxicity": ToxicityGuardrail,
     "citation_coverage": CitationCoverageGuardrail,

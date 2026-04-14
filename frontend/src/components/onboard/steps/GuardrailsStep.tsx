@@ -11,7 +11,6 @@ const inputClass =
 const ENDPOINT_GUARDRAILS = [
   "scope_adherence",
   "pii_scan",
-  "faithfulness",
   "bias",
   "toxicity",
   "prompt_injection",
@@ -214,19 +213,7 @@ function QAGuardrails({ data, onChange }: Props) {
           Thresholds
         </p>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1">Faithfulness</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              max="1"
-              value={data.faithfulness_threshold}
-              onChange={(e) => onChange({ faithfulness_threshold: parseFloat(e.target.value) || 0.90 })}
-              className={inputClass}
-            />
-          </div>
-          <div>
+<div>
             <label className="block text-sm font-medium text-zinc-700 mb-1">Citation Coverage</label>
             <input
               type="number"

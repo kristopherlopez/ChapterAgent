@@ -22,7 +22,6 @@ class ScopeConfig(BaseModel):
 class GuardrailConfig(BaseModel):
     """Guardrail-specific configuration."""
     scope: ScopeConfig = Field(default_factory=ScopeConfig)
-    faithfulness_threshold: float = Field(default=0.90, ge=0.0, le=1.0)
     citation_coverage_threshold: float = Field(default=0.95, ge=0.0, le=1.0)
     temporal_accuracy_enabled: bool = True
     pii_enabled: bool = True
@@ -122,7 +121,6 @@ class SolutionManifest(BaseModel):
         return [
             "scope_adherence",
             "pii_scan",
-            "faithfulness",
             "bias",
             "toxicity",
             "citation_coverage",

@@ -5,7 +5,6 @@ import pytest
 from src.platform.guardrails.base import GuardrailResult
 from src.platform.guardrails.pii import PIIGuardrail
 from src.platform.guardrails.scope import ScopeGuardrail
-from src.platform.guardrails.faithfulness import FaithfulnessGuardrail
 from src.platform.guardrails.bias import BiasGuardrail
 from src.platform.guardrails.toxicity import ToxicityGuardrail
 from src.platform.guardrails.citation_coverage import CitationCoverageGuardrail
@@ -121,28 +120,6 @@ class TestScopeGuardrail:
         assert result.result == "fail"
         assert "Financial advice" in result.detail
 
-
-# --- Faithfulness Guardrail ---
-
-class TestFaithfulnessGuardrail:
-    @pytest.mark.asyncio
-    async def test_prerecorded_pass(self):
-        guardrail = FaithfulnessGuardrail(threshold=0.90, prerecorded_score=0.94)
-        result = await guardrail.check(input="q", output="a")
-        assert result.result == "pass"
-        assert result.score == 0.94
-
-    @pytest.mark.asyncio
-    async def test_prerecorded_fail(self):
-        guardrail = FaithfulnessGuardrail(threshold=0.90, prerecorded_score=0.61)
-        result = await guardrail.check(input="q", output="a")
-        assert result.result == "fail"
-
-    @pytest.mark.asyncio
-    async def test_no_context_warns(self):
-        guardrail = FaithfulnessGuardrail(threshold=0.90)
-        result = await guardrail.check(input="q", output="answer text")
-        assert result.result == "warn"
 
 
 # --- Prompt Injection Guardrail ---
@@ -274,4 +251,4 @@ class TestGuardrailRunner:
         runner = GuardrailRunner.for_qa_agent(
             topic_graph=SAMPLE_TOPIC_GRAPH,
         )
-        assert len(runner.guardrails) == 8
+        assert len(runner.guardrails) == 7

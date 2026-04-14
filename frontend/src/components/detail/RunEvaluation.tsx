@@ -51,7 +51,6 @@ const GUARDRAIL_NAMES = [
   "Prompt Injection",
   "Scope Containment",
   "PII Detection",
-  "Faithfulness Check",
   "Bias Scan",
   "Toxicity Scan",
   "Citation Coverage",

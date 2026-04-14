@@ -10,7 +10,6 @@ class TestDeploymentGate:
         results = [
             GuardrailResult(name="PII Detection", result="pass", detail="clean"),
             GuardrailResult(name="Scope Containment", result="pass", detail="in-scope"),
-            GuardrailResult(name="Faithfulness Check", result="pass", detail="Score: 0.94"),
         ]
         if not all_pass:
             results.append(

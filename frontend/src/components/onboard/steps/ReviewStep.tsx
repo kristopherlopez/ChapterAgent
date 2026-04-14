@@ -109,7 +109,6 @@ export default function ReviewStep({ data }: Props) {
       {data.type === "qa" && (
         <Section title="Guardrails">
           <Row label="Scope Level" value={data.scope_level} />
-          <Row label="Faithfulness" value={`>= ${data.faithfulness_threshold}`} />
           <Row label="Citation Coverage" value={`>= ${data.citation_coverage_threshold}`} />
           <Row label="PII Detection" value={data.pii_enabled ? "Enabled" : "Disabled"} />
           <Row label="Prompt Injection" value={data.prompt_injection_enabled ? "Enabled" : "Disabled"} />

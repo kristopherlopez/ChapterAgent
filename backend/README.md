@@ -41,11 +41,10 @@ ruff check src/
 
 ### Guardrails (`src/platform/guardrails/`)
 
-8 guardrails with a Keras-style API:
+7 guardrails with a Keras-style API:
 
 - **PIIGuardrail** — regex-based Australian PII detection (TFN, ABN, Medicare, phone, email)
 - **ScopeGuardrail** — topic graph + scope level enforcement (strict/contextual/open)
-- **FaithfulnessGuardrail** — checks output is grounded in retrieved context
 - **BiasGuardrail** — demographic bias pattern detection
 - **ToxicityGuardrail** — harmful content detection
 - **CitationCoverageGuardrail** — verifies factual claims have citations

@@ -78,7 +78,6 @@ export interface OnboardFormData {
   // Step 3 — Guardrails (QA)
   scope_level: number;
   scope_refusal_message: string;
-  faithfulness_threshold: number;
   citation_coverage_threshold: number;
   temporal_accuracy_enabled: boolean;
   pii_enabled: boolean;
@@ -129,7 +128,6 @@ const DEFAULTS: OnboardFormData = {
 
   scope_level: 1,
   scope_refusal_message: "",
-  faithfulness_threshold: 0.90,
   citation_coverage_threshold: 0.95,
   temporal_accuracy_enabled: true,
   pii_enabled: true,
@@ -227,7 +225,6 @@ function buildPayload(data: OnboardFormData): Record<string, unknown> {
         topic_graph: "topic_graph.json",
         refusal_message: data.scope_refusal_message || undefined,
       },
-      faithfulness_threshold: data.faithfulness_threshold,
       citation_coverage_threshold: data.citation_coverage_threshold,
       temporal_accuracy_enabled: data.temporal_accuracy_enabled,
       pii_enabled: data.pii_enabled,

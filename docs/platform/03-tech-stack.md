@@ -45,7 +45,7 @@ One choice per slot. No alternatives, no hedging. This is what we're building wi
 | Technology | Purpose |
 |---|---|
 | DeepEval | Evaluation harness (LLM-as-judge, golden datasets, pytest plugin) |
-| Custom Python functions | Guardrail framework (PII, scope, faithfulness, bias, toxicity) |
+| Custom Python functions | Guardrail framework (PII, scope, bias, toxicity, citation coverage, temporal accuracy, prompt injection) |
 | Structured JSON log files | Observability / trace data |
 | JSON / YAML files | All data storage (scenarios, results, manifests, evidence) |
 
@@ -124,7 +124,6 @@ chapter-agent/
 │   │   │   │   ├── base.py            # Base guardrail interface
 │   │   │   │   ├── pii.py             # PII detection guardrail
 │   │   │   │   ├── scope.py           # Scope containment guardrail
-│   │   │   │   ├── faithfulness.py    # Faithfulness check guardrail
 │   │   │   │   ├── bias.py            # Bias detection guardrail
 │   │   │   │   ├── toxicity.py        # Toxicity detection guardrail
 │   │   │   │   └── runner.py          # Runs all guardrails for a solution

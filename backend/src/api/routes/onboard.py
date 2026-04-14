@@ -77,7 +77,6 @@ class GuardrailsConfig(BaseModel):
     names: list[str] | None = None
     # QA type
     scope: dict[str, Any] | None = None
-    faithfulness_threshold: float | None = None
     citation_coverage_threshold: float | None = None
     temporal_accuracy_enabled: bool | None = None
     pii_enabled: bool | None = None
@@ -236,8 +235,6 @@ def _build_manifest(req: OnboardRequest) -> dict[str, Any]:
             if req.guardrails:
                 if req.guardrails.scope:
                     guardrails_qa["scope"] = req.guardrails.scope
-                if req.guardrails.faithfulness_threshold is not None:
-                    guardrails_qa["faithfulness_threshold"] = req.guardrails.faithfulness_threshold
                 if req.guardrails.citation_coverage_threshold is not None:
                     guardrails_qa["citation_coverage_threshold"] = req.guardrails.citation_coverage_threshold
                 if req.guardrails.temporal_accuracy_enabled is not None:

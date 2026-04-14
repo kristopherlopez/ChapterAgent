@@ -227,7 +227,6 @@ class ComplianceRunner:
         runner = GuardrailRunner.for_qa_agent(
             scope_level=guardrail_config.get("scope", {}).get("level", 1),
             topic_graph=topic_graph,
-            faithfulness_threshold=guardrail_config.get("faithfulness_threshold", 0.90),
             citation_coverage_threshold=guardrail_config.get("citation_coverage_threshold", 0.95),
         )
 

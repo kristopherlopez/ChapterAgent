@@ -3,7 +3,6 @@
 from src.platform.guardrails.base import Guardrail, GuardrailResult
 from src.platform.guardrails.bias import BiasGuardrail
 from src.platform.guardrails.citation_coverage import CitationCoverageGuardrail
-from src.platform.guardrails.faithfulness import FaithfulnessGuardrail
 from src.platform.guardrails.pii import PIIGuardrail
 from src.platform.guardrails.prompt_injection import PromptInjectionGuardrail
 from src.platform.guardrails.runner import GUARDRAIL_REGISTRY, GuardrailRunner
@@ -18,7 +17,6 @@ __all__ = [
     "GUARDRAIL_REGISTRY",
     "BiasGuardrail",
     "CitationCoverageGuardrail",
-    "FaithfulnessGuardrail",
     "PIIGuardrail",
     "PromptInjectionGuardrail",
     "ScopeGuardrail",

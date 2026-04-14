@@ -18,7 +18,6 @@ const PLANNED_GUARDRAILS: GuardrailResult[] = [
   { name: "Prompt Injection", result: "warn", detail: "Not yet evaluated" },
   { name: "Scope Containment", result: "warn", detail: "Not yet evaluated" },
   { name: "PII Detection", result: "warn", detail: "Not yet evaluated" },
-  { name: "Faithfulness Check", result: "warn", detail: "Not yet evaluated" },
   { name: "Bias Scan", result: "warn", detail: "Not yet evaluated" },
   { name: "Toxicity Scan", result: "warn", detail: "Not yet evaluated" },
   { name: "Citation Coverage", result: "warn", detail: "Not yet evaluated" },

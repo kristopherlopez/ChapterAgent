@@ -41,7 +41,7 @@ python -m src.agent
 
 ## Guardrails
 
-8 guardrails: prompt injection, scope containment, PII, faithfulness (>= 0.90), bias, toxicity, citation coverage (>= 0.95), temporal accuracy.
+7 guardrails: prompt injection, scope containment, PII, bias, toxicity, citation coverage (>= 0.95), temporal accuracy. Faithfulness is assessed via the DeepEval evaluation metric, not as a real-time guardrail.
 
 ## Golden Dataset
 

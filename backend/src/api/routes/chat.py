@@ -162,32 +162,6 @@ async def chat(solution_id: str, req: ChatRequest):
     blocked = any(g.result == "fail" for g in guardrail_results)
     regenerated = False
 
-    # Regeneration: if only faithfulness failed, retry with stricter grounding
-    if blocked:
-        faithfulness_failed = any(
-            g.result == "fail" and "Faithfulness" in g.name
-            for g in guardrail_results
-        )
-        only_faithfulness = faithfulness_failed and sum(
-            1 for g in guardrail_results if g.result == "fail"
-        ) == 1
-
-        if only_faithfulness:
-            # Retry with stricter grounding prompt
-            response = await agent.answer(
-                req.question,
-                strict_grounding=True,
-            ) if hasattr(agent.answer, '__code__') and 'strict_grounding' in agent.answer.__code__.co_varnames else await agent.answer(req.question)
-
-            context_texts = _get_context(agent, req.question, response)
-            guardrail_results = await runner.run_all(
-                input=req.question,
-                output=response.answer.text,
-                context=context_texts,
-            )
-            blocked = any(g.result == "fail" for g in guardrail_results)
-            regenerated = True
-
     total_ms = int((time.perf_counter() - start) * 1000)
 
     # Log compliance event (Layer 2)

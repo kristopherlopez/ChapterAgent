@@ -211,7 +211,7 @@ Comparison table across all three demo solutions — showing how the same platfo
 Dedicated page at `/catalog` listing every reusable platform component the Chapter ships to squads. This is the "menu" of Chapter-provided tooling.
 
 Components are organised by type with filter pills:
-- **Guardrail** (8) — scope adherence, PII, faithfulness, bias, toxicity, citation coverage, temporal accuracy, prompt injection
+- **Guardrail** (7) — scope adherence, PII, bias, toxicity, citation coverage, temporal accuracy, prompt injection
 - **Evaluation** (1) — the evaluation harness with risk-tier thresholds
 - **Compliance** (8) — the 8 AI-GOV compliance gate checks
 - **Observability** (1) — trace logger
