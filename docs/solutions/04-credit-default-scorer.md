@@ -38,6 +38,7 @@ If the platform can govern a credit scorer — with discrimination testing, cali
 | Payment history | Repayment status for past 6 months (PAY_0 to PAY_6) | 6 |
 | Bill amounts | Bill statement for past 6 months (BILL_AMT1 to BILL_AMT6) | 6 |
 | Payment amounts | Previous payment for past 6 months (PAY_AMT1 to PAY_AMT6) | 6 |
+| **Engineered** | Unpaid balance, utilisation ratio, payment ratio, balance trend, avg utilisation | **20** |
 
 ### Protected Attributes
 
@@ -398,13 +399,15 @@ The solution uses **MLflow** (local SQLite backend) to track experiments. Each t
 
 ```bash
 cd solutions/credit-default-scorer
-python src/ablation.py                    # runs all 5 steps, logs to mlflow.db
+python src/ablation.py                    # runs all 9 steps, logs to mlflow.db
 python -u run_mlflow_ui.py               # browse at http://127.0.0.1:5000
 ```
 
 ### Incremental Feature Group Ablation
 
 Features are added incrementally to isolate the contribution of each group. Same hyperparameters (GBM: 100 trees, depth 5, lr 0.1) and same train/test split (70/30, seed 42) across all steps.
+
+#### Raw Feature Groups (Steps 1-5)
 
 | Step | Features Added | AUC | Gini | Brier | DemParity | DI Ratio |
 |------|---------------|-----|------|-------|-----------|----------|
@@ -413,6 +416,25 @@ Features are added incrementally to isolate the contribution of each group. Same
 | 3. + Bill amounts | BILL_AMT1..6 (13) | 0.773 | 0.546 | 0.137 | 0.013 | 0.952 |
 | 4. + Payment amounts | PAY_AMT1..6 (19) | 0.772 | 0.544 | 0.138 | 0.014 | 0.942 |
 | 5. + Demographics | SEX, EDU, MARRIAGE, AGE (23) | 0.775 | 0.551 | 0.137 | 0.021 | 0.892 |
+
+#### Engineered Feature Groups (Steps 6-9)
+
+Engineered features are derived from raw bill and payment data to test whether domain-informed transformations capture signal that raw features miss.
+
+| Feature | Formula | Intuition |
+|---------|---------|-----------|
+| UNPAID_BAL{1-6} | BILL_AMT - PAY_AMT | Outstanding debt each month |
+| UTIL_RATIO{1-6} | BILL_AMT / LIMIT_BAL | Credit utilisation per month |
+| PAY_RATIO{1-6} | PAY_AMT / BILL_AMT | Fraction of bill paid (capped at 1.0) |
+| BAL_TREND | Linear slope of UNPAID_BAL over 6 months | Debt trajectory (positive = growing) |
+| AVG_UTIL | Mean of UTIL_RATIO across 6 months | Overall credit utilisation |
+
+| Step | Features | Feature Count | Hypothesis |
+|------|----------|---------------|------------|
+| 6. Engineered on best raw | PAY + LIMIT + BILL + all engineered | 33 | Do derived signals beat raw payment amounts? |
+| 7. Unpaid balance only | PAY + LIMIT + BILL + UNPAID_BAL | 19 | Simplest engineered feature — net debt without raw payment amounts |
+| 8. Ratio-based only | PAY + LIMIT + BILL + UTIL + PAY_RATIO + trend | 27 | Normalised signals without raw amounts |
+| 9. All raw + engineered | PAY + LIMIT + BILL + PAY_AMT + all engineered | 39 | Does combining raw and derived improve over either alone? |
 
 ### Key Findings
 
@@ -426,15 +448,24 @@ Features are added incrementally to isolate the contribution of each group. Same
 
 5. **Demographics: the governance tradeoff** — Step 5 adds +0.003 AUC (marginal) but increases demographic parity difference from 0.014 to 0.021 and drops the disparate impact ratio from 0.942 to 0.892. The model is closer to the four-fifths rule threshold (0.80). **The AUC gain is not worth the fairness cost** — this is the governance insight the ablation is designed to surface.
 
+6. **Engineered features on best raw config (Step 6)** — Tests whether derived features (unpaid balance, utilisation ratios, payment ratios, balance trend) add signal on top of the best raw feature set (step 3). The hypothesis: domain-informed transformations like BILL_AMT - PAY_AMT capture interactions the model would otherwise need to learn from raw features.
+
+7. **Unpaid balance alone (Step 7)** — The simplest engineered feature (BILL - PAY) tested in isolation. If this single derived group matches or beats raw payment amounts (step 4), it confirms that the net-debt signal is what matters — not the raw amounts independently.
+
+8. **Ratio-based features (Step 8)** — Utilisation ratios, payment ratios, and balance trend normalise the raw data by credit limit and bill size. Tests whether scale-invariant features help the model generalise better than raw amounts.
+
+9. **All raw + all engineered (Step 9)** — The kitchen-sink test. Combines all raw features with all engineered features. If this doesn't materially beat the best subset, the extra features are noise — confirming that feature selection matters more than feature volume.
+
 ## Model Selection Analysis
 
-Six studies were conducted to systematically arrive at the optimal production model. All experiments are tracked in MLflow with full artifacts.
+Eight studies were conducted to systematically arrive at the optimal production model. All experiments are tracked in MLflow with full artifacts.
 
 ### Study Summary
 
 | # | Study | MLflow Experiment | Key Finding |
 |---|-------|-------------------|-------------|
 | 1 | Feature group ablation | `credit-default-ablation` | Payment history + credit + bills = sweet spot. Payment amounts add noise. |
+| 1b | Engineered feature ablation | `credit-default-ablation` (steps 6-9) | Derived features (unpaid balance, utilisation, payment ratios, trend) tested against and alongside raw features. |
 | 2 | Skip payment amounts | `credit-default-ablation` (step 6) | 17 features (no PAY_AMT) achieves best single-split AUC (0.7765). |
 | 3 | Model comparison | `credit-default-model-comparison` | GBM wins on AUC. Logistic regression fails four-fifths rule. |
 | 4 | Threshold tuning | `credit-default-threshold-tuning` | Best F1 at threshold 0.25. Default 0.50 too conservative. |

@@ -19,6 +19,19 @@ PAYMENT_AMOUNT_FEATURES = [f"PAY_AMT{i}" for i in range(1, 7)]
 
 PROTECTED_ATTRIBUTES = ["SEX", "EDUCATION", "MARRIAGE", "AGE"]
 
+# Engineered feature groups — derived from raw bill/payment data
+UNPAID_BALANCE_FEATURES = [f"UNPAID_BAL{i}" for i in range(1, 7)]
+UTILISATION_FEATURES = [f"UTIL_RATIO{i}" for i in range(1, 7)]
+PAYMENT_RATIO_FEATURES = [f"PAY_RATIO{i}" for i in range(1, 7)]
+BALANCE_TREND_FEATURES = ["BAL_TREND", "AVG_UTIL"]
+
+ENGINEERED_FEATURES = (
+    UNPAID_BALANCE_FEATURES
+    + UTILISATION_FEATURES
+    + PAYMENT_RATIO_FEATURES
+    + BALANCE_TREND_FEATURES
+)
+
 ALL_FEATURES = (
     CREDIT_FEATURES
     + DEMOGRAPHIC_FEATURES
@@ -28,6 +41,60 @@ ALL_FEATURES = (
 )
 
 TARGET = "default_payment_next_month"
+
+
+def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Create derived features from raw bill and payment data.
+
+    Adds:
+        UNPAID_BAL{1-6}: bill minus payment — outstanding debt each month
+        UTIL_RATIO{1-6}: bill / credit limit — credit utilisation per month
+        PAY_RATIO{1-6}: payment / bill — fraction of bill paid (capped at 1.0)
+        BAL_TREND: slope of unpaid balance over 6 months (positive = growing debt)
+        AVG_UTIL: mean utilisation across 6 months
+    """
+    df = df.copy()
+
+    for i in range(1, 7):
+        bill_col = f"BILL_AMT{i}"
+        pay_col = f"PAY_AMT{i}"
+
+        if bill_col not in df.columns or pay_col not in df.columns:
+            continue
+
+        # Unpaid balance: how much is left after payment
+        df[f"UNPAID_BAL{i}"] = df[bill_col] - df[pay_col]
+
+        # Utilisation ratio: bill / credit limit (0 if no limit)
+        if "LIMIT_BAL" in df.columns:
+            df[f"UTIL_RATIO{i}"] = np.where(
+                df["LIMIT_BAL"] > 0,
+                df[bill_col] / df["LIMIT_BAL"],
+                0.0,
+            )
+
+        # Payment ratio: payment / bill, capped at 1.0 (0 if no bill)
+        df[f"PAY_RATIO{i}"] = np.where(
+            df[bill_col] > 0,
+            np.minimum(df[pay_col] / df[bill_col], 1.0),
+            0.0,
+        )
+
+    # Balance trend: slope of unpaid balances (positive = debt growing)
+    unpaid_cols = [f"UNPAID_BAL{i}" for i in range(1, 7) if f"UNPAID_BAL{i}" in df.columns]
+    if len(unpaid_cols) == 6:
+        # Linear slope across 6 months (month 1 = most recent)
+        x = np.arange(6, dtype=float)
+        x_centered = x - x.mean()
+        unpaid_matrix = df[unpaid_cols].values
+        df["BAL_TREND"] = (unpaid_matrix * x_centered).sum(axis=1) / (x_centered ** 2).sum()
+
+    # Average utilisation across 6 months
+    util_cols = [f"UTIL_RATIO{i}" for i in range(1, 7) if f"UTIL_RATIO{i}" in df.columns]
+    if util_cols:
+        df["AVG_UTIL"] = df[util_cols].mean(axis=1)
+
+    return df
 
 
 def load_dataset(path: str | Path) -> pd.DataFrame:
@@ -62,6 +129,9 @@ def load_dataset(path: str | Path) -> pd.DataFrame:
         if alias in df.columns and alias != TARGET:
             df = df.rename(columns={alias: TARGET})
 
+    # Create engineered features from raw data
+    df = engineer_features(df)
+
     return df
 
 
@@ -78,7 +148,7 @@ def prepare_splits(
         protected_train, protected_test,
         feature_names
     """
-    feature_cols = [c for c in ALL_FEATURES if c in df.columns]
+    feature_cols = [c for c in ALL_FEATURES + ENGINEERED_FEATURES if c in df.columns]
     X = df[feature_cols]
     y = df[TARGET]
 

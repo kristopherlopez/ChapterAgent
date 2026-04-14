@@ -28,12 +28,17 @@ from sklearn.ensemble import GradientBoostingClassifier
 # Handle imports whether run as module or standalone script
 try:
     from solutions.credit_default_scorer.src.data import (
+        BALANCE_TREND_FEATURES,
         BILL_AMOUNT_FEATURES,
         CREDIT_FEATURES,
         DEMOGRAPHIC_FEATURES,
+        ENGINEERED_FEATURES,
         PAYMENT_AMOUNT_FEATURES,
         PAYMENT_HISTORY_FEATURES,
+        PAYMENT_RATIO_FEATURES,
         PROTECTED_ATTRIBUTES,
+        UNPAID_BALANCE_FEATURES,
+        UTILISATION_FEATURES,
         load_dataset,
         prepare_splits,
     )
@@ -43,12 +48,17 @@ try:
 except ImportError:
     sys.path.insert(0, str(Path(__file__).parent))
     from data import (  # type: ignore[no-redef]
+        BALANCE_TREND_FEATURES,
         BILL_AMOUNT_FEATURES,
         CREDIT_FEATURES,
         DEMOGRAPHIC_FEATURES,
+        ENGINEERED_FEATURES,
         PAYMENT_AMOUNT_FEATURES,
         PAYMENT_HISTORY_FEATURES,
+        PAYMENT_RATIO_FEATURES,
         PROTECTED_ATTRIBUTES,
+        UNPAID_BALANCE_FEATURES,
+        UTILISATION_FEATURES,
         load_dataset,
         prepare_splits,
     )
@@ -92,6 +102,30 @@ ABLATION_STEPS: list[tuple[str, list[str], list[list[str]], str]] = [
         ["payment_history", "credit", "bill_amounts", "payment_amounts", "demographics"],
         [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, PAYMENT_AMOUNT_FEATURES, DEMOGRAPHIC_FEATURES],
         "Demographics may improve AUC but at what fairness cost? This is the governance question.",
+    ),
+    (
+        "step6_engineered_on_best_raw",
+        ["payment_history", "credit", "bill_amounts", "engineered"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, ENGINEERED_FEATURES],
+        "Engineered features (unpaid balance, utilisation, payment ratio, trend) on top of best raw config — do derived signals beat raw payment amounts?",
+    ),
+    (
+        "step7_engineered_unpaid_only",
+        ["payment_history", "credit", "bill_amounts", "unpaid_balance"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, UNPAID_BALANCE_FEATURES],
+        "Unpaid balance alone (BILL - PAY) — simplest engineered feature, captures net debt without raw payment amounts.",
+    ),
+    (
+        "step8_engineered_util_ratios",
+        ["payment_history", "credit", "bill_amounts", "utilisation", "payment_ratio", "balance_trend"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, UTILISATION_FEATURES, PAYMENT_RATIO_FEATURES, BALANCE_TREND_FEATURES],
+        "Ratio-based features only (utilisation, payment ratio, balance trend) — normalised signals without raw amounts.",
+    ),
+    (
+        "step9_all_with_engineered",
+        ["payment_history", "credit", "bill_amounts", "payment_amounts", "engineered"],
+        [PAYMENT_HISTORY_FEATURES, CREDIT_FEATURES, BILL_AMOUNT_FEATURES, PAYMENT_AMOUNT_FEATURES, ENGINEERED_FEATURES],
+        "All raw features plus all engineered features — does combining raw and derived signals improve over either alone?",
     ),
 ]
 
@@ -164,7 +198,12 @@ def run_ablation(
     *,
     experiment_name: str = "credit-default-ablation",
 ) -> pd.DataFrame:
-    """Run the full ablation study — 5 incremental steps logged to MLflow.
+    """Run the full ablation study — 9 steps logged to MLflow.
+
+    Steps 1-5: incremental raw feature groups.
+    Steps 6-9: engineered feature combinations (unpaid balance, utilisation,
+    payment ratio, balance trend) to test whether derived signals improve
+    over raw features.
 
     Returns a summary DataFrame comparing all steps.
     """
