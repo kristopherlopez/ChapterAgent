@@ -373,6 +373,14 @@ function StepIcon({ type }: { type: ThinkingStep["type"] }) {
   }
 }
 
+function isSourceStep(s: ThinkingStep) {
+  return s.type === "tool_call" && s.text.startsWith("Reading ");
+}
+
+function isCiteStep(s: ThinkingStep) {
+  return s.type === "tool_call" && s.text.startsWith("Recording ");
+}
+
 function CollapsedThinking({
   steps,
   summary,
@@ -384,9 +392,17 @@ function CollapsedThinking({
 
   if (steps.length === 0) return null;
 
-  const readPages = steps.filter((s) => s.type === "tool_call" && s.text.startsWith("Reading "));
-  const otherSteps = steps.filter((s) => !(s.type === "tool_call" && s.text.startsWith("Reading ")));
-  const headerText = summary || `Analysed and cited ${readPages.length || steps.filter((s) => s.type === "tool_call").length} sources`;
+  const sourceSteps = steps.filter(isSourceStep);
+  const traceSteps = steps.filter((s) => !isSourceStep(s) && !isCiteStep(s));
+  const headerText = summary || `Analysed and cited ${sourceSteps.length || steps.filter((s) => s.type === "tool_call").length} sources`;
+
+  // Insert the sources box after the last tool_call that isn't a source/cite
+  // (i.e. after browsing TOC / before final thinking steps)
+  const lastToolIdx = traceSteps.reduce(
+    (acc, s, i) => (s.type === "tool_call" ? i : acc),
+    -1,
+  );
+  const insertSourcesAfter = lastToolIdx >= 0 ? lastToolIdx : traceSteps.length - 1;
 
   return (
     <div className="mb-3">
@@ -405,46 +421,31 @@ function CollapsedThinking({
       </button>
       {isExpanded && (
         <div className="mt-3 space-y-2.5 pl-1">
-          {otherSteps.map((step, i) => (
-            <div key={i} className="flex items-start gap-2.5">
-              <StepIcon type={step.type} />
-              <div className="flex-1 min-w-0">
+          {traceSteps.map((step, i) => (
+            <div key={i}>
+              <div className="flex items-start gap-2.5">
+                <StepIcon type={step.type} />
                 <p className="text-xs text-zinc-500 leading-relaxed">{step.text}</p>
-                {step.results && step.results.length > 0 && (
-                  <div className="mt-1.5 bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden max-h-52 overflow-y-auto">
-                    {step.results.map((r, j) => (
+              </div>
+              {/* Insert sources box after the last tool_call step */}
+              {i === insertSourcesAfter && sourceSteps.length > 0 && (
+                <div className="ml-[26px] mt-2.5">
+                  <div className="bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden max-h-52 overflow-y-auto">
+                    {sourceSteps.map((s, j) => (
                       <div
                         key={j}
                         className="px-3 py-2 text-xs text-zinc-500 border-b border-zinc-100 last:border-b-0 flex items-center gap-2"
                       >
-                        <FileText className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                        <span className="truncate">{r}</span>
+                        <BookOpen className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                        <span className="flex-1 truncate">{s.text}</span>
+                        <span className="text-zinc-400 shrink-0">Annual Report</span>
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           ))}
-          {readPages.length > 0 && (
-            <div className="ml-[26px]">
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <p className="text-xs text-zinc-500 font-medium">Sources found</p>
-                <span className="text-xs text-zinc-400">{readPages.length} pages</span>
-              </div>
-              <div className="bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden max-h-52 overflow-y-auto">
-                {readPages.map((s, j) => (
-                  <div
-                    key={j}
-                    className="px-3 py-2 text-xs text-zinc-500 border-b border-zinc-100 last:border-b-0 flex items-center gap-2"
-                  >
-                    <BookOpen className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                    <span className="truncate">{s.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
           <div className="flex items-start gap-2.5">
             <CheckCircle2 className="w-4 h-4 text-zinc-400 shrink-0" />
             <p className="text-xs text-zinc-500">Done</p>
@@ -795,58 +796,30 @@ export default function ChatInterface({
                   </div>
                 ) : (
                   <>
+                    {/* Thinking steps and tool calls — plain lines, no box */}
                     {liveThinkingSteps
-                      .filter((s) => !(s.type === "tool_call" && s.text.startsWith("Reading ")))
+                      .filter((s) => !isSourceStep(s) && !isCiteStep(s))
                       .map((step, i) => (
-                      <div key={i} className="animate-in fade-in slide-in-from-bottom-1 duration-300">
-                        <div className="flex items-start gap-2.5">
-                          <StepIcon type={step.type} />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="text-sm text-zinc-600">{step.text}</p>
-                              {step.results && step.results.length > 0 && (
-                                <span className="text-xs text-zinc-400 shrink-0">
-                                  {step.results.length} results
-                                </span>
-                              )}
-                            </div>
-                            {step.results && step.results.length > 0 && (
-                              <div className="mt-1.5 bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden max-h-52 overflow-y-auto">
-                                {step.results.map((r, j) => (
-                                  <div
-                                    key={j}
-                                    className="px-3 py-2 text-xs text-zinc-600 border-b border-zinc-100 last:border-b-0 flex items-center gap-2 animate-in fade-in duration-200"
-                                  >
-                                    <FileText className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                                    <span className="truncate">{r}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                      <div key={i} className="flex items-start gap-2.5 animate-in fade-in slide-in-from-bottom-1 duration-300">
+                        <StepIcon type={step.type} />
+                        <p className="text-sm text-zinc-600">{step.text}</p>
                       </div>
                     ))}
-                    {/* Accumulate read_page calls into a live sources box */}
+                    {/* Sources box — only contains read_page entries */}
                     {(() => {
-                      const readPages = liveThinkingSteps.filter(
-                        (s) => s.type === "tool_call" && s.text.startsWith("Reading ")
-                      );
-                      if (readPages.length === 0) return null;
+                      const sources = liveThinkingSteps.filter(isSourceStep);
+                      if (sources.length === 0) return null;
                       return (
-                        <div className="ml-[26px] mt-1">
-                          <div className="flex items-center justify-between gap-2 mb-1.5">
-                            <p className="text-xs text-zinc-500 font-medium">Sources found</p>
-                            <span className="text-xs text-zinc-400">{readPages.length} pages</span>
-                          </div>
+                        <div className="ml-[26px] mt-1 animate-in fade-in duration-300">
                           <div className="bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden max-h-52 overflow-y-auto">
-                            {readPages.map((s, j) => (
+                            {sources.map((s, j) => (
                               <div
                                 key={j}
                                 className="px-3 py-2 text-xs text-zinc-600 border-b border-zinc-100 last:border-b-0 flex items-center gap-2 animate-in fade-in duration-200"
                               >
                                 <BookOpen className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                                <span className="truncate">{s.text}</span>
+                                <span className="flex-1 truncate">{s.text}</span>
+                                <span className="text-zinc-400 shrink-0">Annual Report</span>
                               </div>
                             ))}
                           </div>
