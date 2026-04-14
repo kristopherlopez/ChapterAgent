@@ -10,8 +10,14 @@ from pathlib import Path
 
 sys.stdout.reconfigure(line_buffering=True)
 
-solution_dir = Path(__file__).parent
-db_path = solution_dir / "mlflow.db"
+# Find the project root (contains pyproject.toml) — all MLflow data lives there
+project_root = Path(__file__).parent
+for _ in range(10):
+    if (project_root / "pyproject.toml").exists():
+        break
+    project_root = project_root.parent
+
+db_path = project_root / "mlflow.db"
 
 if not db_path.exists():
     print(f"ERROR: mlflow.db not found at {db_path}")
@@ -19,7 +25,7 @@ if not db_path.exists():
     sys.exit(1)
 
 backend_uri = f"sqlite:///{db_path.resolve().as_posix()}"
-artifact_root = str((solution_dir / "mlartifacts").resolve())
+artifact_root = str((project_root / "mlartifacts").resolve())
 
 HOST = "127.0.0.1"
 PORT = 5000

@@ -18,17 +18,28 @@ import shap
 from sklearn.base import BaseEstimator
 
 
+def _project_root() -> Path:
+    """Walk up from this file to find the project root (contains pyproject.toml)."""
+    path = Path(__file__).resolve().parent
+    for _ in range(10):
+        if (path / "pyproject.toml").exists():
+            return path
+        path = path.parent
+    return Path.cwd()
+
+
 def get_or_create_experiment(
     name: str = "credit-default-ablation",
     *,
-    tracking_dir: str | Path = ".",
+    tracking_dir: str | Path | None = None,
 ) -> str:
     """Set up MLflow experiment with SQLite-backed tracking.
 
-    Stores tracking data in mlflow.db and artifacts in ./mlartifacts/.
+    Stores tracking data in mlflow.db at the project root.
     Browse with: python run_mlflow_ui.py
     """
-    db_path = Path(tracking_dir).resolve() / "mlflow.db"
+    root = Path(tracking_dir) if tracking_dir else _project_root()
+    db_path = root.resolve() / "mlflow.db"
     mlflow.set_tracking_uri(f"sqlite:///{db_path.as_posix()}")
     mlflow.set_experiment(name)
     return name
