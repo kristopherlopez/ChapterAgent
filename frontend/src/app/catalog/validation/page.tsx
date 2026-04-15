@@ -74,7 +74,7 @@ function QueryTypeBadge({ type }: { type: string }) {
 
 export default function ValidationPage() {
   const searchParams = useSearchParams();
-  const solutionParam = searchParams.get("solution") || "cba-annual-report-qa";
+  const solutionParam = searchParams.get("solution") || "petsure-annual-report-qa";
 
   const [selectedSolution, setSelectedSolution] = useState(solutionParam);
   const [testCases, setTestCases] = useState<ValidationTestCase[]>(

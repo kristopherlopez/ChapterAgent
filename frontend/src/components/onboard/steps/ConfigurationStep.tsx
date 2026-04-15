@@ -213,7 +213,7 @@ function QAFields({ data, onChange }: Props) {
           type="text"
           value={data.corpus_source}
           onChange={(e) => onChange({ corpus_source: e.target.value })}
-          placeholder="e.g. CBA Investor Relations"
+          placeholder="e.g. PetSure Australia Investor Relations"
           className={inputClass}
         />
       </div>

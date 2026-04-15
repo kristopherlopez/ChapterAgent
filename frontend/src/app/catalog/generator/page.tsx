@@ -51,7 +51,7 @@ function QueryTypeBadge({ type }: { type: string }) {
 
 export default function GeneratorPage() {
   const router = useRouter();
-  const [selectedSolution, setSelectedSolution] = useState("cba-annual-report-qa");
+  const [selectedSolution, setSelectedSolution] = useState("petsure-annual-report-qa");
   const [numCases, setNumCases] = useState(10);
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set(QUERY_TYPES));
   const [generated, setGenerated] = useState<GeneratedTestCase[] | null>(null);

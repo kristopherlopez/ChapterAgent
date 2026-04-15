@@ -43,7 +43,7 @@ export default function BasicInfoStep({ data, onChange }: Props) {
             }
             onChange(patch);
           }}
-          placeholder="e.g. CBA Annual Report Q&A Agent"
+          placeholder="e.g. PetSure Australia Annual Report Q&A Agent"
           className="w-full px-3 py-2 border border-zinc-200 rounded-md text-sm text-zinc-900 bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
         />
       </div>
@@ -59,7 +59,7 @@ export default function BasicInfoStep({ data, onChange }: Props) {
           onChange={(e) =>
             onChange({ id: e.target.value, idManuallyEdited: true })
           }
-          placeholder="e.g. cba-annual-report-qa"
+          placeholder="e.g. petsure-annual-report-qa"
           className="w-full px-3 py-2 border border-zinc-200 rounded-md text-sm text-zinc-900 bg-white font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
         />
         <p className="text-xs text-zinc-400 mt-1">
