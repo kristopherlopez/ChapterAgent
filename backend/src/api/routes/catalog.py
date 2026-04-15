@@ -155,9 +155,7 @@ def _get_validation_state(solution_id: str) -> dict[str, Any]:
     # Handle ID-to-directory mapping
     dir_map = {
         "cba-annual-report-qa": "qa-agent",
-        "risk-classification-agent": "classification-agent",
-        "credit-default-scorer": "credit-default-scorer",
-        "credit-approval-scorer": "credit-approval-scorer",
+        "governance-policy-qa": "governance-policy-qa",
     }
     dir_name = dir_map.get(solution_id, solution_id)
     solution_dir = SOLUTIONS_DIR / dir_name
@@ -224,9 +222,7 @@ def generate_test_cases(req: GenerationRequest) -> dict[str, Any]:
     """
     dir_map = {
         "cba-annual-report-qa": "qa-agent",
-        "risk-classification-agent": "classification-agent",
-        "credit-default-scorer": "credit-default-scorer",
-        "credit-approval-scorer": "credit-approval-scorer",
+        "governance-policy-qa": "governance-policy-qa",
     }
     dir_name = dir_map.get(req.solution_id)
     if not dir_name:

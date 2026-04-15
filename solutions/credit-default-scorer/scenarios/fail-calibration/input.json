@@ -1,6 +1,0 @@
-{
-  "description": "Batch of 500 customers scored in the 0.70-0.80 probability range",
-  "batch_size": 500,
-  "score_range": [0.70, 0.80],
-  "evaluation_type": "calibration_check"
-}

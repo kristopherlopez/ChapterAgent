@@ -1,6 +1,0 @@
-{
-  "description": "Production population compared to training baseline — credit limit distribution shifted due to product change",
-  "evaluation_type": "stability_check",
-  "population": "production_2026_q2",
-  "baseline": "training_2026_q1"
-}

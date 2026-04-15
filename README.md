@@ -196,11 +196,8 @@ ChapterAgent/
       components/     # UI components
       lib/            # Data fetching and utilities
   solutions/
-    qa-agent/         # Q&A Agent (RAG with citations)
-    validation-agent/ # Agentic model validator
-    classification-agent/
-    credit-approval-scorer/
-    credit-default-scorer/
+    qa-agent/             # Q&A Agent (RAG with citations)
+    governance-policy-qa/ # Governance Policy Agent
   docs/
     platform/         # Platform architecture and component docs
     solutions/        # Solution specifications

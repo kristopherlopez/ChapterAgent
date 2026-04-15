@@ -144,8 +144,4 @@ Portal, platform components, and all demo solutions live in a single repository.
 |---|---|---|
 | 00 | [../solutions/00-solution-types.md](../solutions/00-solution-types.md) | Solution Type Taxonomy (GenAI & ML) |
 | 01 | [../solutions/01-qa-agent.md](../solutions/01-qa-agent.md) | Demo Solution #1: Q&A Agent |
-| 02 | [../solutions/02-agentic-model-validation.md](../solutions/02-agentic-model-validation.md) | Demo Solution #2: Validation Agent |
-| 03 | [../solutions/03-classification-agent.md](../solutions/03-classification-agent.md) | Demo Solution #3: Classification Agent |
-| 04 | [../solutions/04-credit-default-scorer.md](../solutions/04-credit-default-scorer.md) | Demo Solution #4: Credit Card Default Scorer (ML — Taiwan) |
-| 05 | [../solutions/05-credit-approval-scorer.md](../solutions/05-credit-approval-scorer.md) | Demo Solution #5: Credit Approval Scorer (ML — Australian) |
-| 06 | [../solutions/06-delinquency-predictor.md](../solutions/06-delinquency-predictor.md) | Demo Solution #6: Delinquency Predictor (ML — Kaggle) |
+| 07 | [../solutions/07-governance-policy-agent.md](../solutions/07-governance-policy-agent.md) | Demo Solution #2: Governance Policy Agent |

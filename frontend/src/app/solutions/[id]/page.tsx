@@ -6,8 +6,6 @@ import ComplianceGateComponent from "@/components/detail/ComplianceGate";
 import TraceView from "@/components/detail/TraceView";
 import ExportButton from "@/components/evidence/ExportButton";
 import TryAgentButton from "@/components/detail/TryAgentButton";
-import TryScorerButton from "@/components/detail/TryScorerButton";
-import ViewDatasetButton from "@/components/detail/ViewDatasetButton";
 import RunEvaluation from "@/components/detail/RunEvaluation";
 import HealthBadge from "@/components/dashboard/HealthBadge";
 import { solutionDetails, solutionTraces } from "@/lib/data";
@@ -82,14 +80,7 @@ export default async function SolutionDetailPage({
             )}
           </div>
           <div className="flex items-center gap-3">
-            {solution.category === "ml" ? (
-              <>
-                <TryScorerButton solutionId={solution.id} />
-                <ViewDatasetButton solutionId={solution.id} />
-              </>
-            ) : (
-              <TryAgentButton solutionId={solution.id} />
-            )}
+            <TryAgentButton solutionId={solution.id} />
             <RunEvaluation solutionId={solution.id} />
             <ExportButton solutionId={solution.id} />
           </div>

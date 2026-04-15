@@ -74,7 +74,7 @@ The solution manifest (`solution.yaml`) declares the type. The platform uses it 
 - Regulatory mapping (which regulation applies to a control gap)
 - Risk tiering (high/medium/low)
 
-**Demo solution:** `03-classification-agent.md`
+**Demo solution:** None yet
 
 ---
 
@@ -101,7 +101,7 @@ The solution manifest (`solution.yaml`) declares the type. The platform uses it 
 - Regulatory compliance gap analysis
 - Audit finding validation
 
-**Demo solution:** `02-agentic-model-validation.md`
+**Demo solution:** None yet
 
 ---
 
@@ -211,7 +211,7 @@ The solution manifest (`solution.yaml`) declares the type. The platform uses it 
 - Counterparty risk assessment
 - Customer churn probability
 
-**Demo solutions:** `04-credit-default-scorer.md`, `05-credit-approval-scorer.md`
+**Demo solution:** None yet
 
 ---
 

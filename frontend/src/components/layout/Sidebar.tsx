@@ -9,10 +9,8 @@ import {
   ClipboardList,
   FileText,
   BrainCircuit,
-  TrendingUp,
   Package,
   Plus,
-  Database,
 } from "lucide-react";
 import { solutions } from "@/lib/data";
 
@@ -21,7 +19,6 @@ const navItems = [
 ];
 
 const aiSolutions = solutions.filter((s) => s.category === "ai");
-const mlSolutions = solutions.filter((s) => s.category === "ml");
 
 function HealthDot({ health }: { health: string }) {
   const color =
@@ -135,18 +132,6 @@ export default function Sidebar() {
           Component Catalog
         </Link>
 
-        <Link
-          href="/datasets"
-          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-            pathname === "/datasets"
-              ? "bg-zinc-900 text-white"
-              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-          }`}
-        >
-          <Database className="w-4 h-4" />
-          Dataset Explorer
-        </Link>
-
         {/* AI Solutions */}
         <div className="pt-4 pb-2">
           <p className="px-3 text-xs font-medium text-zinc-400 uppercase tracking-wider flex items-center gap-2">
@@ -174,32 +159,6 @@ export default function Sidebar() {
           );
         })}
 
-        {/* ML Solutions */}
-        <div className="pt-4 pb-2">
-          <p className="px-3 text-xs font-medium text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-            <TrendingUp className="w-3 h-3" />
-            ML Solutions
-          </p>
-        </div>
-
-        {mlSolutions.map((solution) => {
-          const isActive = pathname.startsWith(`/solutions/${solution.id}`);
-          return (
-            <Link
-              key={solution.id}
-              href={`/solutions/${solution.id}`}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-                isActive
-                  ? "bg-zinc-900 text-white"
-                  : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-              }`}
-            >
-              <Shield className="w-4 h-4 shrink-0" />
-              <span className="truncate flex-1">{solution.name}</span>
-              <HealthDot health={solution.health} />
-            </Link>
-          );
-        })}
       </nav>
     </aside>
   );

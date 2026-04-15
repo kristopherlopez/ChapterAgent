@@ -67,67 +67,6 @@ export const solutions: SolutionSummary[] = [
     lastTested: "",
     healthHistory: [],
   },
-  {
-    id: "credit-default-scorer",
-    name: "Credit Default Scorer",
-    description:
-      "Predicts credit card default probability using customer payment history and demographics",
-    category: "ml",
-    owner: "Chapter Platform Team",
-    riskTier: "Internal",
-    guardrailsSummary: "4/4 PASS",
-    evalScore: 0.82,
-    gateResult: "pass",
-    health: "pass",
-    lastRun: "2026-04-10 15:10 AEST",
-    lastTested: "2026-03-28 09:00 AEST",
-    healthHistory: [
-      { date: "2026-03-14", status: "pass" },
-      { date: "2026-03-15", status: "pass" },
-      { date: "2026-03-16", status: "pass" },
-      { date: "2026-03-17", status: "pass" },
-      { date: "2026-03-18", status: "pass" },
-      { date: "2026-03-19", status: "pass" },
-      { date: "2026-03-20", status: "pass" },
-      { date: "2026-03-21", status: "pass" },
-      { date: "2026-03-22", status: "warn" },
-      { date: "2026-03-23", status: "pass" },
-      { date: "2026-03-24", status: "pass" },
-      { date: "2026-03-25", status: "pass" },
-      { date: "2026-03-26", status: "pass" },
-      { date: "2026-03-27", status: "pass" },
-      { date: "2026-03-28", status: "pass" },
-    ],
-  },
-  {
-    id: "credit-approval-scorer",
-    name: "Credit Approval Scorer (AU)",
-    description:
-      "Predicts credit approval probability using anonymised Australian credit data with proxy discrimination detection",
-    category: "ml",
-    owner: "Chapter Platform Team",
-    riskTier: "Internal",
-    guardrailsSummary: "3/4 PASS (proxy flag)",
-    evalScore: 0.92,
-    gateResult: "warn",
-    health: "warn",
-    lastRun: "2026-04-12 15:30 AEST",
-    lastTested: "2026-04-12 15:30 AEST",
-    healthHistory: [
-      { date: "2026-04-01", status: "pass" },
-      { date: "2026-04-02", status: "pass" },
-      { date: "2026-04-03", status: "pass" },
-      { date: "2026-04-04", status: "warn" },
-      { date: "2026-04-05", status: "warn" },
-      { date: "2026-04-06", status: "warn" },
-      { date: "2026-04-07", status: "warn" },
-      { date: "2026-04-08", status: "warn" },
-      { date: "2026-04-09", status: "warn" },
-      { date: "2026-04-10", status: "warn" },
-      { date: "2026-04-11", status: "warn" },
-      { date: "2026-04-12", status: "warn" },
-    ],
-  },
 ];
 
 export const solutionDetails: Record<string, SolutionDetail> = {
@@ -153,56 +92,6 @@ export const solutionDetails: Record<string, SolutionDetail> = {
       timestamp: "",
     },
   },
-  "credit-default-scorer": {
-    ...solutions[2],
-    guardrails: [
-      { name: "Discrimination Check", result: "pass", detail: "Demographic parity diff: 0.03 (threshold: 0.05)" },
-      { name: "Calibration Check", result: "pass", detail: "Brier score: 0.17 (threshold: 0.20)" },
-      { name: "Stability Check", result: "pass", detail: "PSI: 0.08 (threshold: 0.25)" },
-      { name: "Explainability Check", result: "pass", detail: "SHAP coverage: 100%" },
-    ],
-    evaluation: [
-      { metric: "AUC-ROC", score: 0.78, threshold: 0.70, status: "pass" },
-      { metric: "Gini", score: 0.56, threshold: 0.40, status: "pass" },
-      { metric: "Brier Score", score: 0.17, threshold: 0.20, status: "pass" },
-      { metric: "ECE", score: 0.03, threshold: 0.05, status: "pass" },
-      { metric: "Demographic Parity Diff", score: 0.03, threshold: 0.05, status: "pass" },
-      { metric: "Equalised Odds Diff", score: 0.04, threshold: 0.05, status: "pass" },
-      { metric: "Disparate Impact Ratio", score: 0.87, threshold: 0.80, status: "pass" },
-      { metric: "PSI", score: 0.08, threshold: 0.25, status: "pass" },
-      { metric: "SHAP Coverage", score: 1.0, threshold: 1.0, status: "pass" },
-    ],
-    complianceGate: {
-      gate: "Deployment Gate",
-      result: "pass",
-      reason: "All 4 guardrails passed. All 9 evaluation metrics within thresholds. Fairness and calibration validated.",
-      timestamp: "2026-04-10 15:10 AEST",
-    },
-  },
-  "credit-approval-scorer": {
-    ...solutions[3],
-    guardrails: [
-      { name: "Proxy Discrimination Check", result: "fail", detail: "Feature A8 approval rate disparity: 89.6% (threshold: 15%). Human review required." },
-      { name: "Calibration Check", result: "pass", detail: "Hosmer-Lemeshow p: 0.08 (threshold: 0.05)" },
-      { name: "Stability Check", result: "pass", detail: "Small sample — PSI unreliable below 1000 records" },
-      { name: "Explainability Check", result: "pass", detail: "SHAP coverage: 100%" },
-    ],
-    evaluation: [
-      { metric: "AUC-ROC", score: 0.92, threshold: 0.70, status: "pass" },
-      { metric: "Gini", score: 0.85, threshold: 0.40, status: "pass" },
-      { metric: "Brier Score", score: 0.11, threshold: 0.25, status: "pass" },
-      { metric: "Hosmer-Lemeshow p", score: 0.08, threshold: 0.05, status: "pass" },
-      { metric: "Bootstrap CI Width (AUC)", score: 0.07, threshold: 0.20, status: "pass" },
-      { metric: "Subgroup Approval Variance", score: 0.90, threshold: 0.15, status: "fail" },
-      { metric: "SHAP Coverage", score: 1.0, threshold: 1.0, status: "pass" },
-    ],
-    complianceGate: {
-      gate: "Deployment Gate",
-      result: "warn",
-      reason: "Proxy discrimination flag on feature A8 (89.6% approval rate disparity). Human review required before production deployment. All other metrics pass.",
-      timestamp: "2026-04-12 15:30 AEST",
-    },
-  },
 };
 
 export const solutionTraces: Record<string, TraceStep[]> = {
@@ -213,23 +102,6 @@ export const solutionTraces: Record<string, TraceStep[]> = {
     { step: 4, label: "LLM generation (OpenAI gpt-4o)", durationMs: 1340, detail: "Tokens: 1,847 | Cost: $0.0034 | Citations: 1" },
     { step: 5, label: "Guardrail pipeline", durationMs: 187, detail: "8/8 passed | Faithfulness: 0.94 | PII: clean | Scope: pass" },
     { step: 6, label: "Response returned", durationMs: 1659, detail: "Total end-to-end latency" },
-  ],
-  "credit-default-scorer": [
-    { step: 1, label: "Scoring request received", durationMs: 0 },
-    { step: 2, label: "Feature engineering", durationMs: 15, detail: "23 features prepared, 4 protected attributes flagged" },
-    { step: 3, label: "Model inference (GradientBoosting)", durationMs: 8, detail: "Default probability: 0.23" },
-    { step: 4, label: "SHAP explanation generated", durationMs: 45, detail: "Top factors: PAY_0, BILL_AMT1, PAY_AMT1" },
-    { step: 5, label: "Fairness guardrails", durationMs: 32, detail: "4/4 passed | Demographic parity: 0.03 | Disparate impact: 0.87" },
-    { step: 6, label: "Score returned", durationMs: 100, detail: "Total end-to-end latency" },
-  ],
-  "credit-approval-scorer": [
-    { step: 1, label: "Scoring request received", durationMs: 0 },
-    { step: 2, label: "Feature preparation", durationMs: 3, detail: "14 anonymised features (A1-A14), all numeric. No protected attributes known." },
-    { step: 3, label: "Model inference (LogisticRegression)", durationMs: 2, detail: "Approval probability: 0.73" },
-    { step: 4, label: "SHAP explanation (LinearExplainer)", durationMs: 8, detail: "Top factors: A8 (+1.44), A10 (+0.97), A5 (-0.65)" },
-    { step: 5, label: "Proxy discrimination check", durationMs: 5, detail: "3/4 passed | A8 flagged: 89.6% approval rate disparity. Human review required." },
-    { step: 6, label: "Bootstrap CI computation", durationMs: 120, detail: "AUC 95% CI: [0.889, 0.961] — width 0.072, within 0.20 threshold" },
-    { step: 7, label: "Score returned", durationMs: 138, detail: "Total end-to-end latency" },
   ],
 };
 
@@ -1870,8 +1742,8 @@ export const documentDetails: Record<string, GovernanceDocumentDetail> = {
 
 // --- Component Catalog ---
 
-const allSolutionIds = ["cba-annual-report-qa", "governance-policy-qa", "risk-classification-agent", "credit-default-scorer", "credit-approval-scorer"];
-const aiSolutionIds = ["cba-annual-report-qa", "governance-policy-qa", "risk-classification-agent"];
+const allSolutionIds = ["cba-annual-report-qa", "governance-policy-qa"];
+const aiSolutionIds = ["cba-annual-report-qa", "governance-policy-qa"];
 
 export const catalogComponents: CatalogComponent[] = [
   // Guardrails (8)
@@ -2046,7 +1918,7 @@ export const catalogComponents: CatalogComponent[] = [
     type: "observability",
     description: "Validates that endpoint responses include compliant execution traces. Supports two patterns: inline traces (endpoint returns trace in response body — used for demo) and OpenTelemetry sidecar (production pattern for orgs where the Chapter doesn't control endpoint schemas).",
     interface: { squadProvides: "Inline: trace field in JSON response matching platform schema. OTel: spans pushed to platform collector with solution.id and step.type attributes", componentReturns: "Validation result with matched/missing trace labels and completeness score" },
-    adoption: ["risk-classification-agent"],
+    adoption: allSolutionIds,
     status: "active",
   },
   // Tooling (2)

@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # Load .env from project root
 load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
-from src.api.routes import catalog, chat, compliance, controls, evaluate, evidence, onboard, scorer, solutions, traces
+from src.api.routes import catalog, chat, compliance, controls, evaluate, evidence, onboard, solutions, traces
 
 
 def create_app() -> FastAPI:
@@ -36,7 +36,6 @@ def create_app() -> FastAPI:
     app.include_router(evidence.router, prefix="/api")
     app.include_router(traces.router, prefix="/api")
     app.include_router(chat.router, prefix="/api")
-    app.include_router(scorer.router, prefix="/api")
     app.include_router(evaluate.router, prefix="/api")
     app.include_router(onboard.router, prefix="/api")
 
