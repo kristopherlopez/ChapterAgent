@@ -1,8 +1,8 @@
-# CBA Chapter Agent — Background
+# PetSure Australia Chapter Agent — Background
 
 ## The Role
 
-**Chapter Area Lead (Executive Manager) -- Gen AI, Data Science, Risk Management AI Capability** at Commonwealth Bank. Reporting to Alex Mendes. Building a chapter from scratch -- initially 5 staff, growing to 10. Focus is GenAI and AI Agents over traditional ML. The chapter sits in 2nd-line Risk Management: it doesn't build fraud models or credit scorers -- it builds the tooling, platforms, governance frameworks, and reusable components that make those models safe to deploy.
+**Chapter Area Lead (Executive Manager) -- Gen AI, Data Science, Risk Management AI Capability** at PetSure Australia. Reporting to Alex Mendes. Building a chapter from scratch -- initially 5 staff, growing to 10. Focus is GenAI and AI Agents over traditional ML. The chapter sits in 2nd-line Risk Management: it doesn't build fraud models or credit scorers -- it builds the tooling, platforms, governance frameworks, and reusable components that make those models safe to deploy.
 
 ## The Strategy
 

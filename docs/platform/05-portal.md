@@ -130,15 +130,15 @@ Each row displays:
 - **Review Date** — next scheduled review
 
 The page includes 10 documents covering:
-- CBA internal policies (Group AI Policy, Responsible AI Principles, Data Governance Standard)
-- CBA frameworks (Model Risk Management, AI Testing & Evaluation)
-- CBA standards (AI Solution Registration, Prompt Governance)
+- PetSure Australia internal policies (Group AI Policy, Responsible AI Principles, Data Governance Standard)
+- PetSure Australia frameworks (Model Risk Management, AI Testing & Evaluation)
+- PetSure Australia standards (AI Solution Registration, Prompt Governance)
 - External standards (APRA CPS 230, APRA CPS 234)
 - Government guidelines (Australia's Voluntary AI Safety Standard)
 
 An explainer card describes how documents connect to automated controls: each document defines requirements, each requirement maps to an AI-GOV control, and each control is enforced by the compliance-as-code pipeline. A legend card shows the colour coding for document types and statuses.
 
-**What Alex sees:** "Every automated check traces back to a policy document. This isn't governance invented from scratch — it's CBA's existing policies, APRA standards, and the Australian AI Safety Standard, operationalised into automated controls."
+**What Alex sees:** "Every automated check traces back to a policy document. This isn't governance invented from scratch — it's PetSure Australia's existing policies, APRA standards, and the Australian AI Safety Standard, operationalised into automated controls."
 
 ### 6. Controls Register
 

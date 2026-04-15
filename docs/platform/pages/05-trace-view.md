@@ -39,7 +39,7 @@ For ML solutions, the trace covers:
 
 | Solution | Steps | Total Latency | Notable |
 |----------|-------|---------------|---------|
-| CBA Annual Report Q&A | 6 | 1,659ms | Full RAG pipeline with 8/8 guardrails pass |
+| PetSure Australia Annual Report Q&A | 6 | 1,659ms | Full RAG pipeline with 8/8 guardrails pass |
 | Model Validation Agent | 7 | 3,945ms | Multi-step agentic workflow with findings |
 | Multi-Platform Agent | 5 | 2,105ms | Response blocked at guardrail step (PII fail) |
 | Credit Default Scorer | 6 | 100ms | ML inference with SHAP explanation and fairness checks |

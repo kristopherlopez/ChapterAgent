@@ -8,7 +8,7 @@ purpose: Interview prep — maps monitoring knowledge to what the Chapter Area L
 
 # Monitoring Responsibilities — Chapter Area Lead vs Crews
 
-## The Org Structure at CBA
+## The Org Structure at PetSure Australia
 
 - **Chapter Area Lead (you)** — sets standards, builds platforms, governs quality, upskills the chapter. You don't build individual models — you make it possible for 50+ data scientists to build and operate them well.
 - **Crews (data scientists / ML engineers)** — build, deploy, and operate specific models within their business domain (credit risk, fraud, collections, marketing, etc.)

@@ -1,8 +1,8 @@
-# Research — CBA Chapter Area Lead
+# Research — PetSure Australia Chapter Area Lead
 
-## CBA Agile Operating Model
+## PetSure Australia Agile Operating Model
 
-CBA uses a Spotify-inspired agile model. Key distinction:
+PetSure Australia uses a Spotify-inspired agile model. Key distinction:
 
 ### Chapter Area Lead (this role)
 - **People leader** — owns a discipline (e.g., data science) across multiple crews
@@ -86,7 +86,7 @@ The rhythm is longer than a crew lead's. They live in fortnightly sprints. You l
 - This is a strength play for Kris — building teams and lifting capability is the PetSure story
 
 ## Company Intelligence
-<!-- CBA strategy, recent news, AI initiatives, risk management focus -->
+<!-- PetSure Australia strategy, recent news, AI initiatives, risk management focus -->
 
 ## Team & Structure
 <!-- Who reports to whom, team size, India/Australia split -->
@@ -97,14 +97,14 @@ The rhythm is longer than a crew lead's. They live in fortnightly sprints. You l
 - **GM** — hiring manager. Will care about leadership, strategic vision, stakeholder management. Speak to outcomes and team impact.
 - **Crew Lead** — your peer if you get the role. Will care about how you run chapters, technical credibility, and whether you'll be easy to collaborate with. This is the person borrowing your people — show you'll make their crews better, not compete with them.
 
-## AI at CBA
+## AI at PetSure Australia
 <!-- Current AI capabilities, tech stack, public case studies -->
 
 ## Risk Management Context
 <!-- Model risk governance, regulatory landscape, APRA expectations -->
 
 ## Culture & Values
-<!-- What CBA says vs what Glassdoor/network says -->
+<!-- What PetSure Australia says vs what Glassdoor/network says -->
 
 ## Compensation Research
-<!-- Market rate for Executive Manager at CBA, bands, benefits -->
+<!-- Market rate for Executive Manager at PetSure Australia, bands, benefits -->

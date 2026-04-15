@@ -95,10 +95,10 @@ The agent succeeds if the interview panel:
 |---|---|---|
 | Leadership & Team | "How would you build the team?" / "What's your leadership style?" | 8-10 |
 | Technical Vision | "What reusable components would you build first?" / "How do you evaluate GenAI?" | 8-10 |
-| Governance | "How would you handle AI governance at CBA scale?" / "What does compliance-as-code mean?" | 6-8 |
+| Governance | "How would you handle AI governance at PetSure Australia scale?" / "What does compliance-as-code mean?" | 6-8 |
 | Strategy & Roadmap | "What does success look like at 90/180/365 days?" / "How do you prioritise?" | 6-8 |
 | Stakeholder | "How would you influence GMs to adopt your components?" / "How do you work with audit?" | 4-6 |
-| Out-of-Scope | "What's CBA's share price?" / "Tell me about fraud detection models" | 5-8 |
+| Out-of-Scope | "What's PetSure Australia's share price?" / "Tell me about fraud detection models" | 5-8 |
 | Kris's Background | "Why should we hire you?" / "Tell me about your PetSure experience" | 4-6 |
 
 ### Evaluation Metrics & Thresholds

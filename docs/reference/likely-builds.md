@@ -1,4 +1,4 @@
-# Likely Builds — CBA Chapter Area Lead
+# Likely Builds — PetSure Australia Chapter Area Lead
 
 What the team (chapter of data scientists across Australia and India) would likely build.
 
@@ -34,6 +34,6 @@ This is where the JD says "AI Reusability Assets, Innovation and Frameworks":
 
 Chapter members embedded in crews build the **models**. The Chapter Area Lead and any platform-focused members build the **system that makes all of it consistent, visible, and governable**.
 
-The JD's emphasis on "reusability" and "unified portal" suggests CBA wants to move from one-off model builds to a scalable, repeatable platform — which is essentially the PetSure story (lifting capability at scale) applied to a much larger org.
+The JD's emphasis on "reusability" and "unified portal" suggests PetSure Australia wants to move from one-off model builds to a scalable, repeatable platform — which is essentially the PetSure story (lifting capability at scale) applied to a much larger org.
 
-The most differentiating builds would be the **unified portal** and **compliance-as-code** — those are the ones CBA is specifically calling out as strategic priorities, not just business-as-usual model building.
+The most differentiating builds would be the **unified portal** and **compliance-as-code** — those are the ones PetSure Australia is specifically calling out as strategic priorities, not just business-as-usual model building.

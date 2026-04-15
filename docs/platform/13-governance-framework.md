@@ -2,7 +2,7 @@
 
 This document defines the policy layer that sits above the platform's operational controls. The compliance-as-code pipeline (doc 07) automates enforcement. This document explains **what** is being enforced, **why**, and **which external frameworks** the platform's controls satisfy.
 
-The chapter doesn't invent governance from scratch — it operationalises CBA's existing policies and Australia's regulatory expectations into automated, auditable controls.
+The chapter doesn't invent governance from scratch — it operationalises PetSure Australia's existing policies and Australia's regulatory expectations into automated, auditable controls.
 
 ---
 
@@ -122,9 +122,9 @@ Published by the Department of Industry, Science and Resources (DISR). While vol
 | 9 | Keep and maintain records | Audit trail (100% completeness), evidence export, compliance event logs, prompt version history | **Addressed** — record-keeping is automated and complete |
 | 10 | Undertake conformity assessments | Deployment gate (pre-production assessment), scheduled re-evaluation, evidence export for external review | **Addressed** — conformity assessment is the deployment gate |
 
-### CBA Group AI Policy (Internal)
+### PetSure Australia Group AI Policy (Internal)
 
-The platform is designed to operationalise CBA's internal AI policy. The specific policy document is internal to CBA, but the platform's architecture assumes the following typical enterprise AI policy requirements:
+The platform is designed to operationalise PetSure Australia's internal AI policy. The specific policy document is internal to PetSure Australia, but the platform's architecture assumes the following typical enterprise AI policy requirements:
 
 | Expected Policy Requirement | Platform Control |
 |-----------------------------|------------------|
@@ -277,7 +277,7 @@ Honest accounting of what the platform addresses today and what requires further
 
 | Area | Current State | Next Step |
 |------|---------------|-----------|
-| Responsible AI principles | Embedded in controls; not published as a standalone policy | Draft standalone RAI policy document for CBA Risk Management AI solutions |
+| Responsible AI principles | Embedded in controls; not published as a standalone policy | Draft standalone RAI policy document for PetSure Australia Risk Management AI solutions |
 | Challenge/appeal mechanism (DISR Guardrail 7) | No platform support | Define escalation pathway template for squads to implement |
 | External transparency (DISR Guardrail 8) | Internal transparency strong via portal | Develop guidance for squads on user-facing AI disclosure |
 | Data governance for training data | Out of platform scope; guidance provided at intake | Publish data governance checklist for squads |

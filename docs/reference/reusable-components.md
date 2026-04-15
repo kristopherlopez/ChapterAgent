@@ -1,4 +1,4 @@
-# Reusable Components — CBA Chapter Area Lead
+# Reusable Components — PetSure Australia Chapter Area Lead
 
 ## 1. What Makes a Component Genuinely Reusable
 
@@ -326,7 +326,7 @@ All pass → auto-promoted. Any fail → blocked with a specific reason and reme
 - **Compliance dashboard** — real-time view of which solutions meet which policies, across all squads
 - **Evidence generator** — automated compliance reporting for 2nd line validation and 3rd line audit, produced as a byproduct of the pipeline running
 
-### Why It Matters at CBA
+### Why It Matters at PetSure Australia
 
 - Manual governance doesn't scale across dozens of squads and hundreds of models
 - Regulators (APRA) want evidence of controls, not just policies — automated checks produce that evidence continuously
@@ -346,7 +346,7 @@ The endpoint includes a `trace` field in its JSON response body conforming to th
 
 ```json
 {
-    "answer": "CBA's NPAT was $10,133M...",
+    "answer": "PetSure Australia's NPAT was $10,133M...",
     "citations": [...],
     "trace": {
         "steps": [
@@ -362,10 +362,10 @@ The endpoint includes a `trace` field in its JSON response body conforming to th
 
 Simple to implement. The audit trail check (AI-GOV-008) validates: "I called your endpoint — did the response include a valid trace? If not, blocked."
 
-**Option 2 — OpenTelemetry sidecar (production / CBA-realistic):**
+**Option 2 — OpenTelemetry sidecar (production / PetSure Australia-realistic):**
 The endpoint pushes spans to a platform-provided OTel collector (e.g. LangFuse, Jaeger). The Chapter doesn't control the response schema — it owns the collector.
 
-More realistic at CBA scale where the Chapter Area Lead may not have the influence to mandate response format changes across all squads. OTel is an industry standard squads may already use. The Chapter provides the collector; squads instrument at their own pace. Adoption is tracked via the dashboard — visibility, not enforcement.
+More realistic at PetSure Australia scale where the Chapter Area Lead may not have the influence to mandate response format changes across all squads. OTel is an industry standard squads may already use. The Chapter provides the collector; squads instrument at their own pace. Adoption is tracked via the dashboard — visibility, not enforcement.
 
 ### Squad Responsibilities (Either Pattern)
 
@@ -409,4 +409,4 @@ The Component Catalog page demonstrates the Chapter's reusable component model: 
 
 > "The chapter builds the evaluation harness and sets the standards. The squads consume it and own their domain-specific test data. That's the reusable component model — we build it once, every squad benefits, and quality is consistent across the organisation."
 >
-> "At PetSure I'm building Layers 1 and 2 right now with DeepEval and LangFuse. At CBA scale, I'd extend this to a full four-layer framework with automated gates across the CI/CD pipeline, staging, and production."
+> "At PetSure I'm building Layers 1 and 2 right now with DeepEval and LangFuse. At PetSure Australia scale, I'd extend this to a full four-layer framework with automated gates across the CI/CD pipeline, staging, and production."

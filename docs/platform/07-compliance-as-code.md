@@ -4,7 +4,7 @@ This is the centrepiece. Alex called out the pain: manual effort to usher AI sol
 
 ## The Problem It Solves
 
-Today at CBA, getting an AI solution through governance means manual checklists, review meetings, Word documents, and email chains. Squads spend weeks on paperwork instead of building. The chapter's job is to encode those policies into automated checks that run at every stage: before deployment, during production, and on demand for audit.
+Today at PetSure Australia, getting an AI solution through governance means manual checklists, review meetings, Word documents, and email chains. Squads spend weeks on paperwork instead of building. The chapter's job is to encode those policies into automated checks that run at every stage: before deployment, during production, and on demand for audit.
 
 ## Three Layers of Compliance-as-Code
 
@@ -151,7 +151,7 @@ jobs:
       "status": "PASS",
       "policy": "AI-GOV-001: All AI solutions must be registered",
       "evidence": {
-        "registry_id": "CBA-AI-2026-0042",
+        "registry_id": "PETSURE-AI-2026-0042",
         "risk_tier": "production_internal",
         "owner": "Kristopher Lopez",
         "registration_date": "2026-04-01"

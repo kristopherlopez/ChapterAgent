@@ -38,10 +38,10 @@ description: >
   fraudulent patterns for human investigation.
 version: "1.0.0"
 owner: "Claims Intelligence Squad"
-contact: "claims-intel@cba.com.au"
+contact: "claims-intel@petsure.com.au"
 type: endpoint
 endpoint:
-  url: "https://claims-fraud-agent.internal.cba.com.au/analyse"
+  url: "https://claims-fraud-agent.internal.petsure.com.au/analyse"
   method: POST
   timeout_ms: 30000
 ```

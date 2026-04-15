@@ -1,8 +1,8 @@
-# Demo Solution #6: CBA Governance Policy Agent
+# Demo Solution #6: PetSure Australia Governance Policy Agent
 
 ## What This Is
 
-A Q&A agent that answers questions about the governance policy documents loaded into the platform. While the existing CBA Annual Report Q&A Agent demonstrates governance over an external document (a public annual report), this agent demonstrates the same governance applied to the platform's own policy corpus — the internal policies, frameworks, standards, and guidelines that define how AI solutions must be built, tested, and deployed.
+A Q&A agent that answers questions about the governance policy documents loaded into the platform. While the existing PetSure Australia Annual Report Q&A Agent demonstrates governance over an external document (a public annual report), this agent demonstrates the same governance applied to the platform's own policy corpus — the internal policies, frameworks, standards, and guidelines that define how AI solutions must be built, tested, and deployed.
 
 This is a "dog-fooding" solution: the platform governs an agent whose job is to help people understand the governance rules.
 
@@ -20,13 +20,13 @@ The agent's knowledge base is the governance document library already in the pla
 
 | Document | Type | Owner | Key Controls |
 |----------|------|-------|-------------|
-| CBA Group AI Policy | Policy | Group Risk | AI-GOV-001, 003, 005, 006, 007, 008, 009, 010 |
-| CBA Responsible AI Principles | Policy | AI Ethics Board | AI-GOV-005, 007 |
-| CBA Model Risk Management Framework | Framework | Model Risk | AI-GOV-001, 003, 007, 009 |
-| CBA Data Governance Standard | Standard | Chief Data Office | AI-GOV-005, 008, 009 |
-| CBA AI Solution Registration Standard | Standard | Risk Management AI | AI-GOV-001 |
-| CBA AI Testing & Evaluation Framework | Framework | Risk Management AI | AI-GOV-003, 006, 007, 009 |
-| CBA Prompt Governance Guideline | Guideline | Risk Management AI | AI-GOV-010 |
+| PetSure Australia Group AI Policy | Policy | Group Risk | AI-GOV-001, 003, 005, 006, 007, 008, 009, 010 |
+| PetSure Australia Responsible AI Principles | Policy | AI Ethics Board | AI-GOV-005, 007 |
+| PetSure Australia Model Risk Management Framework | Framework | Model Risk | AI-GOV-001, 003, 007, 009 |
+| PetSure Australia Data Governance Standard | Standard | Chief Data Office | AI-GOV-005, 008, 009 |
+| PetSure Australia AI Solution Registration Standard | Standard | Risk Management AI | AI-GOV-001 |
+| PetSure Australia AI Testing & Evaluation Framework | Framework | Risk Management AI | AI-GOV-003, 006, 007, 009 |
+| PetSure Australia Prompt Governance Guideline | Guideline | Risk Management AI | AI-GOV-010 |
 | APRA CPS 230 — Operational Risk Management | Standard | APRA | AI-GOV-001, 003, 006, 008 |
 | APRA CPS 234 — Information Security | Standard | APRA | AI-GOV-005, 006, 008, 010 |
 | Australia's Voluntary AI Safety Standard | Guideline | DISR | AI-GOV-001, 003, 005, 007, 008 |
@@ -103,13 +103,13 @@ Multiple documents define terms like "AI solution", "risk tier", "golden dataset
 
 | Priority | Document | Why |
 |----------|----------|-----|
-| 1 | CBA Group AI Policy | The anchor document — everything references it |
-| 2 | CBA AI Testing & Evaluation Framework | Most detail-heavy — metrics, thresholds, risk tier tables |
-| 3 | CBA AI Solution Registration Standard | Defines the manifest schema squads interact with daily |
-| 4 | CBA Responsible AI Principles | Creates the bias/fairness overlap with Testing Framework |
-| 5 | CBA Model Risk Management Framework | Bridges AI governance with traditional model risk |
-| 6 | CBA Data Governance Standard | Privacy and data quality depth |
-| 7 | CBA Prompt Governance Guideline | Narrower scope but unique content |
+| 1 | PetSure Australia Group AI Policy | The anchor document — everything references it |
+| 2 | PetSure Australia AI Testing & Evaluation Framework | Most detail-heavy — metrics, thresholds, risk tier tables |
+| 3 | PetSure Australia AI Solution Registration Standard | Defines the manifest schema squads interact with daily |
+| 4 | PetSure Australia Responsible AI Principles | Creates the bias/fairness overlap with Testing Framework |
+| 5 | PetSure Australia Model Risk Management Framework | Bridges AI governance with traditional model risk |
+| 6 | PetSure Australia Data Governance Standard | Privacy and data quality depth |
+| 7 | PetSure Australia Prompt Governance Guideline | Narrower scope but unique content |
 | 8 | APRA CPS 230 | Regulatory — external authority voice |
 | 9 | APRA CPS 234 | Regulatory — information security angle |
 | 10 | DISR AI Safety Standard | Regulatory — voluntary guardrails |
@@ -122,31 +122,31 @@ The first three are critical for the demo. Documents 4-7 create the cross-refere
 
 > **User:** What are the mandatory fields in a solution manifest?
 >
-> **Agent:** According to the CBA AI Solution Registration Standard, a solution manifest must include: name, ID, description, version, owner, type, risk tier, guardrail configuration, evaluation metrics, and compliance gates.
+> **Agent:** According to the PetSure Australia AI Solution Registration Standard, a solution manifest must include: name, ID, description, version, owner, type, risk tier, guardrail configuration, evaluation metrics, and compliance gates.
 >
-> *Source: CBA AI Solution Registration Standard, Section 3.2 — Mandatory Registration Fields*
+> *Source: PetSure Australia AI Solution Registration Standard, Section 3.2 — Mandatory Registration Fields*
 
 ### Cross-Document Question
 
 > **User:** What guardrails does APRA expect for a customer-facing AI solution?
 >
-> **Agent:** APRA CPS 230 requires operational risk controls including guardrail validation (AI-GOV-006) and audit trail coverage (AI-GOV-008). CPS 234 adds information security requirements including PII protection (AI-GOV-005) and prompt governance (AI-GOV-010). For a customer-facing risk tier, the CBA AI Testing & Evaluation Framework sets the strictest thresholds for all guardrail metrics.
+> **Agent:** APRA CPS 230 requires operational risk controls including guardrail validation (AI-GOV-006) and audit trail coverage (AI-GOV-008). CPS 234 adds information security requirements including PII protection (AI-GOV-005) and prompt governance (AI-GOV-010). For a customer-facing risk tier, the PetSure Australia AI Testing & Evaluation Framework sets the strictest thresholds for all guardrail metrics.
 >
-> *Sources: APRA CPS 230 s4.1, APRA CPS 234 s3.2, CBA AI Testing & Evaluation Framework s5.1*
+> *Sources: APRA CPS 230 s4.1, APRA CPS 234 s3.2, PetSure Australia AI Testing & Evaluation Framework s5.1*
 
 ### Scope Refusal
 
 > **User:** What's the best LLM for building a Q&A agent?
 >
-> **Agent:** I can only answer questions about CBA's AI governance policies, frameworks, and standards.
+> **Agent:** I can only answer questions about PetSure Australia's AI governance policies, frameworks, and standards.
 
 ### Control Mapping
 
 > **User:** Which documents cover AI-GOV-007?
 >
-> **Agent:** Three documents address AI-GOV-007 (Bias & Toxicity validation): the CBA Responsible AI Principles (fairness principles), the CBA Model Risk Management Framework (model validation requirements), and the CBA AI Testing & Evaluation Framework (bias/toxicity metric thresholds by risk tier).
+> **Agent:** Three documents address AI-GOV-007 (Bias & Toxicity validation): the PetSure Australia Responsible AI Principles (fairness principles), the PetSure Australia Model Risk Management Framework (model validation requirements), and the PetSure Australia AI Testing & Evaluation Framework (bias/toxicity metric thresholds by risk tier).
 >
-> *Sources: CBA Responsible AI Principles s2.1, CBA Model Risk Framework s6.3, CBA AI Testing & Evaluation Framework s4.4*
+> *Sources: PetSure Australia Responsible AI Principles s2.1, PetSure Australia Model Risk Framework s6.3, PetSure Australia AI Testing & Evaluation Framework s4.4*
 
 ## Risk Tier
 
@@ -215,11 +215,11 @@ All 8 gates apply. The same gates as every other solution — that's the point.
 
 ## Sidebar Placement
 
-In the platform UI, this solution appears directly below the CBA Annual Report Q&A Agent in the **AI Solutions** section of the sidebar:
+In the platform UI, this solution appears directly below the PetSure Australia Annual Report Q&A Agent in the **AI Solutions** section of the sidebar:
 
 ```
 AI Solutions
-  CBA Annual Report Q&A        [health dot]
+  PetSure Australia Annual Report Q&A        [health dot]
   Governance Policy Agent       [health dot]    <-- new
   Model Validation Agent        [health dot]
   Classification Agent          [health dot]
@@ -311,9 +311,9 @@ The evaluation harness doesn't care which approach was used. It measures the sam
 ### Phase 1: Knowledge Base (Corpus Build-Out)
 
 - [ ] Create `solutions/governance-policy-qa/knowledge_base/` directory
-- [ ] Build out CBA Group AI Policy (~2,000 words) — anchor document
-- [ ] Build out CBA AI Testing & Evaluation Framework (~2,500 words) — most detail
-- [ ] Build out CBA AI Solution Registration Standard (~1,800 words)
+- [ ] Build out PetSure Australia Group AI Policy (~2,000 words) — anchor document
+- [ ] Build out PetSure Australia AI Testing & Evaluation Framework (~2,500 words) — most detail
+- [ ] Build out PetSure Australia AI Solution Registration Standard (~1,800 words)
 - [ ] Build out remaining 4 internal documents (Responsible AI, Model Risk, Data Governance, Prompt Governance)
 - [ ] Build out 3 regulatory documents (CPS 230, CPS 234, DISR AI Safety Standard)
 - [ ] Generate topic graph from document structure and control mappings
@@ -340,7 +340,7 @@ The evaluation harness doesn't care which approach was used. It measures the sam
 - [ ] Create `solutions/governance-policy-qa/solution.yaml` manifest
 - [ ] Generate golden dataset (30 test cases)
 - [ ] Create pre-recorded scenarios (4-5 scenarios)
-- [ ] Add to `data.ts` solutions array (position: after `cba-annual-report-qa`)
+- [ ] Add to `data.ts` solutions array (position: after `petsure-annual-report-qa`)
 - [ ] Add summary.json to `results/governance-policy-qa/`
 
 ### Phase 5: Portal Integration

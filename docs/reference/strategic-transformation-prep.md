@@ -154,7 +154,7 @@ Your team needs the technical depth to assess whether these models are sound, fa
 >
 > The result: crews focus on the problem they're solving, not the infrastructure. Every model is consistent, governed, and auditable by default. And when APRA asks 'show me your controls,' you point at the pipeline, not a folder of Word documents.
 >
-> At PetSure I built this at a smaller scale — standardised our AI development lifecycle, governance framework, evaluation tooling. The principle is the same at CBA, the scale is different. The Chapter Area Lead's job is to make the right thing the easy thing."
+> At PetSure I built this at a smaller scale — standardised our AI development lifecycle, governance framework, evaluation tooling. The principle is the same at PetSure Australia, the scale is different. The Chapter Area Lead's job is to make the right thing the easy thing."
 
 ### Proof points from your experience
 - Built AI operating model and governance framework at PetSure
