@@ -34,8 +34,8 @@ class EvidenceReportGenerator:
     Usage:
         generator = EvidenceReportGenerator()
         report = generator.generate(
-            solution_id="cba-annual-report-qa",
-            solution_name="CBA Annual Report Q&A Agent",
+            solution_id="petsure-annual-report-qa",
+            solution_name="PetSure Australia Annual Report Q&A Agent",
             risk_tier="production_customer_facing",
             guardrail_results=results,
             eval_report=report,

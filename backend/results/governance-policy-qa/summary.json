@@ -1,7 +1,7 @@
 {
   "id": "governance-policy-qa",
   "name": "Governance Policy Agent",
-  "description": "Answers questions about CBA's AI governance policies, frameworks, and standards with source citations",
+  "description": "Answers questions about PetSure Australia's AI governance policies, frameworks, and standards with source citations",
   "category": "ai",
   "owner": "Chapter Platform Team",
   "riskTier": "Internal",

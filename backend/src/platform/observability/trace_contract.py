@@ -9,10 +9,10 @@ integration patterns:
     compliance runner validates the trace at test time.  Simple to implement
     but requires the squad to change their response schema.
 
-**Option 2 — Sidecar export via OpenTelemetry (production / CBA-realistic):**
+**Option 2 — Sidecar export via OpenTelemetry (production / PetSure Australia-realistic):**
     The endpoint pushes spans to a platform-provided OTel collector (e.g.
     LangFuse, Jaeger).  The Chapter doesn't own the endpoint response schema
-    — it owns the collector.  More realistic at CBA scale where the Chapter
+    — it owns the collector.  More realistic at PetSure Australia scale where the Chapter
     may not have the influence to mandate response format changes.
 
 This module implements Option 1 for the demo and documents the Option 2
@@ -42,7 +42,7 @@ class InlineTraceContract(BaseModel):
     Example conforming response from an endpoint::
 
         {
-            "answer": "CBA's NPAT was $10,133M...",
+            "answer": "PetSure Australia's NPAT was $10,133M...",
             "citations": [...],
             "trace": {
                 "steps": [
@@ -149,7 +149,7 @@ response schema, solutions export traces via OpenTelemetry:
 - `trace.contract_version` — matches solution.yaml tracing.contract_version
 - `step.type` — one of: query, retrieval, generation, guardrail, response, tool_call, reasoning_step
 
-### Why this pattern at CBA:
+### Why this pattern at PetSure Australia:
 The Chapter Area Lead typically doesn't have the authority to mandate response
 schema changes across all squads.  OTel is an industry standard that squads
 may already use.  The Chapter provides the collector; squads instrument at

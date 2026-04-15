@@ -87,7 +87,7 @@ class TracingConfig(BaseModel):
       runner can validate traces without extra infrastructure.
     - **opentelemetry** (production): The solution pushes spans to a
       platform-provided OTel collector (e.g. LangFuse).  More realistic at
-      CBA scale where the Chapter may not control endpoint response schemas.
+      PetSure Australia scale where the Chapter may not control endpoint response schemas.
     """
     contract_version: str = "1.0"
     format: str = "inline"  # "inline" | "opentelemetry"

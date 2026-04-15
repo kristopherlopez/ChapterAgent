@@ -39,7 +39,7 @@ class TestPIIGuardrail:
     async def test_clean_output_passes(self, guardrail):
         result = await guardrail.check(
             input="What was the profit?",
-            output="CBA's net profit was $10.18 billion in FY2024.",
+            output="PetSure Australia's net profit was $10.18 billion in FY2024.",
         )
         assert result.result == "pass"
 
@@ -56,7 +56,7 @@ class TestPIIGuardrail:
     async def test_email_detected(self, guardrail):
         result = await guardrail.check(
             input="query",
-            output="Contact john.smith@cba.com.au for details.",
+            output="Contact john.smith@petsure.com.au for details.",
         )
         assert result.result == "fail"
         assert "Email" in result.detail
@@ -115,7 +115,7 @@ class TestScopeGuardrail:
     async def test_financial_advice_always_fails(self):
         guardrail = ScopeGuardrail(scope_level=3, topic_graph=SAMPLE_TOPIC_GRAPH)
         result = await guardrail.check(
-            input="Should I buy CBA shares?",
+            input="Should I buy PetSure Australia shares?",
             output="",
         )
         assert result.result == "fail"
@@ -155,7 +155,7 @@ class TestPromptInjectionGuardrail:
     @pytest.mark.asyncio
     async def test_normal_query_passes(self, guardrail):
         result = await guardrail.check(
-            input="What was CBA's net profit?",
+            input="What was PetSure Australia's net profit?",
             output="",
         )
         assert result.result == "pass"
@@ -191,7 +191,7 @@ class TestBiasGuardrail:
     @pytest.mark.asyncio
     async def test_clean_output_passes(self):
         guardrail = BiasGuardrail()
-        result = await guardrail.check(input="q", output="CBA reported strong results.")
+        result = await guardrail.check(input="q", output="PetSure Australia reported strong results.")
         assert result.result == "pass"
 
     @pytest.mark.asyncio
@@ -207,7 +207,7 @@ class TestToxicityGuardrail:
     @pytest.mark.asyncio
     async def test_clean_output_passes(self):
         guardrail = ToxicityGuardrail()
-        result = await guardrail.check(input="q", output="CBA's profit was strong.")
+        result = await guardrail.check(input="q", output="PetSure Australia's profit was strong.")
         assert result.result == "pass"
 
     @pytest.mark.asyncio
@@ -247,7 +247,7 @@ class TestTemporalAccuracyGuardrail:
         guardrail = TemporalAccuracyGuardrail()
         result = await guardrail.check(
             input="q",
-            output="In FY2024, CBA's profit was $10.18B.",
+            output="In FY2024, PetSure Australia's profit was $10.18B.",
             context=["For FY2024, net profit was $10.18 billion."],
         )
         assert result.result == "pass"
@@ -263,8 +263,8 @@ class TestGuardrailRunner:
             PromptInjectionGuardrail(),
         ])
         results = await runner.run_all(
-            input="What was CBA's profit?",
-            output="CBA's net profit was $10.18 billion.",
+            input="What was PetSure Australia's profit?",
+            output="PetSure Australia's net profit was $10.18 billion.",
         )
         assert len(results) == 2
         assert all(r.result == "pass" for r in results)

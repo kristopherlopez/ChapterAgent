@@ -151,10 +151,10 @@ def _get_validation_state(solution_id: str) -> dict[str, Any]:
         return _validation_state[solution_id]
 
     # Try to load from golden dataset
-    solution_dir = SOLUTIONS_DIR / solution_id.replace("-", "_").replace("cba-annual-report-qa", "qa-agent")
+    solution_dir = SOLUTIONS_DIR / solution_id.replace("-", "_").replace("petsure-annual-report-qa", "qa-agent")
     # Handle ID-to-directory mapping
     dir_map = {
-        "cba-annual-report-qa": "qa-agent",
+        "petsure-annual-report-qa": "qa-agent",
         "governance-policy-qa": "governance-policy-qa",
     }
     dir_name = dir_map.get(solution_id, solution_id)
@@ -221,7 +221,7 @@ def generate_test_cases(req: GenerationRequest) -> dict[str, Any]:
     In production, this would use LLMs to synthesise from the corpus.
     """
     dir_map = {
-        "cba-annual-report-qa": "qa-agent",
+        "petsure-annual-report-qa": "qa-agent",
         "governance-policy-qa": "governance-policy-qa",
     }
     dir_name = dir_map.get(req.solution_id)

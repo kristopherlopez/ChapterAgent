@@ -116,7 +116,7 @@ def _get_guardrail_runner(citations_count: int | None = None) -> GuardrailRunner
     )
 
 
-_compliance_logger = ComplianceLogger(solution_id="cba-annual-report-qa")
+_compliance_logger = ComplianceLogger(solution_id="petsure-annual-report-qa")
 
 
 def _get_context(agent, question, response):
@@ -141,7 +141,7 @@ def _get_context(agent, question, response):
 
 @router.post("/chat/{solution_id}", response_model=ChatResponse)
 async def chat(solution_id: str, req: ChatRequest):
-    if solution_id != "cba-annual-report-qa":
+    if solution_id != "petsure-annual-report-qa":
         raise HTTPException(status_code=404, detail="Solution not found")
 
     start = time.perf_counter()
@@ -212,14 +212,14 @@ async def chat(solution_id: str, req: ChatRequest):
         if scope_failed:
             display_text = (
                 "That question is outside the scope of this tool. "
-                "I can only answer questions about CBA's 2025 Annual Report — "
+                "I can only answer questions about PetSure Australia's 2025 Annual Report — "
                 "try asking about financial performance, dividends, sustainability, "
                 "or other topics covered in the report."
             )
         else:
             display_text = (
                 "I'm unable to answer that question. "
-                "Please try rephrasing or ask something about CBA's 2025 Annual Report."
+                "Please try rephrasing or ask something about PetSure Australia's 2025 Annual Report."
             )
 
     return ChatResponse(
@@ -378,14 +378,14 @@ async def _stream_chat(
         if scope_failed:
             display_text = (
                 "That question is outside the scope of this tool. "
-                "I can only answer questions about CBA's 2025 Annual Report — "
+                "I can only answer questions about PetSure Australia's 2025 Annual Report — "
                 "try asking about financial performance, dividends, sustainability, "
                 "or other topics covered in the report."
             )
         else:
             display_text = (
                 "I'm unable to answer that question. "
-                "Please try rephrasing or ask something about CBA's 2025 Annual Report."
+                "Please try rephrasing or ask something about PetSure Australia's 2025 Annual Report."
             )
 
     yield sse("complete", {
@@ -435,7 +435,7 @@ async def _run_openai_streamed(
 
         @function_tool
         def list_pages() -> str:
-            """List all pages in the CBA Annual Report."""
+            """List all pages in the PetSure Australia Annual Report."""
             return "\n".join(
                 f"p.{e['page']:>3}  {e['title']:<60}  [{e['file']}]"
                 for e in page_index
@@ -443,7 +443,7 @@ async def _run_openai_streamed(
 
         @function_tool
         def read_page(filename: str) -> str:
-            """Read a full page from the CBA Annual Report by filename."""
+            """Read a full page from the PetSure Australia Annual Report by filename."""
             p = pages_dir / filename
             if not p.exists():
                 return json.dumps({"error": f"Not found: {filename}"})
@@ -459,7 +459,7 @@ async def _run_openai_streamed(
             return f"Citation recorded: p.{page}"
 
         openai_agent = Agent(
-            name="CBA Annual Report Q&A",
+            name="PetSure Australia Annual Report Q&A",
             instructions=AGENT_SYSTEM_PROMPT,
             model=agent.generator.model,
             tools=[list_pages, read_page, cite_source],
@@ -479,7 +479,7 @@ async def _run_openai_streamed(
             return f"Citation recorded: p.{page}"
 
         openai_agent = Agent(
-            name="CBA Annual Report Q&A",
+            name="PetSure Australia Annual Report Q&A",
             instructions=instructions,
             model=agent.generator.model,
             tools=[cite_source_ctx],
@@ -560,7 +560,7 @@ async def _run_openai_streamed(
 @router.post("/chat/{solution_id}/stream")
 async def chat_stream(solution_id: str, req: ChatRequest):
     """Stream chat response with real-time thinking traces."""
-    if solution_id != "cba-annual-report-qa":
+    if solution_id != "petsure-annual-report-qa":
         raise HTTPException(status_code=404, detail="Solution not found")
 
     return StreamingResponse(

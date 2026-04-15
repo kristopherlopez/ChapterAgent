@@ -74,7 +74,7 @@ CONTROLS = [
         "enforcementLayer": "deployment-gate+production",
         "controlType": "preventive+detective",
         "risksMitigated": ["AIR-002"],
-        "regulatoryAlignment": ["DISR #4", "CBA AI Policy"],
+        "regulatoryAlignment": ["DISR #4", "PetSure Australia AI Policy"],
         "sourceDoc": "08-evaluation-harness",
     },
     {

@@ -52,7 +52,7 @@ class GuardrailRunner:
         scope_level: int = 1,
         topic_graph: dict | None = None,
         topic_graph_path: str | None = None,
-        refusal_message: str = "I can only answer questions about CBA's 2025 Annual Report.",
+        refusal_message: str = "I can only answer questions about PetSure Australia's 2025 Annual Report.",
         faithfulness_threshold: float = 0.90,
         citation_coverage_threshold: float = 0.95,
         citations_count: int | None = None,

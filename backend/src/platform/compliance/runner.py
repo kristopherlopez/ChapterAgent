@@ -233,15 +233,15 @@ class ComplianceRunner:
 
         # Load golden dataset sample for guardrail testing
         dataset_path = self.solution_dir / "golden_dataset" / "dataset.json"
-        sample_input = "What was CBA's net profit after tax in FY2025?"
+        sample_input = "What was PetSure Australia's net profit after tax in FY2025?"
         sample_output = (
-            "CBA's statutory net profit after tax (NPAT) for FY2025 was "
+            "PetSure Australia's statutory net profit after tax (NPAT) for FY2025 was "
             "$10,133 million, representing a 7% increase from $9,481 million "
-            "in FY2024. [Source: CBA Annual Report 2025, p. 26, Section: "
+            "in FY2024. [Source: PetSure Australia Annual Report 2025, p. 26, Section: "
             "Financial Performance — Overview]"
         )
         sample_context = [
-            "CBA's statutory net profit after tax (NPAT) for FY2025 was "
+            "PetSure Australia's statutory net profit after tax (NPAT) for FY2025 was "
             "$10,133 million, representing a 7% increase from $9,481 million "
             "in FY2024. The Group delivered cash net profit after tax of "
             "$10,164 million, up 2% on the prior year."
