@@ -1,4 +1,4 @@
-# CBA Responsible AI Principles
+# PetSure Australia Responsible AI Principles
 
 **Document ID:** GOV-AI-002
 **Version:** 2.0
@@ -13,17 +13,17 @@
 
 ## 1. Purpose
 
-This document defines the six Responsible AI Principles that govern the design, development, deployment, and operation of all AI systems across the Commonwealth Bank Group. These principles translate the values articulated in GOV-AI-001 Section 4 into practical requirements, platform enforcement mechanisms, and measurable outcomes.
+This document defines the six Responsible AI Principles that govern the design, development, deployment, and operation of all AI systems across the PetSure Australia Group. These principles translate the values articulated in GOV-AI-001 Section 4 into practical requirements, platform enforcement mechanisms, and measurable outcomes.
 
-Principles without enforcement are aspirational statements. This document goes beyond aspiration: for each principle, it defines what the principle means in practice, how the CBA AI governance platform enforces it, and how compliance is measured. The intent is to make responsible AI the path of least resistance, not an additional burden layered onto delivery teams.
+Principles without enforcement are aspirational statements. This document goes beyond aspiration: for each principle, it defines what the principle means in practice, how the PetSure Australia AI governance platform enforces it, and how compliance is measured. The intent is to make responsible AI the path of least resistance, not an additional burden layered onto delivery teams.
 
-This document is subordinate to the CBA Group AI Policy (GOV-AI-001) and is referenced by the CBA AI Testing & Evaluation Framework (GOV-AI-006), the CBA AI Solution Registration Standard (GOV-AI-005), and the CBA Prompt Governance Guideline (GOV-AI-007).
+This document is subordinate to the PetSure Australia Group AI Policy (GOV-AI-001) and is referenced by the PetSure Australia AI Testing & Evaluation Framework (GOV-AI-006), the PetSure Australia AI Solution Registration Standard (GOV-AI-005), and the PetSure Australia Prompt Governance Guideline (GOV-AI-007).
 
 ## 2. Scope
 
 These principles apply to all AI solutions within the scope of GOV-AI-001, at all lifecycle stages and all risk tiers. While the intensity of enforcement varies by risk tier (proportionate governance, per GOV-AI-001 Section 4.1), the principles themselves are universal. An experimental prototype is not exempt from fairness or safety — it is simply held to a proportionate standard.
 
-These principles also apply to the evaluation of third-party AI solutions procured by CBA. Vendors must demonstrate alignment with these principles as a condition of procurement.
+These principles also apply to the evaluation of third-party AI solutions procured by PetSure Australia. Vendors must demonstrate alignment with these principles as a condition of procurement.
 
 ## 3. Definitions
 
@@ -110,15 +110,15 @@ Every AI system must have a named, accountable individual. Accountability cannot
 
 #### What This Means in Practice
 
-- Every solution manifest must include a named owner with a valid CBA email address. The platform does not accept solutions without an identified accountable individual (per GOV-AI-001 Section 4.5).
+- Every solution manifest must include a named owner with a valid PetSure Australia email address. The platform does not accept solutions without an identified accountable individual (per GOV-AI-001 Section 4.5).
 - The solution owner is responsible for the solution's compliance, including maintaining the golden dataset, responding to evaluation failures, and managing incidents.
-- Accountability extends to third-party solutions: if CBA procures an AI system from a vendor, a CBA employee must still be the accountable owner.
+- Accountability extends to third-party solutions: if PetSure Australia procures an AI system from a vendor, a PetSure Australia employee must still be the accountable owner.
 - When a solution owner leaves the organisation or changes roles, ownership must be transferred within 10 business days.
 
 #### Platform Enforcement
 
 - The Registration gate (AI-GOV-001) validates the presence of a named owner in the solution manifest.
-- The platform tracks ownership and flags solutions where the owner's CBA account becomes inactive.
+- The platform tracks ownership and flags solutions where the owner's PetSure Australia account becomes inactive.
 - All compliance evidence, evaluation results, and incident records are attributed to the solution owner at the time of the event.
 
 #### Measurement
@@ -140,7 +140,7 @@ AI systems must not collect, store, process, or expose personal information beyo
 - Golden datasets must use synthetic or appropriately anonymised data. Real customer data is prohibited in test cases (per GOV-AI-001 Section 4.4).
 - Training data and fine-tuning datasets must undergo PII review before use.
 - Solutions that access customer data must declare data sources and PII exposure level in the solution manifest (`data.pii_exposure` field).
-- Data retention for AI interaction logs must comply with CBA data retention policies and the Privacy Act 1988 (Cth).
+- Data retention for AI interaction logs must comply with PetSure Australia data retention policies and the Privacy Act 1988 (Cth).
 
 #### Platform Enforcement
 
@@ -187,7 +187,7 @@ Safety is measured through:
 
 #### Definition
 
-AI systems must operate under appropriate human oversight. The level of oversight must be proportionate to the risk and impact of the system's outputs. No AI system at CBA is fully autonomous — there is always a human in or on the loop.
+AI systems must operate under appropriate human oversight. The level of oversight must be proportionate to the risk and impact of the system's outputs. No AI system at PetSure Australia is fully autonomous — there is always a human in or on the loop.
 
 #### What This Means in Practice
 
@@ -275,10 +275,10 @@ Certain AI solutions or changes require review by the Group AI Ethics Board befo
 |---------|-------------|-------------|
 | **Customer-facing automated decisioning** | Any solution that makes or materially influences decisions about individual customers without human-in-the-loop review of each decision | Full ethics review: fairness, transparency, human oversight, complaint mechanisms |
 | **Sensitive use cases** | Solutions involving credit decisions, insurance underwriting, claims assessment, complaint handling, vulnerability detection, or collections | Full ethics review |
-| **Novel AI capabilities** | First deployment of a new AI capability type within CBA (e.g., first agentic workflow, first voice AI) | Capability assessment: risks, safeguards, oversight model |
+| **Novel AI capabilities** | First deployment of a new AI capability type within PetSure Australia (e.g., first agentic workflow, first voice AI) | Capability assessment: risks, safeguards, oversight model |
 | **Bias threshold exceedance** | A production solution exceeds bias or fairness thresholds during evaluation | Targeted review: root cause, remediation plan, threshold adequacy |
 | **Customer complaint** | A customer lodges a formal complaint alleging unfair or discriminatory treatment by an AI system | Targeted review: complaint investigation, systemic assessment |
-| **Regulatory enquiry** | A regulator enquires about a specific AI solution or CBA's AI practices generally | Full review: compliance posture, documentation adequacy |
+| **Regulatory enquiry** | A regulator enquires about a specific AI solution or PetSure Australia's AI practices generally | Full review: compliance posture, documentation adequacy |
 | **Significant scope expansion** | A registered solution materially expands its scope, audience, or decision authority | Re-assessment of original ethics review (if one existed) or new review |
 
 ### 6.2 Ethics Review Process
@@ -304,11 +304,11 @@ Customers who believe they have been unfairly treated by an AI-assisted decision
 1. **Be informed** that AI was involved in the decision
 2. **Request an explanation** of how the AI contributed to the decision
 3. **Request a human review** of the decision by a qualified person not involved in the original decision
-4. **Lodge a complaint** through CBA's existing complaint resolution process, with the complaint flagged as AI-related for tracking and escalation
+4. **Lodge a complaint** through PetSure Australia's existing complaint resolution process, with the complaint flagged as AI-related for tracking and escalation
 
 ### 7.2 Internal Escalation
 
-CBA staff who identify potential fairness, safety, or ethical concerns with an AI solution may escalate through:
+PetSure Australia staff who identify potential fairness, safety, or ethical concerns with an AI solution may escalate through:
 
 - Their line management
 - The Chapter Lead
@@ -328,11 +328,11 @@ All AI-related complaints and escalations are tracked in the platform and report
 
 | Document | Relationship |
 |----------|-------------|
-| CBA Group AI Policy (GOV-AI-001) | Parent — this document implements the principles defined in Section 4 of the Group policy |
-| CBA Data Governance Standard (GOV-AI-004) | Peer — privacy requirements are jointly governed with the Data Governance Standard |
-| CBA AI Solution Registration Standard (GOV-AI-005) | Peer — fairness definitions and ethics review outcomes are recorded in the solution manifest |
-| CBA AI Testing & Evaluation Framework (GOV-AI-006) | Peer — bias testing methodology and thresholds are implemented through the evaluation harness |
-| CBA Prompt Governance Guideline (GOV-AI-007) | Peer — prompt design must reflect these principles, particularly fairness and safety |
+| PetSure Australia Group AI Policy (GOV-AI-001) | Parent — this document implements the principles defined in Section 4 of the Group policy |
+| PetSure Australia Data Governance Standard (GOV-AI-004) | Peer — privacy requirements are jointly governed with the Data Governance Standard |
+| PetSure Australia AI Solution Registration Standard (GOV-AI-005) | Peer — fairness definitions and ethics review outcomes are recorded in the solution manifest |
+| PetSure Australia AI Testing & Evaluation Framework (GOV-AI-006) | Peer — bias testing methodology and thresholds are implemented through the evaluation harness |
+| PetSure Australia Prompt Governance Guideline (GOV-AI-007) | Peer — prompt design must reflect these principles, particularly fairness and safety |
 | Privacy Act 1988 (Cth) | Regulatory — privacy principle aligns to Australian privacy legislation |
 | APRA CPS 230 — Operational Risk Management | Regulatory — accountability and safety principles support operational risk management obligations |
 | DISR Voluntary AI Safety Standard | Regulatory — these principles align to the 10 voluntary guardrails published by the Department of Industry, Science and Resources |

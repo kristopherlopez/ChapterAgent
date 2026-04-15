@@ -1,4 +1,4 @@
-# CBA AI Testing & Evaluation Framework
+# PetSure Australia AI Testing & Evaluation Framework
 
 **Document ID:** GOV-AI-006
 **Version:** 1.2
@@ -13,7 +13,7 @@
 
 ## 1. Purpose
 
-This framework establishes the mandatory testing and evaluation requirements for all AI solutions governed by the CBA Group AI Policy (GOV-AI-001). It defines the composition, quality, and coverage standards for golden datasets; the evaluation metrics applicable to each solution type; the metric thresholds that vary by risk tier; the re-evaluation cadence for production solutions; and the technical architecture of the evaluation harness.
+This framework establishes the mandatory testing and evaluation requirements for all AI solutions governed by the PetSure Australia Group AI Policy (GOV-AI-001). It defines the composition, quality, and coverage standards for golden datasets; the evaluation metrics applicable to each solution type; the metric thresholds that vary by risk tier; the re-evaluation cadence for production solutions; and the technical architecture of the evaluation harness.
 
 This framework exists because AI systems degrade silently. Unlike traditional software, where a defect produces an observable error, an AI system can drift in quality, develop bias, or produce subtly incorrect outputs without triggering any conventional alarm. Structured, repeatable evaluation is the primary defence against this failure mode. The framework ensures that every AI solution is measured against a defined quality bar before deployment and continuously thereafter.
 
@@ -21,7 +21,7 @@ This document is subordinate to GOV-AI-001 and implements the evaluation require
 
 ## 2. Scope
 
-This framework applies to all AI solutions registered on the CBA AI governance platform, including:
+This framework applies to all AI solutions registered on the PetSure Australia AI governance platform, including:
 
 - Generative AI solutions (Q&A agents, conversational AI, document generation, summarisation)
 - Classification solutions (intent detection, sentiment analysis, document classification, complaint routing)
@@ -36,12 +36,12 @@ The framework applies from the point of solution registration through to retirem
 |------|-----------|
 | **Golden Dataset** | A curated, human-reviewed collection of test cases used to evaluate an AI solution's quality, safety, and compliance. Each case includes an input, expected behaviour or reference output, and metadata describing the case type and intent. |
 | **Test Case** | A single entry in a golden dataset, consisting of an input (query, document, data record), an expected output or acceptable output range, case type tags, and guardrail expectations. |
-| **Evaluation Harness** | The automated system that executes test cases against a solution, collects outputs, computes metrics, and produces a structured evaluation report. Built on DeepEval with CBA-specific extensions. |
+| **Evaluation Harness** | The automated system that executes test cases against a solution, collects outputs, computes metrics, and produces a structured evaluation report. Built on DeepEval with PetSure Australia-specific extensions. |
 | **Metric Threshold** | The minimum (or maximum, for inverse metrics) score a solution must achieve to pass a given metric at its assigned risk tier. |
 | **Re-evaluation** | A scheduled or triggered repeat of the full evaluation harness run against the current golden dataset. Required at defined intervals for production solutions. |
 | **Coverage** | The proportion of a solution's functional scope that is exercised by the golden dataset. Coverage is measured across scenario types, guardrail configurations, and input categories. |
 | **Adversarial Test Case** | A test case specifically designed to probe failure modes: prompt injection, scope violations, hallucination triggers, bias-eliciting inputs, or edge-case formatting. |
-| **DeepEval** | The open-source evaluation framework used as the foundation for the CBA evaluation harness. Provides metric implementations for faithfulness, answer relevancy, contextual precision, contextual recall, hallucination, bias, and toxicity. |
+| **DeepEval** | The open-source evaluation framework used as the foundation for the PetSure Australia evaluation harness. Provides metric implementations for faithfulness, answer relevancy, contextual precision, contextual recall, hallucination, bias, and toxicity. |
 
 ## 4. Golden Dataset Requirements
 
@@ -106,19 +106,19 @@ Q&A solutions (including RAG-based agents, policy Q&A, document Q&A, conversatio
 | **contextual_precision** | DeepEval | Measures whether the retrieval step ranks relevant documents higher than irrelevant ones. |
 | **contextual_recall** | DeepEval | Measures whether all relevant documents for a query are successfully retrieved. |
 | **hallucination** | DeepEval | Measures the proportion of generated claims that are fabricated (not present in any retrieved context). Inverse metric: lower is better. |
-| **citation_coverage** | CBA Custom | Measures whether the generated answer provides citations for factual claims, and whether those citations are correct and traceable to source documents. |
-| **boundary_adherence** | CBA Custom | Measures whether the solution correctly refuses out-of-scope queries, responds with appropriate disclaimers, and does not speculate beyond its knowledge base. |
-| **temporal_accuracy** | CBA Custom | Measures whether time-sensitive information (effective dates, version numbers, review dates) is correctly represented in the output. |
+| **citation_coverage** | PetSure Australia Custom | Measures whether the generated answer provides citations for factual claims, and whether those citations are correct and traceable to source documents. |
+| **boundary_adherence** | PetSure Australia Custom | Measures whether the solution correctly refuses out-of-scope queries, responds with appropriate disclaimers, and does not speculate beyond its knowledge base. |
+| **temporal_accuracy** | PetSure Australia Custom | Measures whether time-sensitive information (effective dates, version numbers, review dates) is correctly represented in the output. |
 
 #### 5.1.2 Classification Solutions
 
 | Metric | Source | Description |
 |--------|--------|-------------|
 | **accuracy** | Standard | Overall classification accuracy across all classes. |
-| **consistency** | CBA Custom | Given semantically equivalent inputs, the classification should be identical. Measures output stability under paraphrase. |
+| **consistency** | PetSure Australia Custom | Given semantically equivalent inputs, the classification should be identical. Measures output stability under paraphrase. |
 | **calibration** | Standard | Confidence scores should be well-calibrated: a prediction made with 80% confidence should be correct approximately 80% of the time. |
 | **bias** | DeepEval | Differential classification rates across demographic groups or protected attributes. |
-| **fairness** | CBA Custom | Solution-specific fairness metric as defined in GOV-AI-002. Default: equalised odds across demographic groups. |
+| **fairness** | PetSure Australia Custom | Solution-specific fairness metric as defined in GOV-AI-002. Default: equalised odds across demographic groups. |
 
 #### 5.1.3 Scoring Solutions
 
@@ -135,8 +135,8 @@ Q&A solutions (including RAG-based agents, policy Q&A, document Q&A, conversatio
 
 | Metric | Source | Description |
 |--------|--------|-------------|
-| **completeness** | CBA Custom | Measures whether the validation solution identifies all relevant issues in the input. |
-| **severity_calibration** | CBA Custom | Measures whether the severity assigned to findings is appropriate relative to ground-truth severity labels. |
+| **completeness** | PetSure Australia Custom | Measures whether the validation solution identifies all relevant issues in the input. |
+| **severity_calibration** | PetSure Australia Custom | Measures whether the severity assigned to findings is appropriate relative to ground-truth severity labels. |
 | **faithfulness** | DeepEval | Measures whether validation findings are supported by the evidence cited. |
 
 ### 5.2 Metric Thresholds by Risk Tier
@@ -237,7 +237,7 @@ The evaluation harness is built on the following components:
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
 | **Metric Engine** | DeepEval (Python) | Provides implementations for faithfulness, answer_relevancy, contextual_precision, contextual_recall, hallucination, bias, and toxicity metrics |
-| **Custom Metrics** | CBA Platform Extensions | Provides implementations for citation_coverage, boundary_adherence, temporal_accuracy, consistency, completeness, severity_calibration, and fairness metrics |
+| **Custom Metrics** | PetSure Australia Platform Extensions | Provides implementations for citation_coverage, boundary_adherence, temporal_accuracy, consistency, completeness, severity_calibration, and fairness metrics |
 | **Test Runner** | Platform Compliance Runner | Orchestrates test case execution, collects outputs, dispatches to metric calculators, aggregates results |
 | **Evidence Store** | Platform Evidence API | Stores structured evaluation results for audit and compliance gate enforcement |
 | **LLM Judge** | Configurable (GPT-4o / Claude Sonnet) | Used by DeepEval metrics that require LLM-as-judge evaluation (faithfulness, answer_relevancy, hallucination) |
@@ -279,10 +279,10 @@ Reports are stored as JSON in the platform evidence store and are included in th
 
 | Document | Relationship |
 |----------|-------------|
-| CBA Group AI Policy (GOV-AI-001) | Parent — this framework implements evaluation requirements from Sections 5.2, 6.1, and 8 |
-| CBA Responsible AI Principles (GOV-AI-002) | Peer — defines fairness metrics and bias testing requirements referenced by this framework |
-| CBA AI Solution Registration Standard (GOV-AI-005) | Peer — defines the solution manifest schema including evaluation configuration fields |
-| CBA Prompt Governance Guideline (GOV-AI-007) | Peer — prompt changes trigger re-evaluation as defined in Section 6.2 of this framework |
+| PetSure Australia Group AI Policy (GOV-AI-001) | Parent — this framework implements evaluation requirements from Sections 5.2, 6.1, and 8 |
+| PetSure Australia Responsible AI Principles (GOV-AI-002) | Peer — defines fairness metrics and bias testing requirements referenced by this framework |
+| PetSure Australia AI Solution Registration Standard (GOV-AI-005) | Peer — defines the solution manifest schema including evaluation configuration fields |
+| PetSure Australia Prompt Governance Guideline (GOV-AI-007) | Peer — prompt changes trigger re-evaluation as defined in Section 6.2 of this framework |
 | DeepEval Documentation | Reference — technical documentation for the evaluation metric library |
 | APRA CPS 230 — Operational Risk Management | Regulatory — evaluation cadence supports continuous risk monitoring obligations |
 

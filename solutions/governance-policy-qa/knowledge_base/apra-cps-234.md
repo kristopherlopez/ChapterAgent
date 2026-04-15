@@ -13,9 +13,9 @@
 
 ## 1. Purpose
 
-This document provides CBA's interpretation of APRA Prudential Standard CPS 234 (Information Security) as it applies to artificial intelligence systems. CPS 234 has been in force since 1 July 2019, but the rapid adoption of generative AI and large language models since 2023 has created information security challenges that the original standard did not explicitly anticipate.
+This document provides PetSure Australia's interpretation of APRA Prudential Standard CPS 234 (Information Security) as it applies to artificial intelligence systems. CPS 234 has been in force since 1 July 2019, but the rapid adoption of generative AI and large language models since 2023 has created information security challenges that the original standard did not explicitly anticipate.
 
-This interpretation extends CBA's existing CPS 234 compliance framework to cover AI-specific information assets, threat vectors, security controls, and incident reporting obligations. It ensures that AI solutions registered on the CBA AI governance platform are secured in a manner consistent with CPS 234 and proportionate to the sensitivity of the information they process.
+This interpretation extends PetSure Australia's existing CPS 234 compliance framework to cover AI-specific information assets, threat vectors, security controls, and incident reporting obligations. It ensures that AI solutions registered on the PetSure Australia AI governance platform are secured in a manner consistent with CPS 234 and proportionate to the sensitivity of the information they process.
 
 AI systems introduce security risks that are fundamentally different from traditional software. They can be manipulated through natural language (prompt injection), they may inadvertently memorise and reproduce sensitive training data, and they process unstructured information in ways that make data classification and access control more complex. This interpretation addresses those risks.
 
@@ -23,20 +23,20 @@ AI systems introduce security risks that are fundamentally different from tradit
 
 This interpretation applies to:
 
-- All AI solutions registered on the CBA AI governance platform, including solutions in development, testing, and production.
+- All AI solutions registered on the PetSure Australia AI governance platform, including solutions in development, testing, and production.
 - All information assets associated with AI solutions: models, prompts, training data, fine-tuning data, reference corpora, evaluation datasets, interaction logs, and trace data.
-- Third-party AI services and LLM providers that process CBA information.
+- Third-party AI services and LLM providers that process PetSure Australia information.
 - AI-related infrastructure including GPU compute, vector databases, embedding stores, and model serving endpoints.
 
-This interpretation supplements CBA's Group Information Security Policy. Where this document is silent, the Group policy applies. Where this document specifies stricter requirements for AI assets, the stricter requirement prevails.
+This interpretation supplements PetSure Australia's Group Information Security Policy. Where this document is silent, the Group policy applies. Where this document specifies stricter requirements for AI assets, the stricter requirement prevails.
 
 ## 3. Definitions
 
 | Term | Definition |
 |------|-----------|
-| **Information Asset** | Any data, system, or component that has value to CBA and requires protection. Under this interpretation, AI models, system prompts, golden datasets, and interaction logs are all information assets. |
+| **Information Asset** | Any data, system, or component that has value to PetSure Australia and requires protection. Under this interpretation, AI models, system prompts, golden datasets, and interaction logs are all information assets. |
 | **Threat Vector** | A method or pathway by which a threat actor can gain unauthorised access to or disrupt an information asset. AI systems have unique threat vectors including prompt injection, data poisoning, and model extraction. |
-| **Security Classification** | A label assigned to an information asset that determines the security controls required. Classifications follow CBA's four-tier scheme: Public, Internal, Confidential, Restricted. |
+| **Security Classification** | A label assigned to an information asset that determines the security controls required. Classifications follow PetSure Australia's four-tier scheme: Public, Internal, Confidential, Restricted. |
 | **Red Team** | A group that simulates adversarial attacks against a system to identify vulnerabilities. AI red-teaming specifically tests for prompt injection, jailbreaking, data leakage, and harmful output generation. |
 | **Prompt Injection** | An attack where a malicious user crafts inputs designed to override, alter, or bypass the AI system's intended behaviour, including its system prompt, guardrails, or safety constraints. |
 
@@ -70,7 +70,7 @@ AI asset classifications must be reviewed when:
 
 ### 5.1 Threat Taxonomy
 
-CPS 234 Paragraph 17 requires institutions to identify and assess information security threats. The following threat taxonomy is specific to AI systems and supplements CBA's general information security threat register.
+CPS 234 Paragraph 17 requires institutions to identify and assess information security threats. The following threat taxonomy is specific to AI systems and supplements PetSure Australia's general information security threat register.
 
 | Threat | Description | Likelihood | Impact | Primary Targets |
 |--------|-------------|------------|--------|-----------------|
@@ -168,7 +168,7 @@ CPS 234 Paragraph 36 requires APRA notification of material information security
 |-----------|--------------------|-----------------------|
 | Information security incident that materially affected or could have affected the entity | Successful prompt injection attack on customer-facing AI that extracted restricted data | Within 72 hours of becoming aware |
 | Material information security control weakness | Discovery that prompt injection guardrail has been ineffective for an extended period | Within 10 business days |
-| Material information security control weakness at a service provider | LLM provider suffers a data breach affecting CBA's interaction logs or prompts | Within 72 hours of becoming aware |
+| Material information security control weakness at a service provider | LLM provider suffers a data breach affecting PetSure Australia's interaction logs or prompts | Within 72 hours of becoming aware |
 
 ### 8.2 Notification Process
 
@@ -180,7 +180,7 @@ When an AI security incident occurs:
 4. **APRA notification**: The CISO Office determines whether APRA notification is required and prepares the notification within the required timeframe.
 5. **Remediation**: Fix the vulnerability, update guardrails, add the attack vector to the golden dataset, and re-run all compliance gates before restoring the solution.
 
-## 9. CBA Platform Alignment
+## 9. PetSure Australia Platform Alignment
 
 The following table maps CPS 234 requirements to the platform's AI-GOV controls and demonstrates how the platform provides automated evidence of compliance.
 
@@ -200,12 +200,12 @@ The platform's automated compliance evidence generation directly supports CPS 23
 
 | Document | Relationship |
 |----------|-------------|
-| CBA Group AI Policy (GOV-AI-001) | Parent — this interpretation supports the Group AI Policy's security obligations |
-| CBA Group Information Security Policy | Parent — this interpretation supplements the Group-wide CPS 234 compliance framework |
+| PetSure Australia Group AI Policy (GOV-AI-001) | Parent — this interpretation supports the Group AI Policy's security obligations |
+| PetSure Australia Group Information Security Policy | Parent — this interpretation supplements the Group-wide CPS 234 compliance framework |
 | APRA CPS 230 — Operational Risk Management (REG-AI-001) | Related — operational risk and information security are complementary frameworks |
 | DISR Voluntary AI Safety Standard (REG-AI-003) | Related — Guardrail 3 (data protection) and Guardrail 4 (testing) align with CPS 234 |
-| CBA AI Testing & Evaluation Framework (GOV-AI-006) | Subordinate — details red-teaming methodology and adversarial test case requirements |
-| CBA Data Governance Standard (GOV-AI-004) | Sibling — defines data classification requirements that inform AI asset classification |
+| PetSure Australia AI Testing & Evaluation Framework (GOV-AI-006) | Subordinate — details red-teaming methodology and adversarial test case requirements |
+| PetSure Australia Data Governance Standard (GOV-AI-004) | Sibling — defines data classification requirements that inform AI asset classification |
 | APRA CPG 234 — Information Security (Guidance) | Regulatory — APRA's non-binding guidance on CPS 234 implementation |
 | OWASP Top 10 for LLM Applications | Reference — industry standard taxonomy of AI security risks |
 

@@ -1,4 +1,4 @@
-# CBA AI Solution Registration Standard
+# PetSure Australia AI Solution Registration Standard
 
 **Document ID:** GOV-AI-005
 **Version:** 1.1
@@ -13,9 +13,9 @@
 
 ## 1. Purpose
 
-This standard defines the mandatory registration process for all AI solutions governed by the CBA Group AI Policy (GOV-AI-001). It specifies the solution manifest schema, risk tier assignment criteria, registration workflow, validation rules, change management requirements, and de-registration procedures.
+This standard defines the mandatory registration process for all AI solutions governed by the PetSure Australia Group AI Policy (GOV-AI-001). It specifies the solution manifest schema, risk tier assignment criteria, registration workflow, validation rules, change management requirements, and de-registration procedures.
 
-Registration is the foundation of AI governance at CBA. A solution that is not registered cannot be evaluated, monitored, or audited. The Registration compliance gate (AI-GOV-001) is the only gate that cannot be exempted under any circumstances, reflecting the principle that governance begins with visibility: you cannot govern what you cannot see.
+Registration is the foundation of AI governance at PetSure Australia. A solution that is not registered cannot be evaluated, monitored, or audited. The Registration compliance gate (AI-GOV-001) is the only gate that cannot be exempted under any circumstances, reflecting the principle that governance begins with visibility: you cannot govern what you cannot see.
 
 This document is subordinate to GOV-AI-001 and implements the registration requirements described in Sections 5, 6.1 (Registration gate), and 10 of that policy.
 
@@ -23,7 +23,7 @@ This document is subordinate to GOV-AI-001 and implements the registration requi
 
 This standard applies to every AI solution that falls within the scope of GOV-AI-001, specifically:
 
-- All AI and machine learning systems developed, procured, or operated by any CBA business unit, subsidiary, or third-party vendor acting on CBA's behalf.
+- All AI and machine learning systems developed, procured, or operated by any PetSure Australia business unit, subsidiary, or third-party vendor acting on PetSure Australia's behalf.
 - Solutions at all lifecycle stages: development, testing, staging, production, and retirement.
 - Both new solutions entering the platform and existing solutions that predate this standard (which must be registered under the transitional provisions in Section 10).
 
@@ -75,13 +75,13 @@ The following fields are mandatory for every registered solution, regardless of 
 | `version` | string | Must match semantic versioning pattern `^\\d+\\.\\d+\\.\\d+$`. | The current version of the solution. Must be incremented on material changes. |
 | `type` | string | Must be one of: `qa`, `classification`, `scoring`, `validation`, `conversational`, `agentic`. | Determines which evaluation metrics apply (see GOV-AI-006). |
 | `risk_tier` | string | Must be one of: `experimental`, `production_internal`, `production_customer_facing`. | Assigned by the Chapter during intake. Determines governance intensity. |
-| `owner.name` | string | Non-empty. Must be a valid CBA employee name. | The accountable individual for this solution. |
-| `owner.email` | string | Must be a valid `@cba.com.au` or `@commbank.com.au` email address. | Contact email for the solution owner. |
+| `owner.name` | string | Non-empty. Must be a valid PetSure Australia employee name. | The accountable individual for this solution. |
+| `owner.email` | string | Must be a valid `@petsure.com.au` email address. | Contact email for the solution owner. |
 | `owner.squad` | string | Non-empty. Must match a registered squad name. | The squad responsible for building and operating the solution. |
 | `owner.chapter` | string | Non-empty. | The chapter the solution reports into for governance purposes. |
 | `data.sources` | list | At least one entry. | List of data sources the solution accesses. |
 | `data.pii_exposure` | string | Must be one of: `none`, `indirect`, `direct`. | Level of PII exposure in the solution's inputs and outputs. |
-| `data.classification` | string | Must be one of: `public`, `internal`, `confidential`, `restricted`. | Data classification level, per CBA Data Governance Standard (GOV-AI-004). |
+| `data.classification` | string | Must be one of: `public`, `internal`, `confidential`, `restricted`. | Data classification level, per PetSure Australia Data Governance Standard (GOV-AI-004). |
 | `guardrails.enabled` | list | Must include at least `scope_containment` and `prompt_injection` for all tiers. | List of active guardrails. |
 
 ### 4.3 Conditional Fields — By Type and Tier
@@ -122,7 +122,7 @@ Risk tier is assigned by the Chapter during intake based on five dimensions, as 
 
 | Dimension | Weight | Experimental | Production Internal | Production Customer-Facing |
 |-----------|--------|-------------|--------------------|-----------------------------|
-| **Audience** | High | Internal team only, limited users | All internal CBA staff, or a specific business unit | External customers, investors, regulators, or public |
+| **Audience** | High | Internal team only, limited users | All internal PetSure Australia staff, or a specific business unit | External customers, investors, regulators, or public |
 | **Decision Impact** | High | No operational decisions depend on outputs | Outputs inform internal decisions but human review is standard | Outputs directly influence customer outcomes, financial decisions, or regulatory reporting |
 | **Data Sensitivity** | Medium | Synthetic or public data only | Internal data, no direct customer PII | Customer data, PII, financial records |
 | **Reversibility** | Medium | All outputs are easily discarded | Outputs can be corrected with moderate effort | Outputs are difficult or impossible to retract once delivered |
@@ -198,7 +198,7 @@ The platform performs the following structural checks on every manifest submissi
 | ID uniqueness | Solution ID must not already exist on the platform | Registration blocked |
 | Type validity | Solution type must be in the allowed enumeration | Registration blocked |
 | Tier validity | Risk tier must be in the allowed enumeration | Registration blocked |
-| Email format | Owner email must match CBA domain patterns | Registration blocked |
+| Email format | Owner email must match PetSure Australia domain patterns | Registration blocked |
 | Version format | Version must be valid semantic version | Registration blocked |
 | Guardrail minimum | `scope_containment` and `prompt_injection` must be in the enabled guardrails list | Registration blocked |
 
@@ -266,7 +266,7 @@ A solution must be de-registered when:
 |------|-------|-----------|
 | **1. Retirement Request** | Solution Owner | Owner submits a de-registration request via the platform, providing a reason and confirming that the solution has been or will be shut down. |
 | **2. Dependency Check** | Platform | Platform checks whether any other registered solutions depend on the solution being retired. If dependencies exist, they must be resolved first. |
-| **3. Data Retention** | Solution Owner + Chapter | All compliance evidence, evaluation reports, audit trails, and the final solution manifest are archived per CBA data retention requirements. Minimum retention: 7 years for customer-facing solutions, 5 years for internal solutions. |
+| **3. Data Retention** | Solution Owner + Chapter | All compliance evidence, evaluation reports, audit trails, and the final solution manifest are archived per PetSure Australia data retention requirements. Minimum retention: 7 years for customer-facing solutions, 5 years for internal solutions. |
 | **4. De-registration** | Platform | Solution status is changed to `retired`. Compliance tracking ceases. The solution ID is permanently reserved and cannot be reused. |
 | **5. Confirmation** | Chapter | Chapter confirms the de-registration and updates the AI solution register. |
 
@@ -295,11 +295,11 @@ Solutions that are not registered by their deadline will be flagged as non-compl
 
 | Document | Relationship |
 |----------|-------------|
-| CBA Group AI Policy (GOV-AI-001) | Parent — this standard implements registration requirements from Sections 5, 6.1, and 10 |
-| CBA Responsible AI Principles (GOV-AI-002) | Peer — ethics review triggers referenced during intake for sensitive use cases |
-| CBA Data Governance Standard (GOV-AI-004) | Peer — data classification and PII exposure levels referenced in the manifest schema |
-| CBA AI Testing & Evaluation Framework (GOV-AI-006) | Peer — evaluation configuration in the manifest must align with metric and threshold requirements |
-| CBA Prompt Governance Guideline (GOV-AI-007) | Peer — prompt governance fields in the manifest must align with prompt version control requirements |
+| PetSure Australia Group AI Policy (GOV-AI-001) | Parent — this standard implements registration requirements from Sections 5, 6.1, and 10 |
+| PetSure Australia Responsible AI Principles (GOV-AI-002) | Peer — ethics review triggers referenced during intake for sensitive use cases |
+| PetSure Australia Data Governance Standard (GOV-AI-004) | Peer — data classification and PII exposure levels referenced in the manifest schema |
+| PetSure Australia AI Testing & Evaluation Framework (GOV-AI-006) | Peer — evaluation configuration in the manifest must align with metric and threshold requirements |
+| PetSure Australia Prompt Governance Guideline (GOV-AI-007) | Peer — prompt governance fields in the manifest must align with prompt version control requirements |
 | APRA CPS 230 — Operational Risk Management | Regulatory — registration supports the identification and management of AI operational risk |
 
 ## 12. Review and Change History

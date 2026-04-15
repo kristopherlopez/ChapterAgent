@@ -13,29 +13,29 @@
 
 ## 1. Purpose
 
-This document provides CBA's interpretation of APRA Prudential Standard CPS 230 (Operational Risk Management) as it applies to artificial intelligence systems. It is not a reproduction of CPS 230 itself, but an internal mapping that translates CPS 230 obligations into concrete requirements for AI governance within the Commonwealth Bank Group.
+This document provides PetSure Australia's interpretation of APRA Prudential Standard CPS 230 (Operational Risk Management) as it applies to artificial intelligence systems. It is not a reproduction of CPS 230 itself, but an internal mapping that translates CPS 230 obligations into concrete requirements for AI governance within the PetSure Australia Group.
 
 CPS 230 came into effect on 1 July 2025 and fundamentally changed how APRA-regulated entities must manage operational risk. It replaced the previous CPS 231 (Outsourcing), CPS 232 (Business Continuity), and CPG 235 (Managing Data Risk) with a single, integrated standard that covers operational risk identification, control effectiveness, business continuity, and third-party risk management.
 
-AI systems represent a new and material category of operational risk. Their outputs can be unpredictable, their failure modes are unlike traditional software, and their reliance on third-party large language model (LLM) providers creates vendor concentration risk that CPS 230 explicitly requires institutions to manage. This document ensures CBA's AI governance platform satisfies the operational risk requirements of CPS 230 in a demonstrable and auditable manner.
+AI systems represent a new and material category of operational risk. Their outputs can be unpredictable, their failure modes are unlike traditional software, and their reliance on third-party large language model (LLM) providers creates vendor concentration risk that CPS 230 explicitly requires institutions to manage. This document ensures PetSure Australia's AI governance platform satisfies the operational risk requirements of CPS 230 in a demonstrable and auditable manner.
 
 ## 2. Scope
 
 This interpretation applies to:
 
-- All AI solutions registered on the CBA AI governance platform, regardless of risk tier.
-- Third-party AI services procured or consumed by CBA business units, including LLM API providers, AI SaaS tools, and AI components embedded in vendor platforms.
+- All AI solutions registered on the PetSure Australia AI governance platform, regardless of risk tier.
+- Third-party AI services procured or consumed by PetSure Australia business units, including LLM API providers, AI SaaS tools, and AI components embedded in vendor platforms.
 - AI-related operational processes including model deployment, monitoring, incident response, and change management.
 
-This interpretation does not replace CBA's broader CPS 230 compliance framework. It supplements the Group-wide operational risk management framework with AI-specific guidance and requirements.
+This interpretation does not replace PetSure Australia's broader CPS 230 compliance framework. It supplements the Group-wide operational risk management framework with AI-specific guidance and requirements.
 
 ## 3. Definitions
 
 | Term | Definition |
 |------|-----------|
 | **Operational Risk** | The risk of loss resulting from inadequate or failed internal processes, people, and systems, or from external events. Under CPS 230, this includes legal risk but excludes strategic and reputational risk (though AI incidents frequently create reputational consequences). |
-| **Material Service Provider** | A third party whose disruption could materially affect CBA's ability to meet its obligations. LLM providers powering customer-facing AI solutions are likely material service providers under CPS 230. |
-| **Critical Operation** | A process, activity, or service that, if disrupted, would have a material adverse impact on CBA's depositors, policyholders, beneficiaries, or the financial system. AI systems that automate customer decisions may constitute critical operations. |
+| **Material Service Provider** | A third party whose disruption could materially affect PetSure Australia's ability to meet its obligations. LLM providers powering customer-facing AI solutions are likely material service providers under CPS 230. |
+| **Critical Operation** | A process, activity, or service that, if disrupted, would have a material adverse impact on PetSure Australia's depositors, policyholders, beneficiaries, or the financial system. AI systems that automate customer decisions may constitute critical operations. |
 | **Tolerance Level** | The maximum acceptable level of disruption to a critical operation, expressed in terms of duration and impact. AI systems must have defined tolerance levels in their solution manifest. |
 | **Control Effectiveness** | A measure of how well a control mitigates the risk it is designed to address. CPS 230 requires regular testing of control effectiveness — the platform's compliance gates serve this function for AI-specific controls. |
 
@@ -50,13 +50,13 @@ CPS 230 requires institutions to identify and assess operational risks across al
 | Risk Category | Description | AI-Specific Manifestation |
 |---------------|-------------|---------------------------|
 | **Output unpredictability** | AI systems can produce incorrect, misleading, or harmful outputs that are not deterministic | A Q&A agent fabricating policy information. A credit model producing unexplainable scores. |
-| **Model drift** | AI model performance degrades over time as the relationship between inputs and outputs changes | An LLM provider updates their model, changing the behaviour of CBA solutions without CBA's direct control. |
+| **Model drift** | AI model performance degrades over time as the relationship between inputs and outputs changes | An LLM provider updates their model, changing the behaviour of PetSure Australia solutions without PetSure Australia's direct control. |
 | **Data quality** | Errors in training, reference, or input data propagate through AI systems in non-obvious ways | A RAG system retrieving outdated policy documents. Poisoned training data producing biased outputs. |
 | **Prompt fragility** | Small changes to system prompts or user inputs can cause dramatic changes in AI behaviour | A guardrail-bypassing prompt injection. A system prompt edit that inadvertently removes safety constraints. |
 | **Vendor dependency** | Reliance on external LLM providers for core AI capabilities creates single points of failure | OpenAI API outage rendering customer-facing Q&A agent unavailable. Anthropic changing API terms. |
 | **Cascading failure** | Agentic AI workflows can propagate errors across multiple systems through tool calls and chain-of-thought reasoning | An agent making an incorrect tool call that triggers a downstream system action. |
 
-CBA's AI governance platform addresses this requirement through mandatory solution registration (AI-GOV-001), which requires every solution to document its risk profile, dependencies, and potential failure modes in the solution manifest.
+PetSure Australia's AI governance platform addresses this requirement through mandatory solution registration (AI-GOV-001), which requires every solution to document its risk profile, dependencies, and potential failure modes in the solution manifest.
 
 ### 4.2 Control Effectiveness (CPS 230 Paragraphs 19-25)
 
@@ -72,7 +72,7 @@ CPS 230 requires institutions to maintain effective controls for material operat
 | Monitor controls on an ongoing basis | AI-GOV-008 | Audit trail records 100% of AI interactions with full trace data for production solutions |
 | Escalate control failures | AI-GOV-001 to AI-GOV-010 | Any gate failure blocks deployment and generates an alert to the solution owner and Chapter Lead |
 
-Control testing is not optional. The platform enforces testing through the compliance gate runner. Solutions that fail a gate cannot deploy — there is no manual override at the pipeline level. Gate exceptions require documented approval from the Chapter Lead and the relevant control owner (see CBA Group AI Policy, Section 6.3).
+Control testing is not optional. The platform enforces testing through the compliance gate runner. Solutions that fail a gate cannot deploy — there is no manual override at the pipeline level. Gate exceptions require documented approval from the Chapter Lead and the relevant control owner (see PetSure Australia Group AI Policy, Section 6.3).
 
 ### 4.3 Incident Management (CPS 230 Paragraphs 36-41)
 
@@ -110,7 +110,7 @@ CPS 230 introduced comprehensive third-party risk management requirements, repla
 
 **Current LLM provider landscape:**
 
-| Provider | Models Used | CBA Solutions Dependent | Concentration Risk |
+| Provider | Models Used | PetSure Australia Solutions Dependent | Concentration Risk |
 |----------|------------|------------------------|-------------------|
 | OpenAI | GPT-4o, GPT-4.1 | Multiple production solutions | High — dominant provider for generative AI |
 | Anthropic | Claude Sonnet 4, Claude Haiku | Growing adoption | Medium — secondary provider |
@@ -118,9 +118,9 @@ CPS 230 introduced comprehensive third-party risk management requirements, repla
 
 ### 5.2 Vendor Concentration Risk
 
-CPS 230 explicitly requires institutions to manage concentration risk in third-party arrangements. The global AI market is heavily concentrated among a small number of LLM providers, which creates systemic risk that CBA must actively manage.
+CPS 230 explicitly requires institutions to manage concentration risk in third-party arrangements. The global AI market is heavily concentrated among a small number of LLM providers, which creates systemic risk that PetSure Australia must actively manage.
 
-**Mitigations required by CBA's interpretation:**
+**Mitigations required by PetSure Australia's interpretation:**
 
 1. **Multi-provider capability**: All production AI solutions must be architecturally capable of switching between at least two LLM providers. The solution manifest must document primary and fallback providers.
 2. **Provider monitoring**: The Chapter maintains a quarterly assessment of each LLM provider's financial health, service reliability, compliance posture, and strategic direction.
@@ -129,7 +129,7 @@ CPS 230 explicitly requires institutions to manage concentration risk in third-p
 
 ### 5.3 Fourth-Party Risk
 
-LLM providers themselves depend on infrastructure providers (primarily cloud hyperscalers). CBA must understand and document these fourth-party dependencies. A disruption to a major cloud provider could simultaneously affect multiple LLM providers and, consequently, multiple CBA AI solutions.
+LLM providers themselves depend on infrastructure providers (primarily cloud hyperscalers). PetSure Australia must understand and document these fourth-party dependencies. A disruption to a major cloud provider could simultaneously affect multiple LLM providers and, consequently, multiple PetSure Australia AI solutions.
 
 ## 6. Business Continuity for AI Systems
 
@@ -153,7 +153,7 @@ AI business continuity arrangements must be tested at least annually for product
 - **Recovery**: Verify the solution can recover to normal operation after an outage without data loss or residual errors.
 - **Concurrent failure**: Simulate simultaneous failure of multiple AI solutions to test the institution's response capacity.
 
-## 7. CBA Platform Alignment
+## 7. PetSure Australia Platform Alignment
 
 The following table maps CPS 230 requirements to the platform's AI-GOV controls and demonstrates how the platform provides automated evidence of compliance.
 
@@ -173,13 +173,13 @@ The platform automates compliance evidence generation for all eight gates. Evide
 
 | Document | Relationship |
 |----------|-------------|
-| CBA Group AI Policy (GOV-AI-001) | Parent — this interpretation supports the Group AI Policy's compliance obligations |
-| CBA Responsible AI Principles (GOV-AI-002) | Sibling — ethical principles inform operational risk identification |
-| CBA Model Risk Management Framework (GOV-AI-003) | Sibling — model risk is a subset of operational risk under CPS 230 |
+| PetSure Australia Group AI Policy (GOV-AI-001) | Parent — this interpretation supports the Group AI Policy's compliance obligations |
+| PetSure Australia Responsible AI Principles (GOV-AI-002) | Sibling — ethical principles inform operational risk identification |
+| PetSure Australia Model Risk Management Framework (GOV-AI-003) | Sibling — model risk is a subset of operational risk under CPS 230 |
 | APRA CPS 234 — Information Security (REG-AI-002) | Related — information security risks are a subset of operational risks |
 | DISR Voluntary AI Safety Standard (REG-AI-003) | Related — the voluntary standard's risk management guardrail aligns with CPS 230 |
 | APRA CPG 230 — Operational Risk Management (Guidance) | Regulatory — APRA's guidance on CPS 230 implementation |
-| CBA Business Continuity Management Framework | Related — AI business continuity integrates with the Group BCM framework |
+| PetSure Australia Business Continuity Management Framework | Related — AI business continuity integrates with the Group BCM framework |
 
 ## 9. Review and Change History
 

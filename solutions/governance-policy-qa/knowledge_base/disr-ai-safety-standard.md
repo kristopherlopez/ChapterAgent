@@ -1,9 +1,9 @@
-# Australia's Voluntary AI Safety Standard — CBA Platform Alignment Guide
+# Australia's Voluntary AI Safety Standard — PetSure Australia Platform Alignment Guide
 
 **Document ID:** REG-AI-003
 **Version:** 1.1
 **Status:** Active
-**Effective Date:** September 2024 (DISR standard); CBA alignment guide effective 1 January 2025
+**Effective Date:** September 2024 (DISR standard); PetSure Australia alignment guide effective 1 January 2025
 **Next Review Date:** 1 January 2026
 **Owner:** Department of Industry, Science and Resources (interpreted by Risk Management AI)
 **Approval Authority:** Group Chief Risk Officer
@@ -13,23 +13,23 @@
 
 ## 1. Purpose
 
-This document maps the Australian Government's Voluntary AI Safety Standard to CBA's AI governance platform. The Voluntary AI Safety Standard was published by the Department of Industry, Science and Resources (DISR) in September 2024 and establishes 10 guardrails for the safe and responsible use of AI in Australia.
+This document maps the Australian Government's Voluntary AI Safety Standard to PetSure Australia's AI governance platform. The Voluntary AI Safety Standard was published by the Department of Industry, Science and Resources (DISR) in September 2024 and establishes 10 guardrails for the safe and responsible use of AI in Australia.
 
-While the standard is voluntary, CBA has made the strategic decision to treat compliance as mandatory for all production AI solutions. This decision reflects three considerations:
+While the standard is voluntary, PetSure Australia has made the strategic decision to treat compliance as mandatory for all production AI solutions. This decision reflects three considerations:
 
-1. **Regulatory trajectory**: The Australian Government has signalled that mandatory AI regulation is forthcoming. The voluntary standard is widely understood as the precursor to binding legislation. By complying now, CBA avoids a disruptive retrospective compliance programme.
+1. **Regulatory trajectory**: The Australian Government has signalled that mandatory AI regulation is forthcoming. The voluntary standard is widely understood as the precursor to binding legislation. By complying now, PetSure Australia avoids a disruptive retrospective compliance programme.
 2. **Prudential expectation**: APRA has indicated through supervisory engagement that it expects regulated entities to demonstrate alignment with industry AI safety standards, even where those standards are not legally binding. Non-compliance may be raised in supervisory reviews.
-3. **Reputational risk**: As one of Australia's largest financial institutions, CBA is held to a higher standard by customers, regulators, and the public. Demonstrating voluntary compliance signals maturity and builds trust.
+3. **Reputational risk**: As one of Australia's largest financial institutions, PetSure Australia is held to a higher standard by customers, regulators, and the public. Demonstrating voluntary compliance signals maturity and builds trust.
 
-This guide provides, for each of the 10 DISR guardrails: the requirement, CBA's platform implementation, the mapped AI-GOV control, and any identified gaps.
+This guide provides, for each of the 10 DISR guardrails: the requirement, PetSure Australia's platform implementation, the mapped AI-GOV control, and any identified gaps.
 
 ## 2. Scope
 
 This alignment guide applies to:
 
-- All AI solutions registered on the CBA AI governance platform at production_internal and production_customer_facing risk tiers.
+- All AI solutions registered on the PetSure Australia AI governance platform at production_internal and production_customer_facing risk tiers.
 - Experimental solutions are encouraged but not required to align with the voluntary standard.
-- Third-party AI solutions procured by CBA, where CBA should seek evidence of the vendor's alignment with the standard.
+- Third-party AI solutions procured by PetSure Australia, where PetSure Australia should seek evidence of the vendor's alignment with the standard.
 
 ## 3. Definitions
 
@@ -46,16 +46,16 @@ This alignment guide applies to:
 
 **DISR Requirement:** Organisations deploying AI systems should have clear governance structures, defined roles and responsibilities, and accountability for AI outcomes at the appropriate senior level.
 
-**CBA Platform Implementation:**
+**PetSure Australia Platform Implementation:**
 
-- The CBA Group AI Policy (GOV-AI-001) establishes a governance hierarchy from the Board Risk Committee through the Group Chief Risk Officer to the Chapter Lead and individual Solution Owners.
+- The PetSure Australia Group AI Policy (GOV-AI-001) establishes a governance hierarchy from the Board Risk Committee through the Group Chief Risk Officer to the Chapter Lead and individual Solution Owners.
 - Every AI solution must have a named owner documented in the solution manifest. The Registration gate (AI-GOV-001) blocks deployment if no owner is specified.
 - The Chapter Lead is accountable for the AI governance platform itself. Solution Owners are accountable for their solution's behaviour.
 - The AI Ethics Board provides independent oversight for fairness and ethical considerations on customer-facing solutions.
 
 **AI-GOV Control:** AI-GOV-001 (Registration)
 
-**Gap Assessment:** No gap. CBA's governance structure fully satisfies this guardrail. Accountability is enforced at registration and cannot be bypassed.
+**Gap Assessment:** No gap. PetSure Australia's governance structure fully satisfies this guardrail. Accountability is enforced at registration and cannot be bypassed.
 
 ---
 
@@ -63,7 +63,7 @@ This alignment guide applies to:
 
 **DISR Requirement:** Organisations should identify, assess, and manage AI risks throughout the AI system lifecycle, proportionate to the level of risk.
 
-**CBA Platform Implementation:**
+**PetSure Australia Platform Implementation:**
 
 - The three-tier risk classification system (experimental, production_internal, production_customer_facing) provides proportionate governance. Higher tiers require stricter controls, more frequent evaluation, and additional oversight.
 - Risk identification occurs during solution intake, where the Chapter reviews the solution's audience, data sensitivity, decision impact, reversibility, and regulatory exposure.
@@ -80,7 +80,7 @@ This alignment guide applies to:
 
 **DISR Requirement:** Organisations should protect AI systems and their data from cybersecurity threats, misuse, and unauthorised access.
 
-**CBA Platform Implementation:**
+**PetSure Australia Platform Implementation:**
 
 - CPS 234 interpretation (REG-AI-002) provides comprehensive AI security controls including information asset classification, threat taxonomy, and mandatory security controls by risk tier.
 - The platform enforces prompt injection detection, input validation, output filtering, and PII detection as mandatory guardrails.
@@ -90,7 +90,7 @@ This alignment guide applies to:
 
 **AI-GOV Control:** AI-GOV-005 (PII Validation), AI-GOV-006 (Guardrail Validation)
 
-**Gap Assessment:** No gap. CBA's CPS 234 compliance framework, combined with the platform's automated security controls, provides comprehensive protection.
+**Gap Assessment:** No gap. PetSure Australia's CPS 234 compliance framework, combined with the platform's automated security controls, provides comprehensive protection.
 
 ---
 
@@ -98,7 +98,7 @@ This alignment guide applies to:
 
 **DISR Requirement:** Organisations should test AI systems to confirm they are fit for purpose, work as intended, and do not pose unacceptable risks before and during deployment.
 
-**CBA Platform Implementation:**
+**PetSure Australia Platform Implementation:**
 
 - The golden dataset framework provides structured, human-reviewed test cases covering expected scenarios, edge cases, and adversarial inputs.
 - The Evaluation Harness gate (AI-GOV-003) runs all golden dataset test cases against configured metrics and blocks deployment if any metric falls below threshold.
@@ -116,7 +116,7 @@ This alignment guide applies to:
 
 **DISR Requirement:** Organisations should enable meaningful human oversight of AI systems, with the ability to intervene or override AI decisions where appropriate.
 
-**CBA Platform Implementation:**
+**PetSure Australia Platform Implementation:**
 
 - The platform provides emergency kill switches to disable any AI solution immediately. This capability is available to the Solution Owner and Chapter Lead.
 - For customer-facing solutions, the platform supports human-in-the-loop configurations where AI outputs are reviewed by a human before delivery.
@@ -134,9 +134,9 @@ This alignment guide applies to:
 
 **DISR Requirement:** Organisations should inform people when they are interacting with an AI system and be transparent about how the AI system works, its limitations, and how decisions are made.
 
-**CBA Platform Implementation:**
+**PetSure Australia Platform Implementation:**
 
-- The CBA Group AI Policy requires that customer-facing AI solutions clearly disclose their AI nature. Users must know they are interacting with an AI system, not a human.
+- The PetSure Australia Group AI Policy requires that customer-facing AI solutions clearly disclose their AI nature. Users must know they are interacting with an AI system, not a human.
 - RAG solutions are required to provide citations to source documents, enabling users to verify the AI's reasoning.
 - The solution manifest documents the solution's intended scope, limitations, and known failure modes. This information must be reflected in user-facing disclosures.
 - Explainability requirements scale with risk tier: citation coverage for Q&A agents, feature importance for scoring models, decision traces for agentic workflows.
@@ -151,9 +151,9 @@ This alignment guide applies to:
 
 **DISR Requirement:** Organisations should provide mechanisms for individuals to contest AI-assisted decisions and have them reviewed by a human.
 
-**CBA Platform Implementation:**
+**PetSure Australia Platform Implementation:**
 
-- CBA's existing complaints and disputes framework applies to AI-assisted decisions. Customers can contest any decision through established channels.
+- PetSure Australia's existing complaints and disputes framework applies to AI-assisted decisions. Customers can contest any decision through established channels.
 - The audit trail (AI-GOV-008) ensures that every AI interaction can be reconstructed after the fact, providing the evidence base for reviewing contested decisions.
 - Trace data captures the full chain of reasoning (retrieval, guardrail checks, model reasoning, tool calls) so that a human reviewer can understand exactly how the AI reached its output.
 - For credit decisions and other regulated outcomes, existing regulatory frameworks (responsible lending, hardship provisions) already provide contestability mechanisms.
@@ -168,13 +168,13 @@ This alignment guide applies to:
 
 **DISR Requirement:** Organisations should maintain adequate records of AI systems and their outcomes to support accountability, auditability, and continuous improvement.
 
-**CBA Platform Implementation:**
+**PetSure Australia Platform Implementation:**
 
 - The Audit Trail gate (AI-GOV-008) requires 100% trace coverage for production solutions. Every AI interaction is logged with full context: user input, retrieved documents, guardrail results, model output, latency, and token usage.
 - Compliance evidence packages are generated automatically by the platform and include gate results, guardrail test outcomes, evaluation metrics, and audit trail exports.
 - Evidence packages are exportable in structured format for internal audit, regulatory review, and APRA examination.
 - Solution manifests, golden datasets, and system prompts are version-controlled. The Prompt Governance gate (AI-GOV-010) requires approval commit hashes linking prompt changes to reviewed versions.
-- Record retention follows CBA's existing data retention policy (minimum 7 years for regulatory records).
+- Record retention follows PetSure Australia's existing data retention policy (minimum 7 years for regulatory records).
 
 **AI-GOV Control:** AI-GOV-008 (Audit Trail), AI-GOV-009 (Golden Dataset Sign-off), AI-GOV-010 (Prompt Governance)
 
@@ -186,10 +186,10 @@ This alignment guide applies to:
 
 **DISR Requirement:** Organisations should identify and mitigate risks of AI systems producing unfair or discriminatory outcomes, particularly for vulnerable or disadvantaged groups.
 
-**CBA Platform Implementation:**
+**PetSure Australia Platform Implementation:**
 
 - The Bias & Toxicity gate (AI-GOV-007) tests all production solutions for bias and toxicity. Thresholds are stricter for customer-facing solutions (bias <= 0.05, toxicity <= 0.05) than internal solutions (bias <= 0.10, toxicity <= 0.10).
-- The CBA Group AI Policy requires that the definition of fairness be documented for each solution, recognising that fairness means different things in different contexts.
+- The PetSure Australia Group AI Policy requires that the definition of fairness be documented for each solution, recognising that fairness means different things in different contexts.
 - The AI Ethics Board reviews bias testing results for customer-facing solutions and provides independent oversight.
 - Golden datasets must include test cases specifically designed to probe for demographic bias, covering protected characteristics under Australian anti-discrimination law.
 - For scoring models, discrimination testing includes demographic parity, equalised odds, and other statistical fairness measures.
@@ -204,9 +204,9 @@ This alignment guide applies to:
 
 **DISR Requirement:** Organisations should regularly assess their AI systems against this standard and maintain a process for continuous improvement.
 
-**CBA Platform Implementation:**
+**PetSure Australia Platform Implementation:**
 
-- This document itself constitutes CBA's initial conformity assessment against the voluntary standard.
+- This document itself constitutes PetSure Australia's initial conformity assessment against the voluntary standard.
 - The compliance gate runner automates assessment against AI-GOV controls, which are mapped to DISR guardrails throughout this document.
 - Re-evaluation cadences (30 days for customer-facing, 90 days for internal) ensure ongoing assessment rather than point-in-time compliance.
 - The compliance dashboard provides real-time visibility into the compliance posture of all registered solutions, enabling continuous monitoring.
@@ -256,24 +256,24 @@ The Australian Government has signalled its intent to move toward mandatory AI r
 - International peers (EU AI Act, Canada's AIDA) are moving toward binding regulation, creating pressure for Australia to follow.
 - APRA has indicated through supervisory engagement that alignment with industry standards is expected, effectively making voluntary standards quasi-mandatory for regulated entities.
 
-### 7.3 CBA's Position
+### 7.3 PetSure Australia's Position
 
-CBA treats the voluntary standard as mandatory for all production AI solutions. This decision was approved by the Group Chief Risk Officer and is documented in the CBA Group AI Policy. The rationale:
+PetSure Australia treats the voluntary standard as mandatory for all production AI solutions. This decision was approved by the Group Chief Risk Officer and is documented in the PetSure Australia Group AI Policy. The rationale:
 
-1. **Compliance readiness**: When the standard becomes mandatory, CBA will already be compliant. This avoids a disruptive and costly retrospective compliance programme.
-2. **Regulatory relationship**: Demonstrating voluntary compliance builds credibility with APRA and DISR. It positions CBA as a responsible leader in AI governance.
-3. **Customer trust**: Customers increasingly expect transparency and accountability in AI. Voluntary compliance supports CBA's brand commitment to responsible banking.
+1. **Compliance readiness**: When the standard becomes mandatory, PetSure Australia will already be compliant. This avoids a disruptive and costly retrospective compliance programme.
+2. **Regulatory relationship**: Demonstrating voluntary compliance builds credibility with APRA and DISR. It positions PetSure Australia as a responsible leader in AI governance.
+3. **Customer trust**: Customers increasingly expect transparency and accountability in AI. Voluntary compliance supports PetSure Australia's brand commitment to responsible banking.
 4. **Risk management**: The 10 guardrails represent genuine good practice. Compliance reduces the risk of AI incidents regardless of regulatory status.
 
 ## 8. Related Documents
 
 | Document | Relationship |
 |----------|-------------|
-| CBA Group AI Policy (GOV-AI-001) | Parent — the Group AI Policy mandates alignment with this standard |
+| PetSure Australia Group AI Policy (GOV-AI-001) | Parent — the Group AI Policy mandates alignment with this standard |
 | APRA CPS 230 — Operational Risk Management (REG-AI-001) | Related — CPS 230 risk management requirements align with Guardrail 2 |
 | APRA CPS 234 — Information Security (REG-AI-002) | Related — CPS 234 security requirements align with Guardrail 3 |
-| CBA Responsible AI Principles (GOV-AI-002) | Sibling — ethical principles inform Guardrails 1, 5, 6, 7, and 9 |
-| CBA AI Testing & Evaluation Framework (GOV-AI-006) | Subordinate — details testing requirements for Guardrail 4 |
+| PetSure Australia Responsible AI Principles (GOV-AI-002) | Sibling — ethical principles inform Guardrails 1, 5, 6, 7, and 9 |
+| PetSure Australia AI Testing & Evaluation Framework (GOV-AI-006) | Subordinate — details testing requirements for Guardrail 4 |
 | DISR Voluntary AI Safety Standard (original document) | Source — this guide interprets and maps the original standard |
 | DISR Safe and Responsible AI in Australia consultation paper (January 2024) | Context — provides background on Australia's regulatory trajectory |
 

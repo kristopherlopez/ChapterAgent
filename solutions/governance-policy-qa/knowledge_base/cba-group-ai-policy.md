@@ -1,4 +1,4 @@
-# CBA Group AI Policy
+# PetSure Australia Group AI Policy
 
 **Document ID:** GOV-AI-001
 **Version:** 2.1
@@ -13,7 +13,7 @@
 
 ## 1. Purpose
 
-This policy establishes mandatory requirements for the safe, ethical, and compliant development, deployment, and operation of artificial intelligence systems across the Commonwealth Bank Group. It provides the overarching governance framework that all subordinate standards, frameworks, and guidelines must align to.
+This policy establishes mandatory requirements for the safe, ethical, and compliant development, deployment, and operation of artificial intelligence systems across the PetSure Australia Group. It provides the overarching governance framework that all subordinate standards, frameworks, and guidelines must align to.
 
 This policy exists because AI systems introduce risks that are qualitatively different from traditional software: they can produce outputs that are unpredictable, difficult to explain, and harmful in ways that may not be immediately apparent. The Group requires a governance approach proportionate to these risks while enabling the responsible use of AI to serve customers and improve operations.
 
@@ -21,7 +21,7 @@ This policy exists because AI systems introduce risks that are qualitatively dif
 
 This policy applies to:
 
-- All AI and machine learning systems developed, procured, or operated by any CBA business unit, subsidiary, or third-party vendor acting on CBA's behalf.
+- All AI and machine learning systems developed, procured, or operated by any PetSure Australia business unit, subsidiary, or third-party vendor acting on PetSure Australia's behalf.
 - Both generative AI (large language models, retrieval-augmented generation, agentic workflows, conversational AI) and traditional machine learning (scoring models, classifiers, anomaly detectors, forecasting models).
 - Systems in all lifecycle stages: development, testing, staging, production, and retirement.
 - AI components embedded within larger systems, even where AI is not the primary function.
@@ -46,7 +46,7 @@ This policy does **not** apply to:
 
 ## 4. Principles
 
-All AI governance at CBA is grounded in five principles. These principles inform every standard, framework, and guideline referenced by this policy.
+All AI governance at PetSure Australia is grounded in five principles. These principles inform every standard, framework, and guideline referenced by this policy.
 
 ### 4.1 Proportionate Governance
 
@@ -85,7 +85,7 @@ Accountability is personal: every solution has a named owner in the solution man
 | Tier | Label | Criteria | Examples |
 |------|-------|----------|----------|
 | **Tier 1** | `experimental` | Not connected to production systems. No real customer data. Used for research, prototyping, or internal exploration. | Research prototypes, hackathon projects, internal tooling experiments |
-| **Tier 2** | `production_internal` | Deployed in production but used only by internal CBA staff. Outputs inform decisions but do not directly reach customers. | Internal Q&A agents, risk assessment tools, model validation assistants, operational dashboards |
+| **Tier 2** | `production_internal` | Deployed in production but used only by internal PetSure Australia staff. Outputs inform decisions but do not directly reach customers. | Internal Q&A agents, risk assessment tools, model validation assistants, operational dashboards |
 | **Tier 3** | `production_customer_facing` | Outputs are visible to or directly impact customers, investors, regulators, or the public. | Customer chatbots, public Q&A agents, credit scoring models, automated decisioning |
 
 ### 5.2 Governance by Tier
@@ -264,12 +264,12 @@ When an AI incident is identified:
 
 | Document | Relationship |
 |----------|-------------|
-| CBA Responsible AI Principles (GOV-AI-002) | Subordinate — defines the fairness and ethics principles this policy mandates |
-| CBA Model Risk Management Framework (GOV-AI-003) | Subordinate — extends model governance requirements for AI/ML models |
-| CBA Data Governance Standard (GOV-AI-004) | Subordinate — defines data quality and privacy requirements for AI data |
-| CBA AI Solution Registration Standard (GOV-AI-005) | Subordinate — details the solution manifest schema and registration process |
-| CBA AI Testing & Evaluation Framework (GOV-AI-006) | Subordinate — details evaluation metrics, thresholds, and golden dataset requirements |
-| CBA Prompt Governance Guideline (GOV-AI-007) | Subordinate — details prompt version control and approval workflows |
+| PetSure Australia Responsible AI Principles (GOV-AI-002) | Subordinate — defines the fairness and ethics principles this policy mandates |
+| PetSure Australia Model Risk Management Framework (GOV-AI-003) | Subordinate — extends model governance requirements for AI/ML models |
+| PetSure Australia Data Governance Standard (GOV-AI-004) | Subordinate — defines data quality and privacy requirements for AI data |
+| PetSure Australia AI Solution Registration Standard (GOV-AI-005) | Subordinate — details the solution manifest schema and registration process |
+| PetSure Australia AI Testing & Evaluation Framework (GOV-AI-006) | Subordinate — details evaluation metrics, thresholds, and golden dataset requirements |
+| PetSure Australia Prompt Governance Guideline (GOV-AI-007) | Subordinate — details prompt version control and approval workflows |
 | APRA CPS 230 — Operational Risk Management | Regulatory — this policy implements CPS 230 requirements for AI operational risk |
 | APRA CPS 234 — Information Security | Regulatory — this policy implements CPS 234 requirements for AI information security |
 | DISR Voluntary AI Safety Standard | Regulatory — this policy aligns to the 10 voluntary guardrails |

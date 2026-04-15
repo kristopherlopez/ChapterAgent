@@ -1,4 +1,4 @@
-# CBA Model Risk Management Framework
+# PetSure Australia Model Risk Management Framework
 
 **Document ID:** GOV-AI-003
 **Version:** 1.2
@@ -13,11 +13,11 @@
 
 ## 1. Purpose
 
-This framework establishes the requirements for managing risk arising from the use of models across the Commonwealth Bank Group, with particular emphasis on models that incorporate artificial intelligence and machine learning techniques. It provides a structured approach to model development, validation, deployment, monitoring, and retirement that is proportionate to the risk each model presents.
+This framework establishes the requirements for managing risk arising from the use of models across the PetSure Australia Group, with particular emphasis on models that incorporate artificial intelligence and machine learning techniques. It provides a structured approach to model development, validation, deployment, monitoring, and retirement that is proportionate to the risk each model presents.
 
 Models are used extensively across the Group for credit decisioning, pricing, fraud detection, customer engagement, and operational optimisation. The increasing adoption of AI and machine learning introduces additional complexity: models may be less interpretable, more sensitive to data drift, and more difficult to validate using traditional techniques. This framework addresses those challenges while maintaining alignment with the Group's established model risk management practices.
 
-This framework is subordinate to the CBA Group AI Policy (GOV-AI-001) and implements model-specific governance requirements referenced in that policy. Where this framework imposes requirements beyond those in GOV-AI-001, the stricter requirement applies.
+This framework is subordinate to the PetSure Australia Group AI Policy (GOV-AI-001) and implements model-specific governance requirements referenced in that policy. Where this framework imposes requirements beyond those in GOV-AI-001, the stricter requirement applies.
 
 ## 2. Scope
 
@@ -289,7 +289,7 @@ Model cards must be updated whenever the model is retrained, re-validated, or it
 
 ### 10.2 Documentation Retention
 
-All model documentation must be retained for the lifetime of the model plus five years after retirement, in accordance with the CBA Data Governance Standard (GOV-AI-004) and APRA record-keeping requirements.
+All model documentation must be retained for the lifetime of the model plus five years after retirement, in accordance with the PetSure Australia Data Governance Standard (GOV-AI-004) and APRA record-keeping requirements.
 
 ## 11. APRA Alignment
 
@@ -307,18 +307,18 @@ APRA's Prudential Standard CPS 230 requires authorised deposit-taking institutio
 
 ### 11.2 CPS 234 — Information Security
 
-Models that process sensitive data must comply with APRA CPS 234 information security requirements. This is addressed through the CBA Data Governance Standard (GOV-AI-004) and the platform's PII validation gate (AI-GOV-005).
+Models that process sensitive data must comply with APRA CPS 234 information security requirements. This is addressed through the PetSure Australia Data Governance Standard (GOV-AI-004) and the platform's PII validation gate (AI-GOV-005).
 
 ## 12. Related Documents
 
 | Document | Relationship |
 |----------|-------------|
-| CBA Group AI Policy (GOV-AI-001) | Parent — this framework implements the model risk requirements of GOV-AI-001 |
-| CBA Responsible AI Principles (GOV-AI-002) | Sibling — provides the fairness and ethics principles applied during model validation |
-| CBA Data Governance Standard (GOV-AI-004) | Sibling — governs data used in model training, evaluation, and monitoring |
-| CBA AI Solution Registration Standard (GOV-AI-005) | Sibling — defines the base solution registration that this framework extends |
-| CBA AI Testing & Evaluation Framework (GOV-AI-006) | Sibling — defines the evaluation harness used for generative AI model monitoring |
-| CBA Prompt Governance Guideline (GOV-AI-007) | Sibling — governs prompt management for generative AI models |
+| PetSure Australia Group AI Policy (GOV-AI-001) | Parent — this framework implements the model risk requirements of GOV-AI-001 |
+| PetSure Australia Responsible AI Principles (GOV-AI-002) | Sibling — provides the fairness and ethics principles applied during model validation |
+| PetSure Australia Data Governance Standard (GOV-AI-004) | Sibling — governs data used in model training, evaluation, and monitoring |
+| PetSure Australia AI Solution Registration Standard (GOV-AI-005) | Sibling — defines the base solution registration that this framework extends |
+| PetSure Australia AI Testing & Evaluation Framework (GOV-AI-006) | Sibling — defines the evaluation harness used for generative AI model monitoring |
+| PetSure Australia Prompt Governance Guideline (GOV-AI-007) | Sibling — governs prompt management for generative AI models |
 | APRA CPS 230 — Operational Risk Management | Regulatory — this framework implements CPS 230 model risk requirements |
 | APRA CPS 234 — Information Security | Regulatory — referenced for data security requirements |
 | APRA CPG 235 — Managing Data Risk (Draft) | Regulatory — anticipated guidance on data risk management for models |

@@ -1,4 +1,4 @@
-# CBA Prompt Governance Guideline
+# PetSure Australia Prompt Governance Guideline
 
 **Document ID:** GOV-AI-007
 **Version:** 1.1
@@ -13,13 +13,13 @@
 
 ## 1. Purpose
 
-This guideline provides recommendations and requirements for the governance of prompts used in generative AI systems across the Commonwealth Bank Group. It covers system prompts, user-facing prompt templates, prompt engineering practices, and the change management processes that should accompany prompt modifications.
+This guideline provides recommendations and requirements for the governance of prompts used in generative AI systems across the PetSure Australia Group. It covers system prompts, user-facing prompt templates, prompt engineering practices, and the change management processes that should accompany prompt modifications.
 
 Prompts are the primary control interface for generative AI systems. A system prompt defines an AI solution's behaviour, boundaries, tone, and safety characteristics. Unlike traditional software where behaviour is determined by compiled code that goes through established change management processes, generative AI behaviour can be fundamentally altered by changing a few lines of natural language. This makes prompt governance both uniquely important and uniquely challenging.
 
 This document is structured as a guideline rather than a standard because prompt engineering practices are evolving rapidly and prescriptive requirements may become outdated. However, where this guideline states that something is "required," that requirement is mandatory and enforced through the platform's prompt governance compliance gate (AI-GOV-010). Advisory recommendations use language such as "should" or "is recommended."
 
-This guideline is subordinate to the CBA Group AI Policy (GOV-AI-001) and implements the prompt governance requirements referenced in that policy.
+This guideline is subordinate to the PetSure Australia Group AI Policy (GOV-AI-001) and implements the prompt governance requirements referenced in that policy.
 
 ## 2. Scope
 
@@ -34,7 +34,7 @@ This guideline applies to:
 This guideline does **not** apply to:
 
 - End-user free-text queries — these are governed by input guardrails rather than prompt governance.
-- Model training prompts or fine-tuning datasets — these are governed by the CBA Data Governance Standard (GOV-AI-004).
+- Model training prompts or fine-tuning datasets — these are governed by the PetSure Australia Data Governance Standard (GOV-AI-004).
 - Traditional software configuration files that do not interact with a language model.
 
 ## 3. Definitions
@@ -45,7 +45,7 @@ This guideline does **not** apply to:
 | **Prompt Template** | A structured prompt containing variable placeholders that are populated at runtime with context, user input, retrieved documents, or other dynamic content. |
 | **Prompt Version** | A specific, immutable snapshot of a prompt identified by a version identifier (typically a git commit hash). |
 | **Prompt Owner** | The individual responsible for a prompt's content, accuracy, and appropriateness. Typically the solution owner or a designated prompt engineer within the squad. |
-| **Prompt Reviewer** | An individual qualified to assess a prompt for safety, compliance, effectiveness, and alignment with CBA's governance requirements. |
+| **Prompt Reviewer** | An individual qualified to assess a prompt for safety, compliance, effectiveness, and alignment with PetSure Australia's governance requirements. |
 | **Prompt Injection** | An attack where a malicious input attempts to override or circumvent the system prompt's instructions, causing the AI to behave in unintended ways. |
 | **Prompt Leakage** | The unintended disclosure of system prompt content, internal instructions, or confidential configuration to end users or external parties. |
 
@@ -88,7 +88,7 @@ The solution manifest (`solution.yaml`) must include a reference to the approved
 prompt_governance:
   approved_commit: "a1b2c3d4e5f6"
   approved_date: "2025-04-01"
-  approved_by: "jane.smith@cba.com.au"
+  approved_by: "jane.smith@petsure.com.au"
   prompt_path: "prompts/system_prompt.md"
 ```
 
@@ -107,7 +107,7 @@ Prompt changes should follow a structured process that is proportionate to the s
 
 **Stage 2: Review**
 - The prompt change is submitted for review via a pull request or equivalent mechanism.
-- Reviewers assess the change for safety, compliance, effectiveness, and alignment with CBA's AI principles (GOV-AI-002).
+- Reviewers assess the change for safety, compliance, effectiveness, and alignment with PetSure Australia's AI principles (GOV-AI-002).
 - Review should include testing the modified prompt against the golden dataset (see Section 6).
 
 **Stage 3: Approve**
@@ -335,7 +335,7 @@ For Tier 3 (customer-facing) solutions, audit trail coverage must be 100% — ev
 
 ### 10.3 Retention
 
-Prompt audit trail data is subject to the retention requirements defined in the CBA Data Governance Standard (GOV-AI-004) Section 7.1: 7 years for customer-facing interactions, 3 years for internal interactions.
+Prompt audit trail data is subject to the retention requirements defined in the PetSure Australia Data Governance Standard (GOV-AI-004) Section 7.1: 7 years for customer-facing interactions, 3 years for internal interactions.
 
 ### 10.4 Audit Trail Access
 
@@ -352,12 +352,12 @@ Audit trail data must not be used for model training without explicit approval f
 
 | Document | Relationship |
 |----------|-------------|
-| CBA Group AI Policy (GOV-AI-001) | Parent — this guideline implements the prompt governance requirements of GOV-AI-001 |
-| CBA Responsible AI Principles (GOV-AI-002) | Sibling — AI principles that inform prompt design and review criteria |
-| CBA Model Risk Management Framework (GOV-AI-003) | Sibling — generative AI model monitoring references prompt governance |
-| CBA Data Governance Standard (GOV-AI-004) | Sibling — defines retention and classification requirements for prompt audit data |
-| CBA AI Solution Registration Standard (GOV-AI-005) | Sibling — defines the solution manifest schema that references prompt commit hashes |
-| CBA AI Testing & Evaluation Framework (GOV-AI-006) | Sibling — defines the evaluation harness used for prompt regression testing |
+| PetSure Australia Group AI Policy (GOV-AI-001) | Parent — this guideline implements the prompt governance requirements of GOV-AI-001 |
+| PetSure Australia Responsible AI Principles (GOV-AI-002) | Sibling — AI principles that inform prompt design and review criteria |
+| PetSure Australia Model Risk Management Framework (GOV-AI-003) | Sibling — generative AI model monitoring references prompt governance |
+| PetSure Australia Data Governance Standard (GOV-AI-004) | Sibling — defines retention and classification requirements for prompt audit data |
+| PetSure Australia AI Solution Registration Standard (GOV-AI-005) | Sibling — defines the solution manifest schema that references prompt commit hashes |
+| PetSure Australia AI Testing & Evaluation Framework (GOV-AI-006) | Sibling — defines the evaluation harness used for prompt regression testing |
 | OWASP Top 10 for LLM Applications | Industry — referenced for prompt injection and information leakage mitigations |
 | APRA CPS 230 — Operational Risk Management | Regulatory — change management requirements for operational systems |
 | APRA CPS 234 — Information Security | Regulatory — security requirements applicable to prompt security |
