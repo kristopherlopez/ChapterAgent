@@ -52,8 +52,8 @@ Golden datasets must meet the following minimum size requirements, as mandated b
 | Risk Tier | Minimum Cases | Sign-off Required | Notes |
 |-----------|--------------|-------------------|-------|
 | `experimental` | Recommended: 10+ | No | Golden datasets are encouraged for experimental solutions to establish evaluation baselines early. Not enforced by compliance gates. |
-| `production_internal` | **30 cases minimum** | Yes — by a qualified reviewer independent of the development squad | Must include all case types defined in Section 4.3. |
-| `production_customer_facing` | **50 cases minimum** | Yes — by a qualified reviewer independent of the development squad, plus Chapter Lead acknowledgement | Must include all case types defined in Section 4.3 with expanded adversarial coverage. |
+| `production_internal` | **30 cases minimum** | Yes — by a qualified reviewer independent of the development team | Must include all case types defined in Section 4.3. |
+| `production_customer_facing` | **50 cases minimum** | Yes — by a qualified reviewer independent of the development team, plus Team Lead acknowledgement | Must include all case types defined in Section 4.3 with expanded adversarial coverage. |
 
 ### 4.2 Data Requirements
 
@@ -187,11 +187,11 @@ The following thresholds define the minimum (or maximum, for inverse metrics) sc
 
 ### 5.3 Threshold Override
 
-Squads may request adjusted thresholds for specific metrics if they can demonstrate that the default thresholds are inappropriate for their use case. Threshold overrides require:
+Teams may request adjusted thresholds for specific metrics if they can demonstrate that the default thresholds are inappropriate for their use case. Threshold overrides require:
 
 1. A written justification documenting why the default threshold does not apply
 2. A proposed alternative threshold with evidence supporting its appropriateness
-3. Approval from the Chapter Lead and the Head of Risk Management AI
+3. Approval from the Team Lead and the Head of Risk Management AI
 4. The override documented in the solution manifest under the `evaluation.threshold_overrides` section
 
 Threshold overrides are reviewed at each re-evaluation. They do not carry over automatically when a solution changes risk tier.
@@ -208,7 +208,7 @@ Production solutions must be re-evaluated on a regular schedule, as mandated by 
 | `production_internal` | Every 90 calendar days | 14 days |
 | `production_customer_facing` | Every 30 calendar days | 7 days |
 
-The platform tracks re-evaluation due dates and sends automated reminders at 14 days, 7 days, and 1 day before the due date. If the grace period expires without a passing re-evaluation, the solution is flagged as non-compliant and the squad has the remediation window defined in GOV-AI-001 Section 8.3 (14 days for customer-facing, 30 days for internal).
+The platform tracks re-evaluation due dates and sends automated reminders at 14 days, 7 days, and 1 day before the due date. If the grace period expires without a passing re-evaluation, the solution is flagged as non-compliant and the team has the remediation window defined in GOV-AI-001 Section 8.3 (14 days for customer-facing, 30 days for internal).
 
 ### 6.2 Triggered Re-evaluation
 

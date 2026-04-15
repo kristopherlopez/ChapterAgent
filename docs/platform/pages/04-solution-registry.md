@@ -7,7 +7,7 @@
 
 ## What It Shows
 
-A dedicated page listing every solution the platform has discovered, with richer metadata than the dashboard. Demonstrates the manifest-driven onboarding model — squads register themselves, the platform discovers and governs automatically.
+A dedicated page listing every solution the platform has discovered, with richer metadata than the dashboard. Demonstrates the manifest-driven onboarding model — teams register themselves, the platform discovers and governs automatically.
 
 ### Registry Table
 
@@ -16,7 +16,7 @@ A dedicated page listing every solution the platform has discovered, with richer
 | **Solution** | Name and description |
 | **Category** | AI or ML |
 | **Risk Tier** | Customer-Facing, High, Medium, Internal |
-| **Owner** | Responsible squad |
+| **Owner** | Responsible team |
 | **Guardrails** | Summary count (e.g. `8/8 PASS`, `5/6 FAIL`) |
 | **Gate** | Deployment gate — minimal icon (check or cross) |
 | **Health** | 14-day health trend sparkline (green/amber/red lines) |
@@ -85,4 +85,4 @@ A legend bar at the bottom explains the sparkline colours and stale indicator.
 
 Alex navigates to the Solution Registry. He sees all four solutions — three AI, one ML — with their categories, risk tiers, and owners. The Credit Default Scorer shows a stale warning (last tested 15 days ago). The Multi-Platform Agent's sparkline is almost entirely red. He understands which solutions need attention without clicking into any of them.
 
-**Key impression:** "Squads onboard themselves. The platform discovers, governs, and surfaces problems automatically."
+**Key impression:** "Teams onboard themselves. The platform discovers, governs, and surfaces problems automatically."

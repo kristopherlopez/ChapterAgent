@@ -156,7 +156,7 @@ AI red-teaming is distinct from traditional penetration testing and requires spe
 - Document all successful and unsuccessful attack vectors with full reproduction steps.
 - Feed findings back into the golden dataset as adversarial test cases.
 
-Red-team findings classified as Critical or High must be remediated before the next production deployment. Medium findings must be remediated within 30 days. Low findings are tracked and prioritised by the squad.
+Red-team findings classified as Critical or High must be remediated before the next production deployment. Medium findings must be remediated within 30 days. Low findings are tracked and prioritised by the team.
 
 ## 8. Incident Notification to APRA
 

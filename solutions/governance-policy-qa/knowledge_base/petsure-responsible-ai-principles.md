@@ -48,8 +48,8 @@ AI systems must not produce systematically biased outputs that disadvantage indi
 #### What This Means in Practice
 
 - Every AI solution must declare its fairness definition in the solution manifest. Fairness is context-dependent: what constitutes fair treatment in a credit scoring model differs from what constitutes fair treatment in a Q&A agent.
-- Squads must consider fairness during design, not only during testing. Bias that is baked into training data or system prompts cannot be reliably detected by post-hoc testing alone.
-- When a solution produces different outcomes for different groups, the squad must be able to explain why and demonstrate that the differential is not attributable to protected attributes.
+- Teams must consider fairness during design, not only during testing. Bias that is baked into training data or system prompts cannot be reliably detected by post-hoc testing alone.
+- When a solution produces different outcomes for different groups, the team must be able to explain why and demonstrate that the differential is not attributable to protected attributes.
 
 #### Fairness Definitions by Solution Type
 
@@ -199,7 +199,7 @@ The required level of human oversight varies by risk tier and decision impact:
 | `production_internal` | **Human-on-the-loop** | AI outputs are delivered to internal users directly, but aggregate quality is monitored. The solution owner reviews evaluation results and production metrics at least monthly. |
 | `production_customer_facing` | **Human-in-the-loop or human-on-the-loop** | Determined by decision impact. High-impact decisions (credit, claims, complaints) require human-in-the-loop. Lower-impact interactions (general Q&A, navigation assistance) may use human-on-the-loop with robust monitoring. |
 
-For customer-facing solutions, the oversight model must be documented in the solution manifest and reviewed during intake. The Chapter assesses whether the proposed oversight model is appropriate for the solution's risk profile.
+For customer-facing solutions, the oversight model must be documented in the solution manifest and reviewed during intake. The Governance Portal team assesses whether the proposed oversight model is appropriate for the solution's risk profile.
 
 #### Escalation and Override
 
@@ -285,7 +285,7 @@ Certain AI solutions or changes require review by the Group AI Ethics Board befo
 
 Ethics Board reviews follow a structured process:
 
-1. **Referral** — The Chapter, solution owner, or compliance function refers the matter to the Ethics Board with supporting documentation.
+1. **Referral** — The platform team, solution owner, or compliance function refers the matter to the Ethics Board with supporting documentation.
 2. **Assessment** — The Ethics Board assesses the matter against the six principles in this document. The Board may request additional information, testing, or expert input.
 3. **Determination** — The Board issues one of three determinations:
    - **Approved** — the solution may proceed as proposed
@@ -311,7 +311,7 @@ Customers who believe they have been unfairly treated by an AI-assisted decision
 PetSure Australia staff who identify potential fairness, safety, or ethical concerns with an AI solution may escalate through:
 
 - Their line management
-- The Chapter Lead
+- The Team Lead
 - The AI Ethics Board directly (for concerns about systemic issues or concerns that have not been addressed through other channels)
 
 Escalations are treated confidentially and without adverse consequence to the person raising the concern.

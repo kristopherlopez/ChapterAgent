@@ -8,7 +8,7 @@ This is a "dog-fooding" solution: the platform governs an agent whose job is to 
 
 ## Why This Matters
 
-Every AI governance platform creates a documentation problem. You write policies, frameworks, standards, and guidelines. They accumulate. Squads building AI solutions need to know: *What does the policy say about PII? Which standard covers evaluation thresholds? What's the difference between AI-GOV-003 and AI-GOV-006?*
+Every AI governance platform creates a documentation problem. You write policies, frameworks, standards, and guidelines. They accumulate. Teams building AI solutions need to know: *What does the policy say about PII? Which standard covers evaluation thresholds? What's the difference between AI-GOV-003 and AI-GOV-006?*
 
 Today that's a Ctrl+F exercise across multiple PDFs. This agent replaces that with a natural language interface over the entire policy corpus — and because it's registered as a platform solution, it's governed by the same guardrails, evaluation metrics, and compliance gates as every other solution.
 
@@ -85,7 +85,7 @@ With 200-word documents, the agent can practically return the whole document. Wi
 
 **2. Cross-document synthesis becomes real.**
 
-"What does a squad need to do before deploying a customer-facing solution?" touches the Registration Standard (manifest requirements), the Testing Framework (evaluation thresholds by tier), the Group AI Policy (mandatory guardrails), the Prompt Governance Guideline (version control), and CPS 230 (operational risk controls). With thin documents this is trivial. With full documents it requires genuine multi-hop retrieval.
+"What does a team need to do before deploying a customer-facing solution?" touches the Registration Standard (manifest requirements), the Testing Framework (evaluation thresholds by tier), the Group AI Policy (mandatory guardrails), the Prompt Governance Guideline (version control), and CPS 230 (operational risk controls). With thin documents this is trivial. With full documents it requires genuine multi-hop retrieval.
 
 **3. Risk tier nuance creates tricky edge cases.**
 
@@ -105,7 +105,7 @@ Multiple documents define terms like "AI solution", "risk tier", "golden dataset
 |----------|----------|-----|
 | 1 | PetSure Australia Group AI Policy | The anchor document — everything references it |
 | 2 | PetSure Australia AI Testing & Evaluation Framework | Most detail-heavy — metrics, thresholds, risk tier tables |
-| 3 | PetSure Australia AI Solution Registration Standard | Defines the manifest schema squads interact with daily |
+| 3 | PetSure Australia AI Solution Registration Standard | Defines the manifest schema teams interact with daily |
 | 4 | PetSure Australia Responsible AI Principles | Creates the bias/fairness overlap with Testing Framework |
 | 5 | PetSure Australia Model Risk Management Framework | Bridges AI governance with traditional model risk |
 | 6 | PetSure Australia Data Governance Standard | Privacy and data quality depth |
@@ -150,7 +150,7 @@ The first three are critical for the demo. Documents 4-7 create the cross-refere
 
 ## Risk Tier
 
-**`production_internal`** — this agent is for internal users (squads, risk officers, compliance teams), not external customers. Guardrails are still enforced but thresholds are slightly relaxed compared to `production_customer_facing`.
+**`production_internal`** — this agent is for internal users (teams, risk officers, compliance teams), not external customers. Guardrails are still enforced but thresholds are slightly relaxed compared to `production_customer_facing`.
 
 This is a deliberate contrast with the Annual Report Q&A Agent (which is `production_customer_facing`). It shows the platform applying different governance intensity based on risk tier — same guardrails, different thresholds.
 
@@ -255,7 +255,7 @@ Traditional RAG pipeline. The same markdown files are processed through:
 4. **Retrieval** — hybrid search (vector + BM25), top-k chunks re-ranked
 5. **Generation** — LLM generates answer from retrieved chunks with citation instructions
 
-**Why this matters for the demo:** This is the pattern most squads will actually use. It has tunable parameters (chunk size, overlap, top-k, re-rank strategy) and visible retrieval steps in the trace. The platform shows exactly which chunks were retrieved and used.
+**Why this matters for the demo:** This is the pattern most teams will actually use. It has tunable parameters (chunk size, overlap, top-k, re-rank strategy) and visible retrieval steps in the trace. The platform shows exactly which chunks were retrieved and used.
 
 ### Same Source, Different Architecture, Same Governance
 
@@ -284,7 +284,7 @@ The evaluation harness doesn't care which approach was used. It measures the sam
 | **Scope** | Financial disclosures | AI governance policies and regulations |
 | **Temporal accuracy** | Critical (competing reporting periods) | Not applicable (no temporal ambiguity) |
 | **Citation style** | Document + page + section | Document + section heading |
-| **Audience** | Investors, analysts, public | Squads, risk officers, compliance teams |
+| **Audience** | Investors, analysts, public | Teams, risk officers, compliance teams |
 | **Demo point** | "We govern real agents" | "The platform helps you understand its own rules — and compares retrieval architectures" |
 
 ## Demo Flow

@@ -48,9 +48,9 @@ This alignment guide applies to:
 
 **PetSure Australia Platform Implementation:**
 
-- The PetSure Australia Group AI Policy (GOV-AI-001) establishes a governance hierarchy from the Board Risk Committee through the Group Chief Risk Officer to the Chapter Lead and individual Solution Owners.
+- The PetSure Australia Group AI Policy (GOV-AI-001) establishes a governance hierarchy from the Board Risk Committee through the Group Chief Risk Officer to the Team Lead and individual Solution Owners.
 - Every AI solution must have a named owner documented in the solution manifest. The Registration gate (AI-GOV-001) blocks deployment if no owner is specified.
-- The Chapter Lead is accountable for the AI governance platform itself. Solution Owners are accountable for their solution's behaviour.
+- The Team Lead is accountable for the AI governance platform itself. Solution Owners are accountable for their solution's behaviour.
 - The AI Ethics Board provides independent oversight for fairness and ethical considerations on customer-facing solutions.
 
 **AI-GOV Control:** AI-GOV-001 (Registration)
@@ -66,7 +66,7 @@ This alignment guide applies to:
 **PetSure Australia Platform Implementation:**
 
 - The three-tier risk classification system (experimental, production_internal, production_customer_facing) provides proportionate governance. Higher tiers require stricter controls, more frequent evaluation, and additional oversight.
-- Risk identification occurs during solution intake, where the Chapter reviews the solution's audience, data sensitivity, decision impact, reversibility, and regulatory exposure.
+- Risk identification occurs during solution intake, where the Governance Portal team reviews the solution's audience, data sensitivity, decision impact, reversibility, and regulatory exposure.
 - Ongoing risk management is automated through the platform's eight compliance gates, which run at defined cadences (30 days for customer-facing, 90 days for internal).
 - The solution manifest documents identified risks and mitigations. Risk tier escalation is triggered automatically when scope changes.
 
@@ -118,7 +118,7 @@ This alignment guide applies to:
 
 **PetSure Australia Platform Implementation:**
 
-- The platform provides emergency kill switches to disable any AI solution immediately. This capability is available to the Solution Owner and Chapter Lead.
+- The platform provides emergency kill switches to disable any AI solution immediately. This capability is available to the Solution Owner and Team Lead.
 - For customer-facing solutions, the platform supports human-in-the-loop configurations where AI outputs are reviewed by a human before delivery.
 - Guardrail confidence thresholds cause the AI to decline to answer and escalate to a human agent when confidence is low.
 - The compliance dashboard provides real-time visibility into all active AI solutions, their compliance status, and guardrail alert rates, enabling proactive human oversight.
@@ -143,7 +143,7 @@ This alignment guide applies to:
 
 **AI-GOV Control:** AI-GOV-001 (Registration), AI-GOV-003 (Evaluation Harness — citation coverage metric)
 
-**Gap Assessment:** Minor gap. The platform tracks citation coverage and scope containment, but does not currently enforce specific user-facing disclosure language or verify that the disclosure is presented prominently. Squads are responsible for implementing appropriate disclosures, but there is no automated check. **Remediation under consideration — disclosure template library planned for Q4 2025.**
+**Gap Assessment:** Minor gap. The platform tracks citation coverage and scope containment, but does not currently enforce specific user-facing disclosure language or verify that the disclosure is presented prominently. Teams are responsible for implementing appropriate disclosures, but there is no automated check. **Remediation under consideration — disclosure template library planned for Q4 2025.**
 
 ---
 
@@ -235,9 +235,9 @@ This alignment guide applies to:
 
 | Gap | DISR Guardrail | Remediation | Target Date | Owner |
 |-----|---------------|-------------|-------------|-------|
-| Human-in-the-loop guidance for customer-facing solutions | Guardrail 5 | Develop decision framework for when mandatory human review is required vs. monitoring-based oversight | Q3 2025 | Chapter Lead |
-| Disclosure enforcement for AI-powered interfaces | Guardrail 6 | Create disclosure template library and automated check for customer-facing solutions | Q4 2025 | Chapter Lead + Design |
-| AI-specific contestability process | Guardrail 7 | Develop AI decision contestability guidance integrated with existing complaints framework | Q3 2025 | Chapter Lead + Customer Advocacy |
+| Human-in-the-loop guidance for customer-facing solutions | Guardrail 5 | Develop decision framework for when mandatory human review is required vs. monitoring-based oversight | Q3 2025 | Team Lead |
+| Disclosure enforcement for AI-powered interfaces | Guardrail 6 | Create disclosure template library and automated check for customer-facing solutions | Q4 2025 | Team Lead + Design |
+| AI-specific contestability process | Guardrail 7 | Develop AI decision contestability guidance integrated with existing complaints framework | Q3 2025 | Team Lead + Customer Advocacy |
 
 All gaps are classified as low severity. The platform provides the technical infrastructure to support these guardrails; the gaps relate to process guidance and policy documentation rather than technical capability. Remediation is planned and tracked.
 

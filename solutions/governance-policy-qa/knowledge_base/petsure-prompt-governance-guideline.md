@@ -44,7 +44,7 @@ This guideline does **not** apply to:
 | **System Prompt** | The initial instruction set provided to a language model that establishes its role, behaviour, boundaries, and constraints. The system prompt is not visible to end users and is considered part of the solution's configuration. |
 | **Prompt Template** | A structured prompt containing variable placeholders that are populated at runtime with context, user input, retrieved documents, or other dynamic content. |
 | **Prompt Version** | A specific, immutable snapshot of a prompt identified by a version identifier (typically a git commit hash). |
-| **Prompt Owner** | The individual responsible for a prompt's content, accuracy, and appropriateness. Typically the solution owner or a designated prompt engineer within the squad. |
+| **Prompt Owner** | The individual responsible for a prompt's content, accuracy, and appropriateness. Typically the solution owner or a designated prompt engineer within the team. |
 | **Prompt Reviewer** | An individual qualified to assess a prompt for safety, compliance, effectiveness, and alignment with PetSure Australia's governance requirements. |
 | **Prompt Injection** | An attack where a malicious input attempts to override or circumvent the system prompt's instructions, causing the AI to behave in unintended ways. |
 | **Prompt Leakage** | The unintended disclosure of system prompt content, internal instructions, or confidential configuration to end users or external parties. |
@@ -127,10 +127,10 @@ The authority required to approve prompt changes varies by risk tier and the nat
 | Change Type | Experimental | Production Internal | Production Customer-Facing |
 |------------|-------------|--------------------|-----------------------------|
 | Minor wording or formatting | Prompt Owner | Prompt Owner | Prompt Owner + Prompt Reviewer |
-| Behaviour modification (tone, style, response format) | Prompt Owner | Prompt Reviewer | Prompt Reviewer + Chapter Lead |
-| Boundary or scope change | N/A | Prompt Reviewer + Chapter Lead | Chapter Lead + Head of Risk Management AI |
-| Safety or guardrail instruction change | N/A | Chapter Lead | Chapter Lead + Head of Risk Management AI |
-| New tool or function definition (agentic) | N/A | Prompt Reviewer + Chapter Lead | Chapter Lead + Head of Risk Management AI |
+| Behaviour modification (tone, style, response format) | Prompt Owner | Prompt Reviewer | Prompt Reviewer + Team Lead |
+| Boundary or scope change | N/A | Prompt Reviewer + Team Lead | Team Lead + Head of Risk Management AI |
+| Safety or guardrail instruction change | N/A | Team Lead | Team Lead + Head of Risk Management AI |
+| New tool or function definition (agentic) | N/A | Prompt Reviewer + Team Lead | Team Lead + Head of Risk Management AI |
 
 **Definitions of change types:**
 
@@ -173,7 +173,7 @@ The regression testing process:
 | Boundary adherence | No decline permitted | No decline permitted |
 | Response latency | <= 20% increase | <= 10% increase |
 
-If a regression exceeds these tolerances, the prompt change must not be deployed until the regression is resolved or the Chapter Lead provides a documented exception explaining why the regression is acceptable.
+If a regression exceeds these tolerances, the prompt change must not be deployed until the regression is resolved or the Team Lead provides a documented exception explaining why the regression is acceptable.
 
 ### 6.3 Automated Regression in CI/CD
 
@@ -247,7 +247,7 @@ The guardrail validation gate (AI-GOV-006) verifies that these test cases are ha
 
 ### 8.1 Template Library
 
-The Chapter maintains a library of approved prompt templates and reusable components that squads can use as starting points. Using these templates is recommended because they have been reviewed for safety, compliance, and effectiveness.
+The platform team maintains a library of approved prompt templates and reusable components that teams can use as starting points. Using these templates is recommended because they have been reviewed for safety, compliance, and effectiveness.
 
 The template library includes:
 
@@ -267,16 +267,16 @@ When using a template from the library:
 
 - The template version (commit hash) should be recorded in the solution manifest.
 - Customisations made to the template should be documented in the prompt's CHANGELOG.
-- Template updates by the Chapter should be assessed by the squad for compatibility with their customisations.
-- Squads should not modify the `guardrail-block` or `pii-protection-block` templates without Chapter approval, as these contain safety-critical instructions.
+- Template updates by the platform team should be assessed by the team for compatibility with their customisations.
+- Teams should not modify the `guardrail-block` or `pii-protection-block` templates without platform team approval, as these contain safety-critical instructions.
 
 ### 8.3 Custom Prompt Components
 
-Squads may develop custom prompt components for their specific use case. Custom components should:
+Teams may develop custom prompt components for their specific use case. Custom components should:
 
 - Follow the same version control and change management requirements as system prompts.
-- Be reviewed by the Chapter during solution intake to ensure they do not conflict with governance requirements.
-- Be shared with the Chapter if they address a common pattern that other squads could benefit from.
+- Be reviewed by the platform team during solution intake to ensure they do not conflict with governance requirements.
+- Be shared with the platform team if they address a common pattern that other teams could benefit from.
 
 ## 9. Emergency Prompt Changes
 
@@ -300,15 +300,15 @@ Emergency changes are not appropriate for:
 
 The expedited process for emergency prompt changes:
 
-1. **Notify** — the solution owner notifies the Chapter Lead that an emergency prompt change is required, with a brief description of the incident and the proposed change.
+1. **Notify** — the solution owner notifies the Team Lead that an emergency prompt change is required, with a brief description of the incident and the proposed change.
 2. **Develop and test** — the prompt change is developed and tested against a minimum subset of the golden dataset (at least the safety and guardrail test cases). Full regression testing is deferred.
-3. **Approve** — the Chapter Lead (or their delegate) provides verbal or written approval. For customer-facing solutions, the Head of Risk Management AI must also approve. Approval is recorded after the fact if time does not permit prior written approval.
+3. **Approve** — the Team Lead (or their delegate) provides verbal or written approval. For customer-facing solutions, the Head of Risk Management AI must also approve. Approval is recorded after the fact if time does not permit prior written approval.
 4. **Deploy** — the change is deployed immediately.
-5. **Post-deployment** — within 48 hours of the emergency change, the squad must: (a) complete full regression testing, (b) document the change rationale and approval, (c) update the solution manifest with the new approved commit hash, and (d) conduct a brief post-incident review.
+5. **Post-deployment** — within 48 hours of the emergency change, the team must: (a) complete full regression testing, (b) document the change rationale and approval, (c) update the solution manifest with the new approved commit hash, and (d) conduct a brief post-incident review.
 
 ### 9.3 Emergency Change Limits
 
-Emergency changes should be rare. If a solution requires more than two emergency prompt changes in a 90-day period, the Chapter Lead should review whether the solution's prompt architecture is fit for purpose and whether additional safeguards are needed.
+Emergency changes should be rare. If a solution requires more than two emergency prompt changes in a 90-day period, the Team Lead should review whether the solution's prompt architecture is fit for purpose and whether additional safeguards are needed.
 
 ## 10. Prompt Audit Trail
 
@@ -341,8 +341,8 @@ Prompt audit trail data is subject to the retention requirements defined in the 
 
 Access to the prompt audit trail is restricted to:
 
-- The solution owner and their squad (their own solution only).
-- The Chapter Lead and Risk Management AI team (all solutions).
+- The solution owner and their team (their own solution only).
+- The Team Lead and Risk Management AI team (all solutions).
 - Internal Audit (all solutions, read-only).
 - Model Risk (solutions containing models, as needed for validation).
 

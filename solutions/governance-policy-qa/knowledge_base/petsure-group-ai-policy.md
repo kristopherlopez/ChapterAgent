@@ -41,8 +41,8 @@ This policy does **not** apply to:
 | **Guardrail** | An automated check that runs on AI inputs or outputs to enforce safety, scope, and quality boundaries. Guardrails may block, flag, or log depending on configuration. |
 | **Golden Dataset** | A curated, human-reviewed set of test cases used to evaluate an AI solution's quality, safety, and compliance. Golden datasets must be representative of production scenarios including edge cases and adversarial inputs. |
 | **Deployment Gate** | An automated compliance check that must pass before a solution can enter or remain in production. Eight gates are defined in this policy (see Section 6). |
-| **Chapter** | The Risk Management AI capability team responsible for maintaining the AI governance platform, reviewing solution intakes, and providing governance tooling to squads. |
-| **Squad** | A cross-functional delivery team that builds and operates an AI solution. Squads are accountable for their solution's behaviour; the Chapter provides the governance infrastructure. |
+| **Governance Portal Team** | The Risk Management AI capability team responsible for maintaining the AI governance platform, reviewing solution intakes, and providing governance tooling to teams. |
+| **Team** | A cross-functional delivery team that builds and operates an AI solution. Teams are accountable for their solution's behaviour; the Governance Portal team provides the governance infrastructure. |
 
 ## 4. Principles
 
@@ -64,7 +64,7 @@ Explainability takes different forms depending on solution type: citation covera
 
 AI systems must not produce systematically biased outputs across demographic groups. Bias testing is mandatory for all solutions above experimental tier, with stricter thresholds for customer-facing systems.
 
-The definition of fairness must be documented for each solution because fairness means different things in different contexts. Demographic parity may be appropriate for one use case while equalised odds is appropriate for another. The Chapter reviews fairness definitions during intake.
+The definition of fairness must be documented for each solution because fairness means different things in different contexts. Demographic parity may be appropriate for one use case while equalised odds is appropriate for another. The Governance Portal team reviews fairness definitions during intake.
 
 ### 4.4 Privacy by Design
 
@@ -76,7 +76,7 @@ This principle extends to training and evaluation data. Golden datasets must use
 
 Every AI interaction must be traceable. The audit trail must be complete enough to reconstruct any AI-assisted decision after the fact. This is both a regulatory requirement (APRA CPS 230, CPS 234) and an operational necessity for incident response.
 
-Accountability is personal: every solution has a named owner in the solution manifest. The Chapter does not accept solutions without an identified accountable individual.
+Accountability is personal: every solution has a named owner in the solution manifest. The Governance Portal team does not accept solutions without an identified accountable individual.
 
 ## 5. Risk Tier Classification
 
@@ -107,7 +107,7 @@ Accountability is personal: every solution has a named owner in the solution man
 
 ### 5.3 Tier Assignment
 
-Risk tier is assigned by the Chapter during the solution intake process based on:
+Risk tier is assigned by the Governance Portal team during the solution intake process based on:
 
 1. **Audience** — who sees or is affected by the AI outputs?
 2. **Decision impact** — what decisions do the outputs inform or automate?
@@ -127,7 +127,7 @@ A solution must be escalated to a higher tier if any of the following occur:
 - An incident occurs that reveals higher impact than originally assessed
 - The solution's scope expands beyond its original registration
 
-Tier escalation cannot be reversed without Chapter approval and a documented justification.
+Tier escalation cannot be reversed without Governance Portal team approval and a documented justification.
 
 ## 6. Compliance Gates
 
@@ -159,7 +159,7 @@ Gate results are recorded as structured evidence and included in the compliance 
 In exceptional circumstances, a gate can be temporarily exempted. Exceptions require:
 
 1. Written justification from the solution owner
-2. Approval from the Chapter Lead **and** the relevant control owner
+2. Approval from the Team Lead **and** the relevant control owner
 3. A documented remediation plan with a deadline (maximum 30 days)
 4. The exception recorded in the compliance evidence package
 
@@ -184,14 +184,14 @@ The Registration gate (AI-GOV-001) cannot be exempted under any circumstances.
 
 ### 7.2 Custom Guardrails
 
-Squads may implement additional guardrails specific to their use case. Custom guardrails must:
+Teams may implement additional guardrails specific to their use case. Custom guardrails must:
 
 - Be documented in the solution manifest
 - Be included in the guardrail test suite
 - Produce structured pass/fail results compatible with the platform's evidence format
 - Be included in the audit trail
 
-The Chapter reviews custom guardrails during intake to ensure they are appropriate and correctly implemented.
+The Governance Portal team reviews custom guardrails during intake to ensure they are appropriate and correctly implemented.
 
 ## 8. Evaluation Requirements
 
@@ -225,7 +225,7 @@ Production solutions must be re-evaluated on a regular cadence:
 - `production_customer_facing`: every 30 days
 - After any model update, prompt change, or scope modification: immediately
 
-Re-evaluation runs the full evaluation harness against the current golden dataset. If a re-evaluation fails, the solution remains in production but is flagged as non-compliant and the squad has 14 days (customer-facing) or 30 days (internal) to remediate.
+Re-evaluation runs the full evaluation harness against the current golden dataset. If a re-evaluation fails, the solution remains in production but is flagged as non-compliant and the team has 14 days (customer-facing) or 30 days (internal) to remediate.
 
 ## 9. Incident Response
 
@@ -234,8 +234,8 @@ Re-evaluation runs the full evaluation harness against the current golden datase
 | Severity | Criteria | Response Time | Escalation |
 |----------|----------|---------------|------------|
 | **Critical** | AI output causes customer harm, regulatory breach, or financial loss | Immediate | GCRO, Board Risk Committee |
-| **High** | AI output is systematically incorrect, biased, or leaking PII | 4 hours | Chapter Lead, Solution Owner, relevant control owner |
-| **Medium** | AI output quality degrades below thresholds but no immediate harm | 24 hours | Chapter Lead, Solution Owner |
+| **High** | AI output is systematically incorrect, biased, or leaking PII | 4 hours | Team Lead, Solution Owner, relevant control owner |
+| **Medium** | AI output quality degrades below thresholds but no immediate harm | 24 hours | Team Lead, Solution Owner |
 | **Low** | Isolated incorrect output, caught by guardrails | 5 business days | Solution Owner |
 
 ### 9.2 Incident Procedures
@@ -253,9 +253,9 @@ When an AI incident is identified:
 | Role | Responsibilities |
 |------|-----------------|
 | **Group Chief Risk Officer** | Approval authority for this policy. Accountable for the Group's AI risk posture. |
-| **Chapter Lead** | Maintains the AI governance platform. Reviews solution intakes. Approves tier assignments and gate exceptions. |
+| **Team Lead** | Maintains the AI governance platform. Reviews solution intakes. Approves tier assignments and gate exceptions. |
 | **Solution Owner** | Accountable for their solution's compliance. Maintains the solution manifest. Responds to incidents. |
-| **Squad** | Builds and operates the AI solution. Implements guardrails. Maintains the golden dataset. |
+| **Team** | Builds and operates the AI solution. Implements guardrails. Maintains the golden dataset. |
 | **AI Ethics Board** | Sets fairness principles. Reviews bias testing results for customer-facing solutions. |
 | **Model Risk** | Reviews scoring models and classifiers. Provides independent validation. |
 | **Internal Audit** | Audits compliance evidence packages. Validates gate enforcement. |
