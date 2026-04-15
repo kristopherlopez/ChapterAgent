@@ -2,9 +2,9 @@
 
 ## What This Is
 
-A taxonomy of AI solution types — both GenAI and traditional ML — that squads across Risk Management commonly build. Each type has a different output shape, different primary governance concerns, and exercises the platform's reusable components differently.
+A taxonomy of AI solution types — both GenAI and traditional ML — that teams across Risk Management commonly build. Each type has a different output shape, different primary governance concerns, and exercises the platform's reusable components differently.
 
-The Chapter doesn't prescribe what squads build. It governs what they ship. This taxonomy defines the patterns the platform expects to see — so guardrails, evaluation metrics, and compliance gates can be configured appropriately for each.
+The Governance Portal doesn't prescribe what teams build. It governs what they ship. This taxonomy defines the patterns the platform expects to see — so guardrails, evaluation metrics, and compliance gates can be configured appropriately for each.
 
 **Two categories:**
 - **GenAI solutions** — LLM-powered: Q&A, classification, validation, summarisation, extraction, generation
@@ -371,7 +371,7 @@ The platform's reusable components work for both GenAI and ML solutions. The key
 
 ## Adding New Solution Types
 
-The taxonomy is not closed. When a squad builds something that doesn't fit these patterns, the Chapter:
+The taxonomy is not closed. When a team builds something that doesn't fit these patterns, the Governance Portal:
 
 1. Identifies the output shape and primary governance concerns
 2. Defines which metrics and guardrails apply

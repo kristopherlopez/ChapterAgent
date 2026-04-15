@@ -61,7 +61,7 @@ One choice per slot. No alternatives, no hedging. This is what we're building wi
 ## Project Structure
 
 ```
-chapter-agent/
+governance-portal/
 │
 ├── docs/                              # Documentation (you're reading it)
 │   ├── platform/                      # Platform docs (architecture, components, delivery)
@@ -233,7 +233,7 @@ The `results/` directory is generated output — what the platform produces when
 The `traces/` directory contains static JSON files representing step-level execution traces. The portal renders these directly. No tracing infrastructure needed.
 
 ### Platform core lives in the backend
-The guardrails, evaluation, compliance, and observability code lives in `backend/src/platform/`. This is the reusable component library — the thing the chapter builds once and every squad consumes.
+The guardrails, evaluation, compliance, and observability code lives in `backend/src/platform/`. This is the reusable component library — the thing the team builds once and every team consumes.
 
 ### Two CI/CD pipelines
 - `ci.yml` — runs on every PR. Tests the platform code itself (pytest, ruff).

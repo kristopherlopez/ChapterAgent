@@ -8,7 +8,7 @@
 
 2. **Show the GitHub Actions pipeline:** Open the browser tab with the CI/CD run. "Before this agent could go live, it passed through an automated deployment gate. Eight policy checks — solution registration, evaluation harness, PII validation, guardrail testing, bias sweep, audit trail completeness, golden dataset sign-off, prompt governance. All automated. All passed. No meeting. No form."
 
-3. **Show the deployment report:** "Here's the compliance report it generated. Every policy maps to a check. Every check has evidence. This is what a squad would see before promoting to production."
+3. **Show the deployment report:** "Here's the compliance report it generated. Every policy maps to a check. Every check has evidence. This is what a team would see before promoting to production."
 
 ### Act 2: "Now let's use it" (Layer 2 — Production Monitoring)
 
@@ -18,7 +18,7 @@
 
 6. **Show the compliance dashboard:** "Over the last [N] interactions, here's the health of this solution. Pass rate, failure breakdown, trends. An auditor can see this at any time."
 
-7. **Switch platforms:** Ask the same question on a different platform. "Same compliance pipeline, different orchestration framework. The governance layer doesn't care which framework the squad chose. That's the reusable component model."
+7. **Switch platforms:** Ask the same question on a different platform. "Same compliance pipeline, different orchestration framework. The governance layer doesn't care which framework the team chose. That's the reusable component model."
 
 ### Act 3: "Now imagine you're an auditor" (Layer 3 — Evidence Export)
 
@@ -28,7 +28,7 @@
 
 ### Close
 
-10. "Three layers. Deployment gates before it goes live. Real-time monitoring while it runs. Evidence export on demand. All automated. All reusable — every squad gets the same framework. You told me governance is a manual bottleneck. This eliminates it. I built it in two weeks. Imagine what a team of five could do in 90 days."
+10. "Three layers. Deployment gates before it goes live. Real-time monitoring while it runs. Evidence export on demand. All automated. All reusable — every team gets the same framework. You told me governance is a manual bottleneck. This eliminates it. I built it in two weeks. Imagine what a team of five could do in 90 days."
 
 ---
 
@@ -36,7 +36,7 @@
 
 - Pre-recorded demo video of all three layers if live demo fails
 - Static deployment report + compliance evidence report (printed/PDF) if everything fails
-- The knowledge base documents standalone as a written chapter blueprint
+- The knowledge base documents standalone as a written team blueprint
 - GitHub Actions pipeline can be shown even if the live agent is down
 
 ---
@@ -57,10 +57,10 @@
 ## Success Criteria
 
 The agent succeeds if the interview panel:
-1. Interacts with it and gets useful, accurate answers about the chapter strategy
+1. Interacts with it and gets useful, accurate answers about the team strategy
 2. Understands the reusable component architecture from seeing it work
 3. Sees the evaluation scorecard and recognises it as the framework described in the interview
-4. Walks away thinking "he's already started building the chapter"
+4. Walks away thinking "he's already started building the team"
 
 ---
 

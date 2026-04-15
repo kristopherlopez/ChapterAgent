@@ -1,6 +1,6 @@
 # Component #3: Observability Layer
 
-Every interaction is fully traced -- proving the step-level observability the chapter would require.
+Every interaction is fully traced -- proving the step-level observability the Governance Portal would require.
 
 ## What Gets Logged
 

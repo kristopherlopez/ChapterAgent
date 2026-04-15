@@ -4,7 +4,7 @@ This is the centrepiece. Alex called out the pain: manual effort to usher AI sol
 
 ## The Problem It Solves
 
-Today at PetSure Australia, getting an AI solution through governance means manual checklists, review meetings, Word documents, and email chains. Squads spend weeks on paperwork instead of building. The chapter's job is to encode those policies into automated checks that run at every stage: before deployment, during production, and on demand for audit.
+Today at PetSure Australia, getting an AI solution through governance means manual checklists, review meetings, Word documents, and email chains. Teams spend weeks on paperwork instead of building. The Governance Portal's job is to encode those policies into automated checks that run at every stage: before deployment, during production, and on demand for audit.
 
 ## Three Layers of Compliance-as-Code
 
@@ -23,15 +23,15 @@ On-demand or scheduled. The audit trail.
 ```
 
 Each layer maps to a different stakeholder:
-- Layer 1 → the squad (can I ship this?)
-- Layer 2 → the chapter lead (are solutions behaving?)
+- Layer 1 → the team (can I ship this?)
+- Layer 2 → the Head of (are solutions behaving?)
 - Layer 3 → 2nd/3rd line and APRA (show me the evidence)
 
 ---
 
 ## LAYER 1: Deployment Gate (CI/CD Pipeline)
 
-Before the agent is deployed, it passes through an automated deployment gate in GitHub Actions. This is the same gate the chapter would require for every squad's AI solution. No manual review meeting. No governance form. The pipeline checks, and either promotes or blocks.
+Before the agent is deployed, it passes through an automated deployment gate in GitHub Actions. This is the same gate the Governance Portal would require for every team's AI solution. No manual review meeting. No governance form. The pipeline checks, and either promotes or blocks.
 
 ### What the pipeline checks
 
@@ -238,9 +238,9 @@ jobs:
 
 ### How it's demonstrated in the interview
 
-Open the GitHub Actions run in a browser tab. Show the pipeline — eight checks, all green. "Before I brought this agent to you, it passed through the same deployment gate I'd build for every squad. Eight policy checks, fully automated. No meeting. No form. Here's the report."
+Open the GitHub Actions run in a browser tab. Show the pipeline — eight checks, all green. "Before I brought this agent to you, it passed through the same deployment gate I'd build for every team. Eight policy checks, fully automated. No meeting. No form. Here's the report."
 
-The key framing: "This pipeline IS the governance process. Not a step before the governance process. Not documentation of what happened at a governance meeting. The pipeline checks are the controls. The report is the evidence. If a squad can't pass the gate, they can't deploy — and the gate tells them exactly what to fix."
+The key framing: "This pipeline IS the governance process. Not a step before the governance process. Not documentation of what happened at a governance meeting. The pipeline checks are the controls. The report is the evidence. If a team can't pass the gate, they can't deploy — and the gate tells them exactly what to fix."
 
 ---
 
@@ -328,7 +328,7 @@ COMPLIANCE HEALTH (last 24 hours)
   Evidence log entries:   142 (complete)
 ```
 
-This dashboard pattern is what every squad's solution would have. The chapter builds it once, every squad gets it automatically.
+This dashboard pattern is what every team's solution would have. The Governance Portal builds it once, every team gets it automatically.
 
 ### How it's demonstrated in the interview
 
@@ -558,29 +558,29 @@ Evaluation scorecard       Health dashboard           HTML/JSON report
                            Failure records            Audit trail sample
 
 Stakeholder:               Stakeholder:               Stakeholder:
-Squad ("can I ship?")      Chapter lead ("healthy?")  2nd/3rd line & APRA
+Team ("can I ship?")       Head of ("healthy?")       2nd/3rd line & APRA
 ```
 
 ## The reusable component pattern
 
-The chapter builds all three layers as reusable components:
+The Governance Portal builds all three layers as reusable components:
 
-| Chapter builds (reusable) | Squad configures (specific) |
+| Governance Portal builds (reusable) | Team configures (specific) |
 |---|---|
 | Deployment gate framework (GitHub Actions template) | Their policy checks and thresholds for their risk tier |
 | Real-time compliance pipeline (Python library) | Their guardrail thresholds and scope definitions |
 | Evidence export generator | Their solution metadata and ownership |
 | Policy-to-evidence mapping template | Their specific policy IDs and control descriptions |
-| Compliance dashboard | Appears automatically when a squad uses the pipeline |
+| Compliance dashboard | Appears automatically when a team uses the pipeline |
 | DeepEval metric configuration | Their golden dataset and evaluation thresholds |
 
-A squad adopts the compliance-as-code framework by:
+A team adopts the compliance-as-code framework by:
 1. Adding the deployment gate template to their GitHub Actions
 2. Importing the compliance pipeline library into their agent
 3. Writing their golden dataset and configuring their thresholds
 4. Registering their solution in the model registry
 
-From that point: deployment gates, production monitoring, and evidence export all work automatically. The squad writes no compliance code. They configure the chapter's components.
+From that point: deployment gates, production monitoring, and evidence export all work automatically. The team writes no compliance code. They configure the Governance Portal's components.
 
 ## What it demonstrates (all three layers)
 
@@ -588,7 +588,7 @@ From that point: deployment gates, production monitoring, and evidence export al
 - Direct solution to the pain point Alex raised (manual governance effort)
 - Policy-to-code-to-evidence mapping in action
 - Compliance evidence as a byproduct, not a burden
-- The gate library pattern squads would consume
+- The gate library pattern teams would consume
 - How 2nd and 3rd line get their evidence without requesting it
 - APRA-ready evidence generation
 - The difference between "guardrails" (Layer 2) and "compliance-as-code" (all three layers)

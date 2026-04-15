@@ -159,9 +159,9 @@ Different platforms handle retrieval differently — the framework adapts:
 
 This means the cross-platform comparison isn't just "same agent, different framework" — it's "same knowledge, different retrieval strategies, comparable outcomes." That's the real insight: the evaluation harness measures retrieval quality regardless of HOW the context was retrieved.
 
-## Source Documents (the chapter blueprint)
+## Source Documents (the team blueprint)
 
-- Chapter vision and strategy
+- Team vision and strategy
 - Team build plan (5 -> 10, hiring sequence, onshore/offshore)
 - Reusable component definitions (evaluation harness, guardrails, CI/CD, compliance-as-code)
 - Unified portal design (5 layers)
@@ -180,12 +180,12 @@ The evaluation harness (Component #4) evaluates retrieval quality regardless of 
 | Contextual Recall | 0.71 | 0.78 | 0.89 | 0.83 | 0.79 |
 | Avg Retrieval Time | 85ms | 120ms | 340ms | 190ms | 165ms |
 
-This shows the tradeoffs: agentic retrieval is more accurate but slower. The chapter defines when each strategy is appropriate — squads configure the router for their use case.
+This shows the tradeoffs: agentic retrieval is more accurate but slower. The Governance Portal defines when each strategy is appropriate — teams configure the router for their use case.
 
 ## What it demonstrates
 
-- Context retrieval is bigger than RAG — the chapter builds for where this is going
-- Strategy selection as a reusable pattern — the router is a component squads consume
+- Context retrieval is bigger than RAG — the Governance Portal builds for where this is going
+- Strategy selection as a reusable pattern — the router is a component teams consume
 - Same evaluation framework works regardless of retrieval method
 - Each platform naturally gravitates toward different strategies — proving framework agnosticism
 - The Claude Code pattern (harness-native retrieval) as the most advanced approach — agents that navigate knowledge like developers navigate code

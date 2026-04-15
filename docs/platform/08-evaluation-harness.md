@@ -1,16 +1,16 @@
 # Component #4: Evaluation Harness (DeepEval)
 
-The agent ships with its own evaluation suite powered by DeepEval — the same pattern the chapter would require for any AI solution. DeepEval is the engine; the harness is the reusable wrapper that standardises how squads consume it.
+The agent ships with its own evaluation suite powered by DeepEval — the same pattern the Governance Portal would require for any AI solution. DeepEval is the engine; the harness is the reusable wrapper that standardises how teams consume it.
 
 ## How DeepEval Fits
 
-DeepEval provides LLM-as-a-judge metrics out of the box. The chapter wraps these into a standardised harness that squads consume without needing to understand DeepEval internals. This is the reusable component pattern in action: DeepEval is the dependency, the harness is the interface.
+DeepEval provides LLM-as-a-judge metrics out of the box. The Governance Portal wraps these into a standardised harness that teams consume without needing to understand DeepEval internals. This is the reusable component pattern in action: DeepEval is the dependency, the harness is the interface.
 
 ```
 +-------------------------------------------------------+
-|  Chapter Evaluation Harness (reusable component)       |
+|  Governance Portal Evaluation Harness (reusable component) |
 |                                                        |
-|  Squad provides:        Harness provides:              |
+|  Team provides:         Harness provides:              |
 |  - Golden dataset        - DeepEval metric configs     |
 |  - Retriever endpoint    - Threshold enforcement       |
 |  - Generator endpoint    - Scorecard generation        |
@@ -28,7 +28,7 @@ DeepEval provides LLM-as-a-judge metrics out of the box. The chapter wraps these
 |  |  - BiasMetric                                      | |
 |  |  - ToxicityMetric                                  | |
 |  |                                                    | |
-|  |  Custom Metrics (chapter-defined):                 | |
+|  |  Custom Metrics (Governance Portal-defined):       | |
 |  |  - CitationCoverageMetric                          | |
 |  |  - BoundaryAdherenceMetric                         | |
 |  |  - CrossPlatformConsistencyMetric                  | |
@@ -56,7 +56,7 @@ from deepeval.metrics import (
 )
 from deepeval.dataset import EvaluationDataset
 
-# Chapter-defined thresholds (configurable by risk tier)
+# Governance Portal-defined thresholds (configurable by risk tier)
 THRESHOLDS = {
     "production_customer_facing": {
         "faithfulness": 0.9,
@@ -79,7 +79,7 @@ THRESHOLDS = {
     "experimental": None,  # no gate, but scores logged
 }
 
-# Metrics the chapter ships as part of the harness
+# Metrics the Governance Portal ships as part of the harness
 metrics = [
     FaithfulnessMetric(threshold=0.9, model="gpt-4o"),
     AnswerRelevancyMetric(threshold=0.85, model="gpt-4o"),
@@ -90,7 +90,7 @@ metrics = [
     ToxicityMetric(threshold=0.05),
 ]
 
-# Squad provides: golden dataset + their retriever/generator endpoints
+# Team provides: golden dataset + their retriever/generator endpoints
 # Harness provides: metrics, thresholds, scorecard, CI/CD gate
 def build_test_cases(golden_dataset, retriever, generator):
     test_cases = []
@@ -167,7 +167,7 @@ async def compliance_pipeline(query, retrieved_chunks, response):
 | **Latency budget** | Minutes (batch) | < 500ms (real-time) |
 | **DeepEval integration** | `evaluate()` on `EvaluationDataset` | Individual `Metric.measure()` calls |
 
-This is the key architectural insight: the same evaluation framework (DeepEval) serves two purposes through the same reusable component. Squads don't need to build separate systems for pre-deployment testing and production monitoring.
+This is the key architectural insight: the same evaluation framework (DeepEval) serves two purposes through the same reusable component. Teams don't need to build separate systems for pre-deployment testing and production monitoring.
 
 ## Golden Dataset
 
@@ -193,8 +193,8 @@ This is the key architectural insight: the same evaluation framework (DeepEval) 
 ## What it demonstrates
 
 - The RAG evaluation harness in action — not theoretical, running on real data
-- DeepEval as the engine, chapter harness as the reusable interface
+- DeepEval as the engine, Governance Portal harness as the reusable interface
 - Same framework powering both CI/CD gates and real-time compliance
 - Golden dataset methodology with graded relevance
 - Configurable thresholds by risk tier
-- The chapter's evaluation framework applied to a real system
+- The Governance Portal's evaluation framework applied to a real system

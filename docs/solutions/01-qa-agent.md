@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An AI solution that answers questions about a document corpus — the most common pattern squads build. A user uploads documents, connects an LLM, and asks questions. The agent retrieves relevant context, generates an answer, and cites its sources.
+An AI solution that answers questions about a document corpus — the most common pattern teams build. A user uploads documents, connects an LLM, and asks questions. The agent retrieves relevant context, generates an answer, and cites its sources.
 
 This is the first demo solution. It passes through the same platform components (guardrails, evaluation, compliance gates) as Solutions #2 and #3, proving the reusable components work across fundamentally different solution types. It's also the solution type where **faithfulness is the primary governance concern** — every claim must be grounded in the source documents.
 
@@ -15,11 +15,11 @@ Q&A over documents is the most common GenAI use case in the enterprise:
 - Report analysis ("What was the net interest margin in FY2025?")
 - Knowledge management ("Summarise the key findings from…")
 
-It's the first thing squads build. It's the first thing that lands on the Chapter's desk. If the platform can't govern a Q&A agent well, it can't govern anything.
+It's the first thing teams build. It's the first thing that lands on the Governance Portal's desk. If the platform can't govern a Q&A agent well, it can't govern anything.
 
 ## The Scenario
 
-A squad in investor relations builds a Q&A agent over PetSure Australia's most recent Annual Report. The agent is customer-facing — released publicly so investors, analysts, and customers can ask questions about PetSure Australia's disclosures rather than reading the full report.
+A team in investor relations builds a Q&A agent over PetSure Australia's most recent Annual Report. The agent is customer-facing — released publicly so investors, analysts, and customers can ask questions about PetSure Australia's disclosures rather than reading the full report.
 
 ### Risk Tier
 
@@ -53,7 +53,7 @@ Example topics extracted from a PetSure Australia Annual Report:
 
 ## Scope Dial
 
-Scope is not binary. The squad configures a **scope level** that controls how strictly the agent stays within the document corpus. This is independent of risk tier — a `production_customer_facing` solution can run at any scope level if the squad accepts the trade-offs (and the evaluation scores reflect them).
+Scope is not binary. The team configures a **scope level** that controls how strictly the agent stays within the document corpus. This is independent of risk tier — a `production_customer_facing` solution can run at any scope level if the team accepts the trade-offs (and the evaluation scores reflect them).
 
 ### Level 1 — Strict
 
@@ -161,7 +161,7 @@ Given a question about PetSure Australia's Annual Report, the agent:
 
 ## Retrieval Strategies
 
-The Q&A agent supports multiple retrieval strategies against the same corpus. This demonstrates the Chapter's framework-agnostic approach — same governance applies regardless of how context is retrieved.
+The Q&A agent supports multiple retrieval strategies against the same corpus. This demonstrates the Governance Portal's framework-agnostic approach — same governance applies regardless of how context is retrieved.
 
 ### Strategy 1: Vector Search
 
@@ -197,11 +197,11 @@ Multi-step reasoning. The agent decomposes complex queries, retrieves iterativel
 | Contextual Precision | ✅ Measured | ✅ Measured | ✅ Measured |
 | Latency | Fastest | Medium | Slowest |
 
-The platform doesn't care which strategy the squad chose. It measures the same metrics, applies the same thresholds, and produces the same compliance report.
+The platform doesn't care which strategy the team chose. It measures the same metrics, applies the same thresholds, and produces the same compliance report.
 
 ## Multi-Framework Implementation
 
-The Q&A agent is implemented in three frameworks to prove the Chapter's "same governance, any framework" promise.
+The Q&A agent is implemented in three frameworks to prove the Governance Portal's "same governance, any framework" promise.
 
 ### Framework 1: Claude Agent SDK
 
@@ -553,7 +553,7 @@ compliance:
 
 ### To Alex
 
-"This is the most common AI solution type in the enterprise — someone throws documents at an LLM and lets users ask questions. Every squad in Risk Management will build one of these eventually. The question isn't whether they'll build it — it's whether we'll know if it's hallucinating, leaking data, or answering questions it shouldn't."
+"This is the most common AI solution type in the enterprise — someone throws documents at an LLM and lets users ask questions. Every team in Risk Management will build one of these eventually. The question isn't whether they'll build it — it's whether we'll know if it's hallucinating, leaking data, or answering questions it shouldn't."
 
 "This agent answers questions about PetSure Australia's Annual Report. Watch — I'll ask it a question live. Now look at the portal. Every guardrail check, every evaluation score, every compliance gate — visible, automated, exportable. Now let me show you what happens when something goes wrong."
 
@@ -563,7 +563,7 @@ compliance:
 |---|---|
 | Platform handles Q&A solutions | The most common solution type, governed end-to-end |
 | Faithfulness is measurable | LLM-as-judge catches plausible hallucinations |
-| Scope is configurable | Three levels — squad chooses, platform enforces |
+| Scope is configurable | Three levels — team chooses, platform enforces |
 | Citations are enforced | Not optional — every claim must be traceable |
 | Multiple retrieval strategies, same governance | Vector, hybrid, agentic — all evaluated identically |
 | Multiple frameworks, same governance | Claude SDK, OpenAI SDK, LangChain — all pass the same gates |

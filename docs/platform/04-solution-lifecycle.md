@@ -1,8 +1,8 @@
 # Solution Lifecycle
 
-How an AI solution moves through the chapter's platform — from a squad's first conversation to continuous production monitoring.
+How an AI solution moves through the team's platform — from a team's first conversation to continuous production monitoring.
 
-This is the chapter's operating model. Every AI solution in Risk Management follows this lifecycle, regardless of framework, LLM provider, or team. The platform automates the governance; the squad builds the solution.
+This is the team's operating model. Every AI solution in Risk Management follows this lifecycle, regardless of framework, LLM provider, or team. The platform automates the governance; the team builds the solution.
 
 ---
 
@@ -10,8 +10,8 @@ This is the chapter's operating model. Every AI solution in Risk Management foll
 
 | Actor | Role | What They Care About |
 |---|---|---|
-| **Squad** | Builds the AI solution. Owns the code, the deployment, the domain expertise. | "Can I ship this? What do I need to pass?" |
-| **Chapter** | Builds and operates the governance platform. Provides reusable components, tracing SDK, evaluation harness. | "Is this solution safe, compliant, and monitored?" |
+| **Team** | Builds the AI solution. Owns the code, the deployment, the domain expertise. | "Can I ship this? What do I need to pass?" |
+| **Governance Portal** | Builds and operates the governance platform. Provides reusable components, tracing SDK, evaluation harness. | "Is this solution safe, compliant, and monitored?" |
 | **2nd/3rd Line** | Reviews evidence. Validates controls are working. | "Can we prove this to a regulator?" |
 | **Platform** | The automated system. Discovers solutions, runs checks, produces evidence. | (No opinions — executes policy as code) |
 
@@ -21,23 +21,23 @@ This is the chapter's operating model. Every AI solution in Risk Management foll
 
 *Before anything touches the platform.*
 
-The squad comes to the chapter with an AI solution — built or in development. The chapter doesn't need their repo. What they need is a manifest, instrumentation, and test data.
+The team comes to the Governance Portal with an AI solution — built or in development. The Governance Portal doesn't need their repo. What they need is a manifest, instrumentation, and test data.
 
 ### Step 1: Register the Solution
 
-The squad registers their solution via the **Onboard Solution** wizard in the platform UI (`/onboard`), or by creating a `solution.yaml` manifest directly. The wizard walks through five steps — basics, type-specific configuration, guardrails, evaluation metrics, and a final review — then scaffolds the solution directory, manifest, and golden dataset automatically.
+The team registers their solution via the **Onboard Solution** wizard in the platform UI (`/onboard`), or by creating a `solution.yaml` manifest directly. The wizard walks through five steps — basics, type-specific configuration, guardrails, evaluation metrics, and a final review — then scaffolds the solution directory, manifest, and golden dataset automatically.
 
-Alternatively, the squad fills out a `solution.yaml` manifest manually. This is the intake form — except it's a config file, not a Word doc.
+Alternatively, the team fills out a `solution.yaml` manifest manually. This is the intake form — except it's a config file, not a Word doc.
 
 ```yaml
-# solution.yaml — the squad's registration
+# solution.yaml — the team's registration
 name: "Claims Fraud Detection Agent"
 id: "claims-fraud-agent"
 description: >
   LLM agent that analyses claims data and flags potentially 
   fraudulent patterns for human investigation.
 version: "1.0.0"
-owner: "Claims Intelligence Squad"
+owner: "Claims Intelligence Team"
 contact: "claims-intel@petsure.com.au"
 type: endpoint
 endpoint:
@@ -50,10 +50,10 @@ No meeting. No governance form. A pull request with a YAML file.
 
 ### Step 2: Assign Risk Tier
 
-The chapter assigns a risk tier based on the solution's description. Risk tier determines which guardrails fire and what thresholds apply.
+The Governance Portal assigns a risk tier based on the solution's description. Risk tier determines which guardrails fire and what thresholds apply.
 
 ```yaml
-# Added by the chapter after review
+# Added by the Governance Portal after review
 risk_tier: production_customer_facing    # highest bar
 
 # Risk tier determines:
@@ -73,7 +73,7 @@ The risk tier conversation is the one human judgment call in the process. Everyt
 
 ### Step 3: Instrument with Tracing SDK
 
-The chapter provides a lightweight SDK. The squad adds it to their solution — a few decorators and context managers. This is the only code change the squad makes to interact with the platform.
+The Governance Portal provides a lightweight SDK. The team adds it to their solution — a few decorators and context managers. This is the only code change the team makes to interact with the platform.
 
 ```python
 from chapter_platform import trace
@@ -108,7 +108,7 @@ See [../solutions/02-agentic-model-validation.md](../solutions/02-agentic-model-
 
 ### Step 4: Provide a Golden Dataset
 
-The squad provides test cases that cover their solution's expected behaviour. The chapter provides the template and reviews for coverage — but the squad owns the domain knowledge.
+The team provides test cases that cover their solution's expected behaviour. The Governance Portal provides the template and reviews for coverage — but the team owns the domain knowledge.
 
 ```json
 [
@@ -133,32 +133,32 @@ The squad provides test cases that cover their solution's expected behaviour. Th
 ]
 ```
 
-The golden dataset uses synthetic data — no real claims, no real customers. The chapter reviews for:
+The golden dataset uses synthetic data — no real claims, no real customers. The Governance Portal reviews for:
 - Coverage across expected scenarios (happy path, edge cases, adversarial)
 - Balance (not all pass or all fail)
 - Alignment with the risk tier's requirements
 
-The squad signs off on the dataset. The sign-off is recorded and becomes part of the evidence package.
+The team signs off on the dataset. The sign-off is recorded and becomes part of the evidence package.
 
-### What the Chapter Does NOT Do in Phase 1
+### What the Governance Portal Does NOT Do in Phase 1
 
-- Clone the squad's repo
+- Clone the team's repo
 - Review their code line by line
 - Tell them which framework or LLM provider to use
 - Rewrite their solution
 - Attend their stand-ups
 
-The chapter provides components, not opinions about implementation.
+The Governance Portal provides components, not opinions about implementation.
 
 ---
 
 ## Phase 2: Pre-Deployment Assessment
 
-*The squad wants to go to production. The deployment gate decides.*
+*The team wants to go to production. The deployment gate decides.*
 
 ### Step 5: Platform Runs the Evaluation Harness
 
-Automated, no human in the loop. The platform calls the squad's endpoint with every golden dataset entry and runs the evaluation suite.
+Automated, no human in the loop. The platform calls the team's endpoint with every golden dataset entry and runs the evaluation suite.
 
 ```
 EVALUATION RUN — Claims Fraud Detection Agent v1.0.0
@@ -210,7 +210,7 @@ This data populates the trace view in the portal and feeds into the evidence pac
 
 **PASS** — the solution is approved for deployment. The platform generates a deployment compliance report automatically. The report becomes evidence. No one wrote it. No one reviewed it manually. The pipeline produced it.
 
-**FAIL** — the platform tells the squad exactly what failed and why.
+**FAIL** — the platform tells the team exactly what failed and why.
 
 ```
 COMPLIANCE GATE — FAILED
@@ -226,7 +226,7 @@ COMPLIANCE GATE — FAILED
   Re-submit when ready — no meeting needed, just re-run the gate.
 ```
 
-The squad fixes, re-submits. The gate runs again. This cycle repeats until the solution passes or the squad decides it's not ready. No governance committee sits in between — the gate is the committee.
+The team fixes, re-submits. The gate runs again. This cycle repeats until the solution passes or the team decides it's not ready. No governance committee sits in between — the gate is the committee.
 
 ---
 
@@ -236,7 +236,7 @@ The squad fixes, re-submits. The gate runs again. This cycle repeats until the s
 
 ### Step 9: Continuous Compliance Checks
 
-Every response passes through the real-time compliance layer. The squad routes production traffic through the platform's proxy, or the platform polls the solution's trace output.
+Every response passes through the real-time compliance layer. The team routes production traffic through the platform's proxy, or the platform polls the solution's trace output.
 
 ```
 PRODUCTION COMPLIANCE (per response)
@@ -259,7 +259,7 @@ When a check fails:
 
 ### Step 10: Portfolio Dashboard
 
-The chapter lead opens the portal. Every governed solution is visible.
+The Head of opens the portal. Every governed solution is visible.
 
 ```
 COMPLIANCE HEALTH — All Solutions
@@ -271,7 +271,7 @@ COMPLIANCE HEALTH — All Solutions
                                                ↑ faithfulness degrading — review triggered
 ```
 
-One view. All solutions. No asking squads for status updates.
+One view. All solutions. No asking teams for status updates.
 
 ### Step 11: Evidence Export
 
@@ -295,13 +295,13 @@ The platform monitors for degradation over time.
 
 | Signal | Trigger | Action |
 |---|---|---|
-| Faithfulness declining | 7-day rolling average drops below threshold | Alert to squad + chapter lead |
+| Faithfulness declining | 7-day rolling average drops below threshold | Alert to team + Head of |
 | Bias score rising | Score exceeds 80% of threshold | Warning — not blocking yet |
 | New prompt version deployed | Prompt hash changes | Automatic re-evaluation against golden dataset |
 | Scheduled re-evaluation | Every 90 days (configurable by risk tier) | Full evaluation suite re-run |
-| Model change | Squad updates LLM provider or model version | Mandatory re-evaluation before traffic resumes |
+| Model change | Team updates LLM provider or model version | Mandatory re-evaluation before traffic resumes |
 
-When drift is detected, the solution's portal status moves from GREEN to AMBER. If it crosses a hard threshold, it moves to RED and the chapter lead is notified. The squad is told exactly what degraded and by how much.
+When drift is detected, the solution's portal status moves from GREEN to AMBER. If it crosses a hard threshold, it moves to RED and the Head of is notified. The team is told exactly what degraded and by how much.
 
 ---
 
@@ -311,16 +311,16 @@ When drift is detected, the solution's portal status moves from GREEN to AMBER. 
 PHASE 1: INTAKE                    PHASE 2: ASSESSMENT              PHASE 3: PRODUCTION
 ─────────────────                  ────────────────────              ───────────────────
 
-Squad registers                    Platform runs eval               Continuous compliance
+Team registers                     Platform runs eval               Continuous compliance
   solution.yaml ──────────────────→  harness on golden  ──────────→  checks on every
                                      dataset                         response
-Chapter assigns                    
+Governance Portal assigns          
   risk tier                        Platform runs 8                  Portfolio dashboard
                                      compliance gates                 updated continuously
-Squad instruments                  
+Team instruments                   
   with tracing SDK                 PASS → deploy                    Evidence export
                                    FAIL → fix + re-submit             on demand
-Squad provides                     
+Team provides                      
   golden dataset                   Traces analysed                  Drift monitoring
                                                                       + re-evaluation
 
@@ -333,22 +333,22 @@ Human effort:                      Human effort:                    Human effort
 
 ---
 
-## What the Squad Provides vs What the Chapter Provides
+## What the Team Provides vs What the Governance Portal Provides
 
-| Squad Provides | Chapter Provides |
+| Team Provides | Governance Portal Provides |
 |---|---|
 | The AI solution (their code, their repo, their deployment) | Governance platform (portal, gates, monitoring) |
 | `solution.yaml` manifest | Manifest schema and validation |
 | Endpoint URL | Endpoint integration layer |
-| Tracing instrumentation (using chapter's SDK) | Tracing SDK (lightweight package) |
+| Tracing instrumentation (using Governance Portal's SDK) | Tracing SDK (lightweight package) |
 | Golden dataset (domain knowledge) | Golden dataset template + coverage review |
 | Domain expertise for risk tier discussion | Risk tier framework and threshold definitions |
 | Fixes when gates fail | Clear failure messages with remediation guidance |
 
-## What the Chapter Does NOT Need
+## What the Governance Portal Does NOT Need
 
-- **The squad's repo** — the platform governs via endpoint + traces, not code review. Code quality and architecture are the squad's responsibility. The chapter may offer advisory reviews, but the platform doesn't require repo access to function.
-- **The squad's prompts** — the tracing SDK emits a prompt hash for version tracking, not the prompt content. The chapter tracks that prompts are versioned and approved, not what they say.
+- **The team's repo** — the platform governs via endpoint + traces, not code review. Code quality and architecture are the team's responsibility. The Governance Portal may offer advisory reviews, but the platform doesn't require repo access to function.
+- **The team's prompts** — the tracing SDK emits a prompt hash for version tracking, not the prompt content. The Governance Portal tracks that prompts are versioned and approved, not what they say.
 - **Control over framework choice** — the tracing contract is framework-agnostic. LangChain, Claude SDK, raw API calls, custom framework — all emit the same spans.
 - **Ongoing manual intervention** — once a solution passes the deployment gate and is instrumented, production monitoring is fully automated.
 
@@ -380,10 +380,10 @@ The three demo solutions cover three different types, proving the platform adapt
 | Validation Agent | Validation | Structured findings with severity | Are findings complete and calibrated? |
 | Classification Agent | Classification | Category + confidence + reasoning | Is the classifier biased? Is it consistent? |
 
-The same guardrail runner, evaluation harness, and compliance gates handle all three — but the metrics that matter shift based on type. The platform handles this through the solution manifest: the squad declares what type of solution it is, the chapter's thresholds and metric selection adjust accordingly.
+The same guardrail runner, evaluation harness, and compliance gates handle all three — but the metrics that matter shift based on type. The platform handles this through the solution manifest: the team declares what type of solution it is, the Governance Portal's thresholds and metric selection adjust accordingly.
 
 ---
 
 ## The Insight for Alex
 
-"This lifecycle is the chapter's product. Not the guardrails themselves — the guardrails are a component. Not the eval harness — that's a component too. The product is this end-to-end lifecycle: a squad registers a solution, the platform assesses it, monitors it continuously, and produces evidence on demand. The chapter builds it once. Every squad in Risk Management uses it. That's what 'governance on autopilot' means in practice."
+"This lifecycle is the Governance Portal's product. Not the guardrails themselves — the guardrails are a component. Not the eval harness — that's a component too. The product is this end-to-end lifecycle: a team registers a solution, the platform assesses it, monitors it continuously, and produces evidence on demand. The team builds it once. Every team in Risk Management uses it. That's what 'governance on autopilot' means in practice."

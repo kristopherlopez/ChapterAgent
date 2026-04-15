@@ -86,7 +86,7 @@
   - Synthetic model documentation to validate against (pass + fail model cards)
   - LLM agent: reads docs, runs validation checks, drafts structured findings
   - Tool definitions (document reader, completeness checker, risk assessor, findings drafter)
-  - Instrumented with chapter tracing SDK
+  - Instrumented with Governance Portal tracing SDK
 - Create solution manifest (`type: endpoint`), scenarios (pass/fail), golden dataset
 - Run through same platform (guardrails, eval, compliance gates) via endpoint
 - Write results, portal renders second solution on dashboard
@@ -104,7 +104,7 @@
   - Basel II operational risk event classification
   - Structured output: category, confidence, reasoning, recommended action
   - Bias probe test cases (same event, different demographics — must produce identical output)
-  - Instrumented with chapter tracing SDK
+  - Instrumented with Governance Portal tracing SDK
 - Create solution manifest (`type: endpoint`), scenarios (pass/fail/bias), golden dataset
 - Run through same platform with classification-specific metrics (accuracy, bias, consistency)
 - Build solution type comparison view in portal:

@@ -58,7 +58,7 @@ Every risk in the [AI Risk Register](13-governance-framework.md) maps to at leas
 | AIR-008 | Audit Trail Gaps | AI-GOV-008 (tracing SDK, 100% completeness requirement) | Very Low |
 | AIR-009 | Uncontrolled Prompt Changes | AI-GOV-010 (prompt version control + approval + re-eval trigger) | Low |
 | AIR-010 | Third-Party Model Changes | AI-GOV-003 (model change detection triggers mandatory re-eval) | Medium |
-| AIR-011 | Insufficient Test Coverage | AI-GOV-009 (chapter review + human sign-off + coverage analysis) | Low |
+| AIR-011 | Insufficient Test Coverage | AI-GOV-009 (Governance Portal review + human sign-off + coverage analysis) | Low |
 | AIR-012 | Unauthorised Deployment | AI-GOV-001 + AI-GOV-002 (8-check deployment gate blocks on any failure) | Very Low |
 
 ---
@@ -90,7 +90,7 @@ How the platform's controls satisfy each external framework requirement.
 
 | # | DISR Guardrail | Controls | Status |
 |---|----------------|----------|--------|
-| 1 | Accountability | AI-GOV-001 (named owner, risk tier, chapter oversight) | Addressed |
+| 1 | Accountability | AI-GOV-001 (named owner, risk tier, Governance Portal oversight) | Addressed |
 | 2 | Risk management | AI-GOV-002 (risk register, tier framework, risk-proportionate controls) | Addressed |
 | 3 | Data governance & protection | AI-GOV-005 (PII detection), AI-GOV-006 (scope, injection) | Partially addressed |
 | 4 | Testing | AI-GOV-003 (eval harness), AI-GOV-006 (guardrail tests), AI-GOV-004 (toxicity) | Addressed |
@@ -126,15 +126,15 @@ When a control detects a violation, the response depends on the control and seve
 
 | Control | Event | Automated Response | Escalation |
 |---------|-------|--------------------|------------|
-| AI-GOV-005 | PII detected in output | Response blocked, PII redacted | Immediate alert to owner + chapter lead |
-| AI-GOV-004 | Toxicity detected | Response blocked | Immediate alert to owner + chapter lead |
-| AI-GOV-007 | Bias threshold exceeded | Response blocked | Alert to owner + chapter lead |
+| AI-GOV-005 | PII detected in output | Response blocked, PII redacted | Immediate alert to owner + Head of |
+| AI-GOV-004 | Toxicity detected | Response blocked | Immediate alert to owner + Head of |
+| AI-GOV-007 | Bias threshold exceeded | Response blocked | Alert to owner + Head of |
 | AI-GOV-003 | Faithfulness below threshold | Response regenerated (stricter grounding) | Escalated if retry also fails |
 | AI-GOV-006 | Scope violation | Response blocked, refusal served | Escalated if > 5 in 1 hour |
 | AI-GOV-006 | Prompt injection detected | Response blocked | Logged as security event |
-| AI-GOV-008 | Audit trail incomplete | Response served but flagged | Alert to chapter lead |
-| AI-GOV-003 | 7-day faithfulness declining | Dashboard moves to AMBER | Alert to squad + chapter lead |
-| AI-GOV-003 | Any metric crosses hard threshold | Dashboard moves to RED | Chapter lead notified; solution flagged for re-eval |
+| AI-GOV-008 | Audit trail incomplete | Response served but flagged | Alert to Head of |
+| AI-GOV-003 | 7-day faithfulness declining | Dashboard moves to AMBER | Alert to team + Head of |
+| AI-GOV-003 | Any metric crosses hard threshold | Dashboard moves to RED | Head of notified; solution flagged for re-eval |
 
 ### Escalation SLAs
 
