@@ -1,11 +1,11 @@
-# Chapter Area Lead (Executive Manager) – Gen AI, Data Science, Risk Management AI Capability — PetSure Australia
+# Head of (Executive Manager) – Gen AI, Data Science, Risk Management AI Capability — PetSure Australia
 
 ## Overview
 
 | Field | Detail |
 |-------|--------|
 | **Company** | PetSure Australia |
-| **Title** | Chapter Area Lead (Executive Manager) – Gen AI, Data Science, Risk Management AI Capability |
+| **Title** | Head of (Executive Manager) – Gen AI, Data Science, Risk Management AI Capability |
 | **Location** | Sydney, New South Wales, Australia |
 | **Type** | Full-time |
 | **Seniority** | Mid-Senior level |

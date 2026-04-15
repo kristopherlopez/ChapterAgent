@@ -1,8 +1,8 @@
-# Reusable Components — PetSure Australia Chapter Area Lead
+# Reusable Components — PetSure Australia Head of
 
 ## 1. What Makes a Component Genuinely Reusable
 
-Shared code is "here's a repo, good luck." A reusable component is something squads actually adopt and rely on. The distinction:
+Shared code is "here's a repo, good luck." A reusable component is something teams actually adopt and rely on. The distinction:
 
 | Shared Code | Reusable Component |
 |---|---|
@@ -10,17 +10,17 @@ Shared code is "here's a repo, good luck." A reusable component is something squ
 | Tribal knowledge to use | Documented with clear interface |
 | Author moves on, it rots | Has an owner who maintains it |
 | No idea if anyone uses it | Adoption tracked via telemetry |
-| Squads need to understand internals | Squads consume it as a black box |
+| Teams need to understand internals | Teams consume it as a black box |
 | Breaks silently when dependencies change | Breaking changes managed through semver |
 
 ### Four Criteria for Reusability
 
-1. **Clear interface** — squads don't need to understand the internals to use it
+1. **Clear interface** — teams don't need to understand the internals to use it
 2. **Distribution** — easy to consume (installable package, template repo, sparse clone)
 3. **Ownership** — someone maintains it, answers questions, fixes bugs
 4. **Adoption tracking** — telemetry proves it's actually used and surfaces where it's failing
 
-If a component doesn't meet all four, it's shared code pretending to be reusable. The chapter's job is to build and maintain components that meet this bar.
+If a component doesn't meet all four, it's shared code pretending to be reusable. The team's job is to build and maintain components that meet this bar.
 
 ---
 
@@ -59,9 +59,9 @@ The strategic framework that defines how AI solutions are assessed. Each layer a
 | 3 | Staging environment | Load testing under realistic conditions |
 | 4 | Continuous in production | Observability layer (e.g., LangFuse) |
 
-A squad can't promote without passing Layers 1-3. Layer 4 runs forever and feeds back into the golden dataset — real queries that fail in production become new test cases.
+A team can't promote without passing Layers 1-3. Layer 4 runs forever and feeds back into the golden dataset — real queries that fail in production become new test cases.
 
-### Chapter Lead's Role Across All Four Layers
+### Team Lead's Role Across All Four Layers
 - Define the metrics and thresholds per layer
 - Build the reusable tooling (harness, generator, validation UI)
 - Review scorecards before production sign-off
@@ -71,7 +71,7 @@ A squad can't promote without passing Layers 1-3. Layer 4 runs forever and feeds
 
 ## 3. Guardrail Framework
 
-Standardised guardrails that apply across all AI solutions, with additional controls specific to agentic architectures. The chapter defines the guardrail patterns and reusable components — squads implement them in their solutions.
+Standardised guardrails that apply across all AI solutions, with additional controls specific to agentic architectures. The team defines the guardrail patterns and reusable components — teams implement them in their solutions.
 
 ### Foundation Guardrails (All AI Solutions)
 
@@ -102,7 +102,7 @@ Agents introduce unique risks — they take actions, make multi-step decisions, 
 **Human-in-the-Loop Gates**
 - Defined thresholds where the agent must stop and request human approval before proceeding
 - Risk-tiered: low-risk actions proceed autonomously, high-risk actions require sign-off
-- Configurable per use case — the chapter provides the gate framework, squads define their thresholds
+- Configurable per use case — the team provides the gate framework, teams define their thresholds
 
 **Step-Level Observability**
 - Full trace of every decision the agent made, every tool it called, and why
@@ -120,7 +120,7 @@ Agents introduce unique risks — they take actions, make multi-step decisions, 
 
 ### Guardrail Ownership
 
-| Chapter builds (reusable) | Squad owns (specific) |
+| Team builds (reusable) | Team owns (specific) |
 |---|---|
 | PII masking library | Which data fields to mask for their domain |
 | Bias detection pipeline | Fairness thresholds for their use case |
@@ -133,7 +133,7 @@ Agents introduce unique risks — they take actions, make multi-step decisions, 
 
 ## 4. RAG Evaluation Harness
 
-The primary reusable component — a standardised test runner that any squad can plug their RAG pipeline into to measure retrieval and generation quality against chapter-defined thresholds.
+The primary reusable component — a standardised test runner that any team can plug their RAG pipeline into to measure retrieval and generation quality against team-defined thresholds.
 
 ### Components
 
@@ -150,8 +150,8 @@ Curated set of question-answer-context triples (ground truth). Each entry has:
 Graded relevance enables ranking metrics (NDCG, MRR) — without it, you can only measure whether the right chunks were retrieved, not whether they were retrieved *in the right order*.
 
 **4.2 Golden Dataset Generator**
-Uses LLMs to synthesise question-answer-context triples from a squad's document corpus. Bootstraps evaluation quickly rather than waiting for manual curation. Process:
-- Ingest the squad's source documents
+Uses LLMs to synthesise question-answer-context triples from a team's document corpus. Bootstraps evaluation quickly rather than waiting for manual curation. Process:
+- Ingest the team's source documents
 - Generate candidate questions per chunk
 - Generate expected answers grounded in the chunk
 - Output draft triples for human review
@@ -164,10 +164,10 @@ Lightweight web app for SMEs (not data scientists) to review and approve synthet
 - Tracks inter-rater agreement if multiple SMEs review
 - Exports validated dataset in the format the evaluation harness expects
 
-This closes the loop: the generator creates volume, the UI brings in domain expertise, and the harness runs the evaluation. The chapter builds all three — squads bring their documents and their SMEs.
+This closes the loop: the generator creates volume, the UI brings in domain expertise, and the harness runs the evaluation. The team builds all three — teams bring their documents and their SMEs.
 
 **4.4 Retrieval Evaluator**
-Runs each question through the squad's retriever and scores:
+Runs each question through the team's retriever and scores:
 - **Precision** — of the chunks retrieved, what proportion were in the expected set?
 - **Recall** — of the expected chunks, how many were actually retrieved?
 - **Ranking quality (MRR / NDCG)** — were the best chunks ranked highest?
@@ -190,17 +190,17 @@ Scores the generated output against the retrieved context:
 - **Toxicity / bias checks** — relevant for customer-facing or decision-support systems
 
 **4.8 Configurable Thresholds**
-Chapter sets minimum bars per risk tier:
+Team sets minimum bars per risk tier:
 - Production customer-facing: retrieval precision > 0.8, faithfulness > 0.9
 - Production internal: retrieval precision > 0.7, faithfulness > 0.8
 - Experimental / sandbox: no gate, but scores logged
 
 **4.9 Report Output**
-Standardised scorecard written to the model registry. Same format across every squad and every RAG implementation.
+Standardised scorecard written to the model registry. Same format across every team and every RAG implementation.
 
 ### Harness Ownership
 
-| Chapter builds (reusable) | Squad owns (specific) |
+| Team builds (reusable) | Team owns (specific) |
 |---|---|
 | Evaluation harness / test runner | Their golden dataset (domain-specific) |
 | Golden dataset generator | Their source document corpus |
@@ -212,13 +212,13 @@ Standardised scorecard written to the model registry. Same format across every s
 
 ### How It Works in Practice
 
-The harness is a Python package or internal library. A squad imports it, points it at their retriever and their golden dataset, runs it, gets a scorecard. If it passes the chapter's thresholds, they can promote to production. If not, they know exactly where it's failing.
+The harness is a Python package or internal library. A team imports it, points it at their retriever and their golden dataset, runs it, gets a scorecard. If it passes the team's thresholds, they can promote to production. If not, they know exactly where it's failing.
 
 ---
 
 ## 5. Framework Evaluation Template
 
-Standardised criteria for squads evaluating agentic orchestration frameworks (or any significant technology adoption). The chapter defines the template — squads fill it out, the chapter reviews, and the decision is documented and auditable.
+Standardised criteria for teams evaluating agentic orchestration frameworks (or any significant technology adoption). The team defines the template — teams fill it out, the team reviews, and the decision is documented and auditable.
 
 ### Evaluation Criteria
 
@@ -259,41 +259,41 @@ Standardised criteria for squads evaluating agentic orchestration frameworks (or
 
 ### How It Works
 
-A squad considering a new framework fills out the template, scoring each criterion. The chapter reviews the evaluation, challenges assumptions, and signs off. Even if three squads pick different frameworks, they all made the decision the same way and the rationale is documented.
+A team considering a new framework fills out the template, scoring each criterion. The team reviews the evaluation, challenges assumptions, and signs off. Even if three teams pick different frameworks, they all made the decision the same way and the rationale is documented.
 
 ---
 
 ## 6. CI/CD Consistency Strategy
 
-The chapter can't control every squad's CI/CD pipeline — and shouldn't try. The lever is standardising what runs *inside* the pipeline, not the pipeline itself.
+The team can't control every team's CI/CD pipeline — and shouldn't try. The lever is standardising what runs *inside* the pipeline, not the pipeline itself.
 
 ### The Principle
 
-You don't need to own the pipeline to enforce consistency through it. Shared components plug into any CI/CD setup regardless of whether the squad uses GitHub Actions, Azure DevOps, or Jenkins.
+You don't need to own the pipeline to enforce consistency through it. Shared components plug into any CI/CD setup regardless of whether the team uses GitHub Actions, Azure DevOps, or Jenkins.
 
-### Pipeline-Agnostic Components the Chapter Ships
+### Pipeline-Agnostic Components the Team Ships
 
-| Component | What it does | How squads consume it |
+| Component | What it does | How teams consume it |
 |---|---|---|
 | **Evaluation gate** | Runs the RAG evaluation harness, fails the build if thresholds aren't met | CLI command or Docker container — callable from any pipeline |
 | **Model registry push** | Standardised registration of models with metadata, version, lineage | API call or SDK — same format regardless of pipeline |
-| **Notebook linting config** | Shared code quality and style standards for data science notebooks | Config file imported into squad's linting step |
+| **Notebook linting config** | Shared code quality and style standards for data science notebooks | Config file imported into team's linting step |
 | **Guardrail validation step** | Tests guardrails (PII masking, boundary adherence, bias checks) pre-deployment | CLI command — runs in any pipeline as a step |
 | **Scorecard generator** | Produces the standardised evaluation report after all checks pass | Triggered by evaluation gate — outputs to model registry |
 
 ### How It Works
 
-1. Chapter publishes components as versioned packages (pip install, Docker images, or CLI tools)
-2. Squads add them as steps in their own pipelines — one line of config each
-3. Components report results to a central dashboard — chapter has visibility across all squads
-4. If a squad skips a required step, it shows up as a gap in the dashboard — visibility, not enforcement
+1. Team publishes components as versioned packages (pip install, Docker images, or CLI tools)
+2. Teams add them as steps in their own pipelines — one line of config each
+3. Components report results to a central dashboard — team has visibility across all teams
+4. If a team skips a required step, it shows up as a gap in the dashboard — visibility, not enforcement
 
 ### Why This Works
 
-- Squads keep autonomy over their pipeline tooling
-- Chapter gets consistency through shared components, not mandated infrastructure
+- Teams keep autonomy over their pipeline tooling
+- Team gets consistency through shared components, not mandated infrastructure
 - Adoption is tracked via telemetry — you can see who's using what and where gaps are
-- New squads get a starter template but aren't locked into it
+- New teams get a starter template but aren't locked into it
 
 ---
 
@@ -307,7 +307,7 @@ Every governance policy should have a corresponding automated check. If a rule c
 
 ### Example: RAG Solution Promotion
 
-A squad wants to promote a RAG solution to production. Instead of a governance review meeting, the pipeline automatically checks:
+A team wants to promote a RAG solution to production. Instead of a governance review meeting, the pipeline automatically checks:
 
 | Check | Policy it encodes | Pass/Fail |
 |---|---|---|
@@ -319,18 +319,18 @@ A squad wants to promote a RAG solution to production. Instead of a governance r
 
 All pass → auto-promoted. Any fail → blocked with a specific reason and remediation guidance.
 
-### What the Chapter Builds
+### What the Team Builds
 
 - **Policy-to-code mapping** — each governance policy translated into one or more automated checks
-- **Gate library** — reusable check functions squads add to their pipelines
-- **Compliance dashboard** — real-time view of which solutions meet which policies, across all squads
+- **Gate library** — reusable check functions teams add to their pipelines
+- **Compliance dashboard** — real-time view of which solutions meet which policies, across all teams
 - **Evidence generator** — automated compliance reporting for 2nd line validation and 3rd line audit, produced as a byproduct of the pipeline running
 
 ### Why It Matters at PetSure Australia
 
-- Manual governance doesn't scale across dozens of squads and hundreds of models
+- Manual governance doesn't scale across dozens of teams and hundreds of models
 - Regulators (APRA) want evidence of controls, not just policies — automated checks produce that evidence continuously
-- Reduces governance overhead for squads — they don't fill out forms, they pass gates
+- Reduces governance overhead for teams — they don't fill out forms, they pass gates
 - 2nd and 3rd line get their evidence without requesting it — it's already in the system
 
 ---
@@ -363,11 +363,11 @@ The endpoint includes a `trace` field in its JSON response body conforming to th
 Simple to implement. The audit trail check (AI-GOV-008) validates: "I called your endpoint — did the response include a valid trace? If not, blocked."
 
 **Option 2 — OpenTelemetry sidecar (production / PetSure Australia-realistic):**
-The endpoint pushes spans to a platform-provided OTel collector (e.g. LangFuse, Jaeger). The Chapter doesn't control the response schema — it owns the collector.
+The endpoint pushes spans to a platform-provided OTel collector (e.g. LangFuse, Jaeger). The team doesn't control the response schema — it owns the collector.
 
-More realistic at PetSure Australia scale where the Chapter Area Lead may not have the influence to mandate response format changes across all squads. OTel is an industry standard squads may already use. The Chapter provides the collector; squads instrument at their own pace. Adoption is tracked via the dashboard — visibility, not enforcement.
+More realistic at PetSure Australia scale where the Head of may not have the influence to mandate response format changes across all teams. OTel is an industry standard teams may already use. The team provides the collector; teams instrument at their own pace. Adoption is tracked via the dashboard — visibility, not enforcement.
 
-### Squad Responsibilities (Either Pattern)
+### Team Responsibilities (Either Pattern)
 
 | What | Why |
 |---|---|
@@ -375,7 +375,7 @@ More realistic at PetSure Australia scale where the Chapter Area Lead may not ha
 | `tracing` config in `solution.yaml` | Declares contract version, format (inline/opentelemetry), and emitted event types |
 | Required trace labels: query, retrieval, generation, guardrail, response | Platform validates these exist to confirm full pipeline observability |
 
-### Chapter Responsibilities
+### Team Responsibilities
 
 | What | Why |
 |---|---|
@@ -388,7 +388,7 @@ More realistic at PetSure Australia scale where the Chapter Area Lead may not ha
 
 ## 9. Platform Implementation Status
 
-The following components are implemented in the Chapter AI Platform portal:
+The following components are implemented in the Governance Portal:
 
 | Component | Status | Portal Location |
 |---|---|---|
@@ -401,12 +401,12 @@ The following components are implemented in the Chapter AI Platform portal:
 | Golden Dataset Generator | Beta | `/catalog/generator` — generates draft test triples from corpus |
 | Golden Dataset Validation UI | Beta | `/catalog/validation` — SME review, approve/reject/edit, sign-off |
 
-The Component Catalog page demonstrates the Chapter's reusable component model: each component shows its interface contract (what the squad provides vs what the component returns) and adoption across registered solutions.
+The Component Catalog page demonstrates the team's reusable component model: each component shows its interface contract (what the team provides vs what the component returns) and adoption across registered solutions.
 
 ---
 
 ## Interview Framing
 
-> "The chapter builds the evaluation harness and sets the standards. The squads consume it and own their domain-specific test data. That's the reusable component model — we build it once, every squad benefits, and quality is consistent across the organisation."
+> "The team builds the evaluation harness and sets the standards. The teams consume it and own their domain-specific test data. That's the reusable component model — we build it once, every team benefits, and quality is consistent across the organisation."
 >
 > "At PetSure I'm building Layers 1 and 2 right now with DeepEval and LangFuse. At PetSure Australia scale, I'd extend this to a full four-layer framework with automated gates across the CI/CD pipeline, staging, and production."

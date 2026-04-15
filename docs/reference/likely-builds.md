@@ -1,6 +1,6 @@
-# Likely Builds — PetSure Australia Chapter Area Lead
+# Likely Builds — PetSure Australia Head of
 
-What the team (chapter of data scientists across Australia and India) would likely build.
+What the team (team of data scientists across Australia and India) would likely build.
 
 ---
 
@@ -19,7 +19,7 @@ What the team (chapter of data scientists across Australia and India) would like
 - **LLM-as-a-Judge evaluation pipelines** — automated quality scoring for GenAI outputs
 - **Prompt engineering frameworks** — versioned, tested prompt pipelines with approval gates
 
-## Platform & Reusability (Chapter Area Lead's direct focus)
+## Platform & Reusability (Head of's direct focus)
 
 This is where the JD says "AI Reusability Assets, Innovation and Frameworks":
 
@@ -32,7 +32,7 @@ This is where the JD says "AI Reusability Assets, Innovation and Frameworks":
 
 ## Key Distinction
 
-Chapter members embedded in crews build the **models**. The Chapter Area Lead and any platform-focused members build the **system that makes all of it consistent, visible, and governable**.
+Team members embedded in teams build the **models**. The Head of and any platform-focused members build the **system that makes all of it consistent, visible, and governable**.
 
 The JD's emphasis on "reusability" and "unified portal" suggests PetSure Australia wants to move from one-off model builds to a scalable, repeatable platform — which is essentially the PetSure story (lifting capability at scale) applied to a much larger org.
 

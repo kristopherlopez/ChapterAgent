@@ -3,23 +3,23 @@ topic: ML & AI Monitoring — Role Responsibilities
 related:
   - [[learning/topics/ml-ops/]]
   - [[learning/topics/ai-ops/]]
-purpose: Interview prep — maps monitoring knowledge to what the Chapter Area Lead and crews actually do
+purpose: Interview prep — maps monitoring knowledge to what the Head of and teams actually do
 ---
 
-# Monitoring Responsibilities — Chapter Area Lead vs Crews
+# Monitoring Responsibilities — Head of vs Teams
 
 ## The Org Structure at PetSure Australia
 
-- **Chapter Area Lead (you)** — sets standards, builds platforms, governs quality, upskills the chapter. You don't build individual models — you make it possible for 50+ data scientists to build and operate them well.
-- **Crews (data scientists / ML engineers)** — build, deploy, and operate specific models within their business domain (credit risk, fraud, collections, marketing, etc.)
+- **Head of (you)** — sets standards, builds platforms, governs quality, upskills the team. You don't build individual models — you make it possible for 50+ data scientists to build and operate them well.
+- **Teams (data scientists / ML engineers)** — build, deploy, and operate specific models within their business domain (credit risk, fraud, collections, marketing, etc.)
 
 ---
 
-## What the Chapter Area Lead Does
+## What the Head of Does
 
 ### Standards & Templates (the "paved road")
 
-You build the thing that crews deploy *with*, not the thing they deploy.
+You build the thing that teams deploy *with*, not the thing they deploy.
 
 | What you build | Reference |
 |---------------|-----------|
@@ -32,16 +32,16 @@ You build the thing that crews deploy *with*, not the thing they deploy.
 | **Vendor monitoring capability** — golden test sets, output distribution tracking, contractual templates | `ai-ops/09` |
 | **Fairness monitoring toolkit** — standard metrics, segmentation requirements, regulatory reporting templates | `ml-ops/09` |
 
-The key principle: **crews shouldn't have to think about monitoring architecture.** They deploy a model, it comes with monitoring. Like deploying a microservice comes with logging and health checks.
+The key principle: **teams shouldn't have to think about monitoring architecture.** They deploy a model, it comes with monitoring. Like deploying a microservice comes with logging and health checks.
 
 ### Central Dashboards & Visibility
 
 | Dashboard | Audience | What it shows |
 |-----------|----------|---------------|
-| **Model Health** — risk-tiered view of all models | Chapter Area Lead, Model Risk Committee | Drift scores, performance metrics, alert status by model tier |
-| **GenAI Quality** — quality scores across all LLM-powered systems | Chapter Area Lead, Product owners | Hallucination rates, faithfulness, safety violations |
-| **Agent Activity** — sessions, costs, blast radius across all agent usage | Chapter Area Lead, Security | Who's running what, what did it touch, what did it cost |
-| **Cost** — token spend by team, system, model | Chapter Area Lead, Finance | Budget burn, attribution, optimisation opportunities |
+| **Model Health** — risk-tiered view of all models | Head of, Model Risk Committee | Drift scores, performance metrics, alert status by model tier |
+| **GenAI Quality** — quality scores across all LLM-powered systems | Head of, Product owners | Hallucination rates, faithfulness, safety violations |
+| **Agent Activity** — sessions, costs, blast radius across all agent usage | Head of, Security | Who's running what, what did it touch, what did it cost |
+| **Cost** — token spend by team, system, model | Head of, Finance | Budget burn, attribution, optimisation opportunities |
 | **Regulatory** — APRA-ready model risk reporting | Model Risk Committee, Compliance | Performance by model tier, fairness metrics, drift status |
 
 ### Governance & Escalation
@@ -50,13 +50,13 @@ You define the rules, not just the tools:
 
 - **Risk tiering** — which models are Tier 1 (customer-facing, regulatory-critical) vs Tier 3 (internal tools)? Tier determines monitoring rigour.
 - **Retraining governance** — who can trigger retraining? What validation gates exist? How does a retrained model get promoted through the registry?
-- **Alert escalation paths** — drift alert on a Tier 3 model → crew handles it. Drift alert on a Tier 1 credit risk model → crew + Chapter Lead + Model Risk Committee.
+- **Alert escalation paths** — drift alert on a Tier 3 model → team handles it. Drift alert on a Tier 1 credit risk model → team + Team Lead + Model Risk Committee.
 - **Agent approval tiers** — which MCP servers can agents access? Who approves new tool access? What's the incident playbook when an agent makes a destructive change?
 - **Vendor change management** — what happens when Azure OpenAI updates a model? Who validates? Who approves the switch?
 
-### Upskilling the Chapter
+### Upskilling the Team
 
-This is the part most people miss. The Chapter Area Lead's job is to raise the floor:
+This is the part most people miss. The Head of's job is to raise the floor:
 
 - Run workshops on monitoring best practices
 - Pair senior data scientists with juniors on monitoring implementation
@@ -65,7 +65,7 @@ This is the part most people miss. The Chapter Area Lead's job is to raise the f
 
 ---
 
-## What the Data Scientists / Crews Do
+## What the Data Scientists / Teams Do
 
 ### For Traditional ML Models
 
@@ -95,7 +95,7 @@ This is the part most people miss. The Chapter Area Lead's job is to raise the f
 
 ## Summary — Who Owns What
 
-| Responsibility | Chapter Area Lead | Data Scientists / Crews |
+| Responsibility | Head of | Data Scientists / Teams |
 |---------------|-------------------|------------------------|
 | **Monitoring platform** | Builds and maintains it | Uses it |
 | **Standards & templates** | Defines them | Implements them |
@@ -112,4 +112,4 @@ This is the part most people miss. The Chapter Area Lead's job is to raise the f
 
 ## Interview Framing
 
-> "As Chapter Area Lead, my job isn't to build individual models — it's to build the platform and standards that let 50+ data scientists build and operate models well. For monitoring, that means a standardised template every crew deploys with — drift detection, performance tracking, alerting, fairness metrics — so they don't have to reinvent monitoring for every model. A central dashboard that gives the Model Risk Committee a risk-tiered view across all models. Governance for retraining — who can trigger it, what gates exist, how models promote through the registry. And for GenAI specifically, evaluation frameworks, prompt management standards, agent governance with audit trails, and vendor monitoring capability. The crews own their models and respond to alerts. I own the system that makes all of that consistent, visible, and governable."
+> "As Head of, my job isn't to build individual models — it's to build the platform and standards that let 50+ data scientists build and operate models well. For monitoring, that means a standardised template every team deploys with — drift detection, performance tracking, alerting, fairness metrics — so they don't have to reinvent monitoring for every model. A central dashboard that gives the Model Risk Committee a risk-tiered view across all models. Governance for retraining — who can trigger it, what gates exist, how models promote through the registry. And for GenAI specifically, evaluation frameworks, prompt management standards, agent governance with audit trails, and vendor monitoring capability. The teams own their models and respond to alerts. I own the system that makes all of that consistent, visible, and governable."
