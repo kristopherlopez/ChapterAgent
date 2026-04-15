@@ -83,7 +83,7 @@ def _save_results(
     agent_results: list[dict] | None = None,
 ):
     """Persist results to the results directory — both per-framework and top-level."""
-    result_dir = RESULTS_DIR / "petsure-annual-report-qa"
+    result_dir = RESULTS_DIR / "petsure-policy-qa"
     result_dir.mkdir(parents=True, exist_ok=True)
 
     # Save per-framework results
@@ -132,8 +132,8 @@ def _save_results(
             summary = json.load(f)
     else:
         summary = {
-            "id": "petsure-annual-report-qa",
-            "name": "PetSure Australia Annual Report Q&A",
+            "id": "petsure-policy-qa",
+            "name": "PetSure Policy Q&A",
         }
 
     summary["guardrailsSummary"] = f"{pass_count}/{total} PASS"
@@ -356,7 +356,7 @@ async def run_evaluation(
     judge: str = Query(default="gpt-5.4"),
 ):
     """Run evaluation with SSE streaming progress."""
-    if solution_id != "petsure-annual-report-qa":
+    if solution_id != "petsure-policy-qa":
         raise HTTPException(status_code=404, detail="Solution not found")
 
     return StreamingResponse(

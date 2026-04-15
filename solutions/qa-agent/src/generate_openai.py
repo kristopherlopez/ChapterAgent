@@ -1,7 +1,7 @@
 """Answer generation — OpenAI Agents SDK with agentic retrieval.
 
 The agent has access to tools (list_pages, read_page, cite_source) and
-decides which pages to read from the Annual Report. Same agentic pattern
+decides which pages to read from the governance policies. Same agentic pattern
 as the Claude generator — no pre-supplied context.
 """
 
@@ -28,7 +28,7 @@ class OpenAIGenerator(BaseGenerator):
     """Agentic Q&A using the OpenAI Agents SDK.
 
     Gives the agent three tools via @function_tool:
-        - list_pages: table of contents of the Annual Report
+        - list_pages: table of contents of the governance policies
         - read_page: read a full markdown page
         - cite_source: record a citation for a claim
 
@@ -40,7 +40,7 @@ class OpenAIGenerator(BaseGenerator):
 
     Usage:
         generator = OpenAIGenerator()
-        response = generator.generate("What was CBA's NIM?", chunks)
+        response = generator.generate("What is the PII handling policy?", chunks)
     """
 
     framework = "openai-agents-sdk"
@@ -99,7 +99,7 @@ class OpenAIGenerator(BaseGenerator):
         try:
             @function_tool
             def list_pages() -> str:
-                """List all pages in the CBA Annual Report with page numbers and section titles."""
+                """List all pages in the PetSure governance policies with page numbers and section titles."""
                 toc_lines = [
                     f"p.{entry['page']:>3}  {entry['title']:<60}  [{entry['file']}]"
                     for entry in page_index
@@ -108,7 +108,7 @@ class OpenAIGenerator(BaseGenerator):
 
             @function_tool
             def read_page(filename: str) -> str:
-                """Read a full page from the CBA Annual Report by filename."""
+                """Read a full page from the PetSure governance policies by filename."""
                 page_path = pages_dir / filename
                 if not page_path.exists():
                     return json.dumps({"error": f"Page not found: {filename}"})
@@ -128,7 +128,7 @@ class OpenAIGenerator(BaseGenerator):
                 return f"Citation recorded: p.{page}, {section}"
 
             agent = Agent(
-                name="CBA Annual Report Q&A",
+                name="PetSure Policy Q&A",
                 instructions=AGENT_SYSTEM_PROMPT,
                 model=self.model,
                 tools=[list_pages, read_page, cite_source],
@@ -150,7 +150,7 @@ class OpenAIGenerator(BaseGenerator):
                         name = item.get("name", "")
                         args = item.get("arguments", "")
                         if name == "list_pages":
-                            thinking.append("Browsing Annual Report table of contents")
+                            thinking.append("Browsing Governance Policies table of contents")
                         elif name == "read_page":
                             try:
                                 import json as _json
@@ -158,7 +158,7 @@ class OpenAIGenerator(BaseGenerator):
                                 fname = a.get("filename", "")
                                 thinking.append(f"Reading {fname.replace('.md', '').replace('-', ' ')}")
                             except Exception:
-                                thinking.append("Reading a page from the Annual Report")
+                                thinking.append("Reading a page from the governance policies")
                         elif name == "cite_source":
                             try:
                                 import json as _json
@@ -222,7 +222,7 @@ class OpenAIGenerator(BaseGenerator):
                 return f"Citation recorded: p.{page}, {section}"
 
             agent = Agent(
-                name="CBA Annual Report Q&A",
+                name="PetSure Policy Q&A",
                 instructions=instructions,
                 model=self.model,
                 tools=[cite_source],

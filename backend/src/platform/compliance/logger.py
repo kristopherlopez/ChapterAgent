@@ -6,7 +6,7 @@ and production monitoring dashboards.
 Usage:
     from src.platform.compliance.logger import ComplianceLogger
 
-    logger = ComplianceLogger(solution_id="petsure-annual-report-qa")
+    logger = ComplianceLogger(solution_id="petsure-policy-qa")
     logger.log_response(
         query="What was net profit?",
         guardrail_results=results,

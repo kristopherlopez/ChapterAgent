@@ -60,7 +60,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
     text: "PetSure Australia's net interest margin for FY2025 was 2.08%, up 9 basis points from FY2024's 1.99%. This improvement was driven by disciplined pricing in a competitive mortgage market and favourable deposit mix shifts.",
     citations: [
       {
-        document: "PetSure Australia Annual Report 2025",
+        document: "PetSure Governance Policies",
         page: 30,
         section: "Operational Excellence",
         quote: "Net interest margin 2.08%, FY24 1.99%",
@@ -82,13 +82,13 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
     text: "PetSure Australia declared a final dividend of $2.65 per share for FY2025, bringing the full-year dividend to $4.75 per share — fully franked. This represents a 5% increase on the prior year, reflecting the Board's confidence in the Group's capital position and earnings outlook.",
     citations: [
       {
-        document: "PetSure Australia Annual Report 2025",
+        document: "PetSure Governance Policies",
         page: 8,
         section: "Chairman's Message",
         quote: "Full-year dividend of $4.75 per share, fully franked",
       },
       {
-        document: "PetSure Australia Annual Report 2025",
+        document: "PetSure Governance Policies",
         page: 26,
         section: "Delivering financial performance",
         quote: "Final dividend $2.65 per share",
@@ -110,13 +110,13 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
     text: "PetSure Australia committed to reducing its operational emissions by 42% by 2030 (from a 2020 baseline) and has set a target to achieve net zero in its own operations by 2030. The bank also disclosed financed emissions for key sectors including power generation, oil & gas, and commercial real estate, aligned with the PCAF methodology.",
     citations: [
       {
-        document: "PetSure Australia Annual Report 2025",
+        document: "PetSure Governance Policies",
         page: 88,
         section: "Sustainability",
         quote: "42% reduction target for operational emissions by 2030",
       },
       {
-        document: "PetSure Australia Annual Report 2025",
+        document: "PetSure Governance Policies",
         page: 92,
         section: "Climate-related disclosures",
         quote: "Financed emissions disclosed using PCAF methodology",
@@ -138,13 +138,13 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
     text: "PetSure Australia reported 8.4 million digitally active customers in FY2025, with the CommBank app maintaining its position as Australia's #1 banking app. The bank processed over 1.2 billion digital transactions during the year. Key digital investments included AI-powered customer service tools and enhanced real-time fraud detection capabilities.",
     citations: [
       {
-        document: "PetSure Australia Annual Report 2025",
+        document: "PetSure Governance Policies",
         page: 34,
         section: "Technology & Innovation",
         quote: "8.4 million digitally active customers",
       },
       {
-        document: "PetSure Australia Annual Report 2025",
+        document: "PetSure Governance Policies",
         page: 36,
         section: "Technology & Innovation",
         quote: "Over 1.2 billion digital transactions processed",
@@ -163,7 +163,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
     blocked: false,
   },
   scope_fail: {
-    text: "I can only answer questions about PetSure Australia's 2025 Annual Report. Comparisons with other institutions are outside my permitted scope.",
+    text: "I can only answer questions about PetSure Australia's governance policies. Comparisons with other institutions are outside my permitted scope.",
     citations: [],
     guardrails: [
       {
@@ -177,7 +177,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
     blocked: true,
   },
   advice_fail: {
-    text: "I can only answer questions about PetSure Australia's 2025 Annual Report. I'm not able to provide financial advice or investment recommendations.",
+    text: "I can only answer questions about PetSure Australia's governance policies. I'm not able to provide financial advice or investment recommendations.",
     citations: [],
     guardrails: [
       {
@@ -191,7 +191,7 @@ const DEMO_RESPONSES: Record<string, AgentResponse> = {
     blocked: true,
   },
   injection_fail: {
-    text: "I can only answer questions about PetSure Australia's 2025 Annual Report.",
+    text: "I can only answer questions about PetSure Australia's governance policies.",
     citations: [],
     guardrails: [
       {
@@ -439,7 +439,7 @@ function CollapsedThinking({
                       >
                         <BookOpen className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                         <span className="flex-1 truncate">{s.text}</span>
-                        <span className="text-zinc-400 shrink-0">Annual Report</span>
+                        <span className="text-zinc-400 shrink-0">Governance Policies</span>
                       </div>
                     ))}
                   </div>
@@ -655,7 +655,7 @@ export default function ChatInterface({
         if (response.citations.length > 0) {
           steps.push({
             type: "tool_call",
-            text: `Retrieved ${response.citations.length} source${response.citations.length !== 1 ? "s" : ""} from the Annual Report`,
+            text: `Retrieved ${response.citations.length} source${response.citations.length !== 1 ? "s" : ""} from the Governance Policies`,
             results: response.citations.map((c) => `p.${c.page} — ${c.section}`),
           });
         }
@@ -704,10 +704,10 @@ export default function ChatInterface({
                 <BookOpen className="w-6 h-6 text-emerald-600" />
               </div>
               <h3 className="text-lg font-semibold text-zinc-900 mb-2">
-                PetSure Australia Annual Report Q&A
+                PetSure Policy Q&A
               </h3>
               <p className="text-sm text-zinc-500 mb-8 max-w-md mx-auto">
-                Ask questions about PetSure Australia&apos;s 2025 Annual Report. All responses
+                Ask questions about PetSure Australia&apos;s governance policies. All responses
                 are grounded in the source document with citations, and validated
                 by 8 guardrails in real time.
               </p>
@@ -815,7 +815,7 @@ export default function ChatInterface({
                               >
                                 <BookOpen className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                                 <span className="flex-1 truncate">{s.text}</span>
-                                <span className="text-zinc-400 shrink-0">Annual Report</span>
+                                <span className="text-zinc-400 shrink-0">Governance Policies</span>
                               </div>
                             ))}
                           </div>
@@ -859,7 +859,7 @@ export default function ChatInterface({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSend();
                 }}
-                placeholder="Ask about PetSure Australia's 2025 Annual Report..."
+                placeholder="Ask about PetSure Australia's governance policies..."
                 className="flex-1 px-4 py-2.5 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent placeholder:text-zinc-400"
                 disabled={isTyping}
               />

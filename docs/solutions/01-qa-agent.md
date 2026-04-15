@@ -19,7 +19,7 @@ It's the first thing teams build. It's the first thing that lands on the Governa
 
 ## The Scenario
 
-A team in investor relations builds a Q&A agent over PetSure Australia's most recent Annual Report. The agent is customer-facing — released publicly so investors, analysts, and customers can ask questions about PetSure Australia's disclosures rather than reading the full report.
+A team in investor relations builds a Q&A agent over PetSure Australia's governance policies. The agent is customer-facing — released publicly so investors, analysts, and customers can ask questions about PetSure Australia's disclosures rather than reading the full report.
 
 ### Risk Tier
 
@@ -27,7 +27,7 @@ A team in investor relations builds a Q&A agent over PetSure Australia's most re
 
 ### Document Corpus
 
-**Source:** PetSure Australia's most recent Annual Report, downloaded as PDF from PetSure Australia's investor relations page.
+**Source:** PetSure Australia's governance policies, downloaded as PDF from PetSure Australia's investor relations page.
 
 A single document — dense, structured, containing financials, risk disclosures, governance statements, strategic commentary, and sustainability reporting. Hundreds of pages covering dozens of topics. One document is enough to exercise every retrieval strategy and every guardrail.
 
@@ -35,7 +35,7 @@ A single document — dense, structured, containing financials, risk disclosures
 
 At ingestion time, the platform scans the document and builds a **topic graph** — a structured map of subjects, entities, metrics, and relationships covered in the corpus.
 
-Example topics extracted from a PetSure Australia Annual Report:
+Example topics extracted from PetSure Australia's governance policies:
 
 | Topic Cluster | Example Topics |
 |---|---|
@@ -93,7 +93,7 @@ guardrails:
   scope:
     level: 1  # strict | contextual | open
     topic_graph: "artifacts/topic-graph.json"
-    refusal_message: "I can only answer questions about PetSure Australia's 2025 Annual Report."
+    refusal_message: "I can only answer questions about PetSure Australia's governance policies."
 ```
 
 ### Guardrail Behaviour by Scope Level
@@ -110,7 +110,7 @@ Note: opinions and financial advice are always refused regardless of scope level
 
 ## What the Agent Does
 
-Given a question about PetSure Australia's Annual Report, the agent:
+Given a question about PetSure Australia's governance policies, the agent:
 
 1. **Receives** the user's question
 2. **Checks scope** — maps the question against the topic graph and scope level
@@ -132,7 +132,7 @@ Given a question about PetSure Australia's Annual Report, the agent:
   },
   "citations": [
     {
-      "document": "PetSure Australia Annual Report 2025",
+      "document": "PetSure Governance Policies",
       "page": 26,
       "section": "Financial Performance — Net Interest Margin",
       "quote": "Net interest margin of 2.08%, up 9 basis points"
@@ -157,7 +157,7 @@ Given a question about PetSure Australia's Annual Report, the agent:
 
 > PetSure Australia's net interest margin for FY2025 was 2.08%, up 9 basis points from FY2024's 1.99%.
 >
-> *Source: PetSure Australia Annual Report 2025, p.26 — Financial Performance — Net Interest Margin*
+> *Source: PetSure Governance Policies, p.26 — Financial Performance — Net Interest Margin*
 
 ## Retrieval Strategies
 
@@ -302,7 +302,7 @@ The evaluation harness runs against the golden dataset using DeepEval metrics. F
 
 ## Golden Dataset
 
-50 test cases covering different query types against PetSure Australia's most recent Annual Report. Structure defined here; cases populated after document ingestion.
+50 test cases covering different query types against PetSure Australia's governance policies. Structure defined here; cases populated after document ingestion.
 
 ### Query Type Distribution
 
@@ -427,7 +427,7 @@ Six scenarios covering the governance story — showing what the platform catche
 
 **Question:** "How does PetSure Australia's dividend yield compare to Westpac?"
 
-**What happens:** Agent checks the topic graph. Westpac is not in the corpus. At scope Level 1, the agent refuses: "I can only answer questions about PetSure Australia's 2025 Annual Report." Portal shows the scope guardrail activating.
+**What happens:** Agent checks the topic graph. Westpac is not in the corpus. At scope Level 1, the agent refuses: "I can only answer questions about PetSure Australia's governance policies." Portal shows the scope guardrail activating.
 
 **Point:** The agent knows its boundaries. The platform enforces them.
 
@@ -468,18 +468,18 @@ Six scenarios covering the governance story — showing what the platform catche
 ```yaml
 # solution.yaml
 solution:
-  name: "PetSure Australia Annual Report Q&A Agent"
-  id: "qa-petsure-annual-report"
+  name: "PetSure Policy Q&A Agent"
+  id: "petsure-policy-qa"
   type: "qa"
   version: "1.0.0"
-  description: "Answers questions about PetSure Australia's most recent Annual Report with source citations"
+  description: "Answers questions about PetSure Australia's governance policies with source citations"
 
 risk_tier: "production_customer_facing"
 
 corpus:
-  source: "PetSure Australia Investor Relations"
+  source: "PetSure Australia Governance"
   documents:
-    - name: "PetSure Australia Annual Report 2025"
+    - name: "PetSure Governance Policies"
       format: "pdf"
       pages: ~300
   topic_graph: "artifacts/topic-graph.json"
@@ -488,7 +488,7 @@ guardrails:
   scope:
     level: 1
     topic_graph: "artifacts/topic-graph.json"
-    refusal_message: "I can only answer questions about PetSure Australia's 2025 Annual Report."
+    refusal_message: "I can only answer questions about PetSure Australia's governance policies."
   faithfulness:
     threshold: 0.90
     judge_model: "gpt-4o"
@@ -555,7 +555,7 @@ compliance:
 
 "This is the most common AI solution type in the enterprise — someone throws documents at an LLM and lets users ask questions. Every team in Risk Management will build one of these eventually. The question isn't whether they'll build it — it's whether we'll know if it's hallucinating, leaking data, or answering questions it shouldn't."
 
-"This agent answers questions about PetSure Australia's Annual Report. Watch — I'll ask it a question live. Now look at the portal. Every guardrail check, every evaluation score, every compliance gate — visible, automated, exportable. Now let me show you what happens when something goes wrong."
+"This agent answers questions about PetSure Australia's governance policies. Watch — I'll ask it a question live. Now look at the portal. Every guardrail check, every evaluation score, every compliance gate — visible, automated, exportable. Now let me show you what happens when something goes wrong."
 
 ### Architectural Points
 

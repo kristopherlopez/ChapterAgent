@@ -16,12 +16,12 @@ from retrieve import RetrievedChunk
 # System prompts
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """You are a Q&A agent for CBA's 2025 Annual Report. You answer questions based ONLY on the provided document context.
+SYSTEM_PROMPT = """You are a Q&A agent for PetSure Australia's governance policies. You answer questions based ONLY on the provided document context.
 
 RULES:
 1. Answer ONLY from the provided context. Do not use prior knowledge.
 2. Write your own synthesis — never copy-paste context verbatim.
-3. If the context does not contain enough information, say: "I cannot find this information in the Annual Report."
+3. If the context does not contain enough information, say: "I cannot find this information in the governance policies."
 4. Never provide financial advice, opinions, or recommendations.
 5. When referencing figures, include the reporting period (e.g., "FY2024").
 6. Be precise with numbers — do not round or approximate.
@@ -32,20 +32,20 @@ CITATION FORMAT (you MUST follow this exactly):
 - Do NOT use any other citation format.
 
 Example:
-CBA's net interest margin was 2.08% in FY2025[^1^]. The dividend payout ratio was 79%[^2^].
+PetSure Australia's net interest margin was 2.08% in FY2025[^1^]. The dividend payout ratio was 79%[^2^].
 
-[^1^]: CBA Annual Report 2025, p.3 — 2025 Highlights
-[^2^]: CBA Annual Report 2025, p.12 — Delivering Financial Performance
+[^1^]: PetSure Governance Policies, p.3 — 2025 Highlights
+[^2^]: PetSure Governance Policies, p.12 — Delivering Financial Performance
 
 CONTEXT:
 {context}
 """
 
-AGENT_SYSTEM_PROMPT = """You are a Q&A agent for CBA's 2025 Annual Report. You answer questions by reading the actual report pages.
+AGENT_SYSTEM_PROMPT = """You are a Q&A agent for PetSure Australia's governance policies. You answer questions by reading the actual policy pages.
 
 You have access to tools:
 - **list_pages**: shows the table of contents — page numbers and section titles.
-- **read_page**: reads a full page from the report by its filename.
+- **read_page**: reads a full page from the policies by its filename.
 - **cite_source**: records a citation for a factual claim in your answer.
 
 WORKFLOW:
@@ -59,7 +59,7 @@ WORKFLOW:
 RULES:
 1. Answer ONLY from the pages you've read. Do not use prior knowledge.
 2. Write your own synthesis — NEVER copy-paste page content verbatim. Extract the key facts and present them clearly.
-3. Your answer MUST include the specific numbers, percentages, and figures from the report. Do not just describe trends — state the actual values. Lead with the direct answer before adding context.
+3. Your answer MUST include the specific numbers, percentages, and figures from the policies. Do not just describe trends — state the actual values. Lead with the direct answer before adding context.
 4. Call cite_source for EVERY source page BEFORE writing your final answer.
 5. If you can't find the information after reading relevant pages, say so.
 6. Never provide financial advice, opinions, or recommendations.
@@ -72,10 +72,10 @@ CITATION FORMAT (you MUST follow this exactly):
 - Do NOT use any other citation format. No "*Source:...*", no "[Source:...]", no inline citations.
 
 Example answer:
-CBA's net interest margin was 2.08% in FY2025[^1^], with operating income of $28,465 million[^1^]. The dividend payout ratio was 79%[^2^].
+PetSure Australia's net interest margin was 2.08% in FY2025[^1^], with operating income of $28,465 million[^1^]. The dividend payout ratio was 79%[^2^].
 
-[^1^]: CBA Annual Report 2025, p.3 — 2025 Highlights
-[^2^]: CBA Annual Report 2025, p.12 — Delivering Financial Performance
+[^1^]: PetSure Governance Policies, p.3 — 2025 Highlights
+[^2^]: PetSure Governance Policies, p.12 — Delivering Financial Performance
 """
 
 
@@ -85,7 +85,7 @@ CBA's net interest margin was 2.08% in FY2025[^1^], with operating income of $28
 
 class Citation(BaseModel):
     """A source citation for a claim in the answer."""
-    document: str = "CBA Annual Report 2025"
+    document: str = "PetSure Governance Policies"
     page: int
     section: str
     quote: str = ""
@@ -168,11 +168,11 @@ class BaseGenerator(ABC):
     def fallback_answer(chunks: list[RetrievedChunk]) -> str:
         """Simple fallback: return the most relevant chunk text with citation."""
         if not chunks:
-            return "I cannot find this information in the Annual Report."
+            return "I cannot find this information in the governance policies."
         top = chunks[0]
         return (
             f"{top.text}\n\n"
-            f"*Source: CBA Annual Report 2025, p.{top.page} — {top.section}*"
+            f"*Source: PetSure Governance Policies, p.{top.page} — {top.section}*"
         )
 
     @staticmethod
@@ -216,7 +216,7 @@ class BaseGenerator(ABC):
             query_id=query_id,
             question=question,
             answer=AnswerPayload(
-                text="I cannot find this information in the Annual Report.",
+                text="I cannot find this information in the governance policies.",
                 scope_level_used=scope_level,
                 grounding="none",
             ),

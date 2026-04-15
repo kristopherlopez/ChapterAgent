@@ -1,17 +1,17 @@
 solution:
-  name: "PetSure Australia Annual Report Q&A Agent"
-  id: "petsure-annual-report-qa"
+  name: "PetSure Policy Q&A Agent"
+  id: "petsure-policy-qa"
   type: "qa"
   version: "1.0.0"
-  description: "Answers questions about PetSure Australia's most recent Annual Report with source citations"
+  description: "Answers questions about PetSure Australia's governance policies with source citations"
 
 owner: "Governance Portal Team"
 risk_tier: "production_customer_facing"
 
 corpus:
-  source: "PetSure Australia Investor Relations"
+  source: "PetSure Australia Governance"
   documents:
-    - name: "PetSure Australia Annual Report 2025"
+    - name: "PetSure Governance Policies"
       format: "pdf"
       pages: 229
   topic_graph: "topic_graph.json"
@@ -20,7 +20,7 @@ guardrails:
   scope:
     level: 1
     topic_graph: "topic_graph.json"
-    refusal_message: "I can only answer questions about PetSure Australia's 2025 Annual Report."
+    refusal_message: "I can only answer questions about PetSure Australia's governance policies."
   faithfulness_threshold: 0.90
   citation_coverage_threshold: 0.95
   temporal_accuracy_enabled: true

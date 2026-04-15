@@ -28,11 +28,11 @@ class TraceLogger:
     """Builds structured execution traces.
 
     Usage:
-        logger = TraceLogger(solution_id="petsure-annual-report-qa")
+        logger = TraceLogger(solution_id="petsure-policy-qa")
         logger.log_step(1, "Query received", 0)
         logger.log_step(2, "Context retrieval", 120, detail="3 chunks retrieved")
         trace = logger.to_trace()
-        logger.save(Path("traces/petsure-annual-report-qa/run_001.json"))
+        logger.save(Path("traces/petsure-policy-qa/run_001.json"))
     """
 
     def __init__(self, *, solution_id: str, scenario: str = "live", question: str = ""):

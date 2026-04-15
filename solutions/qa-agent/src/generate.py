@@ -15,12 +15,12 @@ try:
 except ImportError:
     from retrieve import RetrievedChunk  # type: ignore[no-redef]
 
-SYSTEM_PROMPT = """You are a Q&A agent for CBA's 2025 Annual Report. You answer questions based ONLY on the provided document context.
+SYSTEM_PROMPT = """You are a Q&A agent for PetSure Australia's governance policies. You answer questions based ONLY on the provided document context.
 
 RULES:
 1. Answer ONLY from the provided context. Do not use prior knowledge.
-2. Cite EVERY factual claim with [Source: CBA Annual Report 2025, p.X, Section Name].
-3. If the context does not contain enough information, say: "I cannot find this information in the Annual Report."
+2. Cite EVERY factual claim with [Source: PetSure Governance Policies, p.X, Section Name].
+3. If the context does not contain enough information, say: "I cannot find this information in the governance policies."
 4. Never provide financial advice, opinions, or recommendations.
 5. When referencing figures, include the reporting period (e.g., "FY2024").
 6. Be precise with numbers — do not round or approximate.
@@ -32,7 +32,7 @@ CONTEXT:
 
 class Citation(BaseModel):
     """A source citation for a claim in the answer."""
-    document: str = "CBA Annual Report 2025"
+    document: str = "PetSure Governance Policies"
     page: int
     section: str
     quote: str = ""
@@ -64,7 +64,7 @@ class QAGenerator:
     Usage:
         from agents import Agent, Runner, function_tool
         generator = QAGenerator()
-        response = generator.generate("What was CBA's NIM?", chunks)
+        response = generator.generate("What is the PII handling policy?", chunks)
     """
 
     def __init__(self, *, model: str = "gpt-4o", temperature: float = 0.1):
@@ -115,7 +115,7 @@ class QAGenerator:
                 query_id=query_id,
                 question=question,
                 answer=AnswerPayload(
-                    text="I cannot find this information in the Annual Report.",
+                    text="I cannot find this information in the governance policies.",
                     scope_level_used=scope_level,
                     grounding="none",
                 ),
@@ -142,7 +142,7 @@ class QAGenerator:
                 return f"Citation recorded: p.{page}, {section}"
 
             agent = Agent(
-                name="CBA Annual Report Q&A",
+                name="PetSure Policy Q&A",
                 instructions=instructions,
                 model=self.model,
                 tools=[cite_source],
@@ -205,9 +205,9 @@ class QAGenerator:
     def _fallback_answer(question: str, chunks: list[RetrievedChunk]) -> str:
         """Simple fallback: return the most relevant chunk text with citation."""
         if not chunks:
-            return "I cannot find this information in the Annual Report."
+            return "I cannot find this information in the governance policies."
         top = chunks[0]
         return (
             f"{top.text}\n\n"
-            f"*Source: CBA Annual Report 2025, p.{top.page} — {top.section}*"
+            f"*Source: PetSure Governance Policies, p.{top.page} — {top.section}*"
         )

@@ -37,14 +37,14 @@ def _create_generator(framework: str = "openai", **kwargs: Any) -> BaseGenerator
 
 
 class QAAgent:
-    """CBA Annual Report Q&A Agent.
+    """PetSure Policy Q&A Agent.
 
     Full pipeline: scope check -> retrieve -> generate -> guardrails.
     Can run with or without the guardrail runner (for standalone use).
 
     Usage:
         agent = QAAgent.from_solution_dir(Path("solutions/qa-agent"))
-        response = await agent.answer("What was CBA's net interest margin?")
+        response = await agent.answer("What is the PII handling policy?")
     """
 
     def __init__(
@@ -54,7 +54,7 @@ class QAAgent:
         generator: BaseGenerator | None = None,
         topic_graph: dict[str, Any] | None = None,
         scope_level: int = 1,
-        refusal_message: str = "I can only answer questions about CBA's 2025 Annual Report.",
+        refusal_message: str = "I can only answer questions about PetSure Australia's governance policies.",
     ):
         self.retriever = retriever
         self.generator = generator or _create_generator("openai")
@@ -153,7 +153,7 @@ class DemoQAAgent:
 
     Usage:
         agent = DemoQAAgent.from_solution_dir(Path("solutions/qa-agent"))
-        response = await agent.answer("What was CBA's net interest margin?")
+        response = await agent.answer("What is the PII handling policy?")
     """
 
     def __init__(self, scenarios: dict[str, dict]):
@@ -218,7 +218,7 @@ class DemoQAAgent:
         return {
             "answer": {
                 "text": "I can only answer questions about "
-                "CBA's 2025 Annual Report.",
+                "PetSure Australia's governance policies.",
             },
             "citations": [],
         }
@@ -247,7 +247,7 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="CBA Annual Report Q&A Agent",
+        description="PetSure Policy Q&A Agent",
     )
     parser.add_argument(
         "--demo",
@@ -266,13 +266,13 @@ async def main():
 
     if args.demo:
         agent = DemoQAAgent.from_solution_dir(solution_dir)
-        print("CBA Annual Report Q&A Agent (DEMO MODE)")
+        print("PetSure Policy Q&A Agent (DEMO MODE)")
         print("Answers are pre-recorded. No API key needed.")
     else:
         agent = QAAgent.from_solution_dir(
             solution_dir, framework=args.framework,
         )
-        print(f"CBA Annual Report Q&A Agent ({args.framework})")
+        print(f"PetSure Policy Q&A Agent ({args.framework})")
 
     print("Type 'quit' to exit.\n")
 

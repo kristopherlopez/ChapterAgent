@@ -30,7 +30,7 @@ One solution, exercised thoroughly, proving the platform works end-to-end:
 
 | Demo Solution | Solution Type | What It Proves |
 |---|---|---|
-| **Q&A Agent** — answers questions about PetSure Australia's most recent Annual Report, retrieves context, cites sources. Implemented in three frameworks (Claude Agent SDK, OpenAI SDK, LangChain/LangGraph) with multiple retrieval strategies. | Q&A | Guardrails catching bad answers, eval harness in action, compliance gates firing, multi-framework governance, scope enforcement, citation coverage — all visible in the portal |
+| **Q&A Agent** — answers questions about PetSure Australia's governance policies, retrieves context, cites sources. Implemented in three frameworks (Claude Agent SDK, OpenAI SDK, LangChain/LangGraph) with multiple retrieval strategies. | Q&A | Guardrails catching bad answers, eval harness in action, compliance gates firing, multi-framework governance, scope enforcement, citation coverage — all visible in the portal |
 
 The Q&A agent is the most common solution type teams build. If the platform can govern it well — across multiple frameworks, retrieval strategies, and failure modes — it can govern anything. See `../solutions/01-qa-agent.md` for the full solution spec.
 
@@ -54,7 +54,7 @@ These are the components the team builds once. Every team's solution plugs into 
 ## Demo Approach
 
 - **Live query + pre-recorded scenarios** — ask the Q&A agent a question live, then walk through six pre-recorded governance scenarios (happy path, scope refusal, faithfulness catch, temporal accuracy failure, prompt injection, citation gap)
-- **Real PetSure Australia Annual Report** as the document corpus — publicly available, no sensitive data
+- **Real PetSure Australia governance policies** as the document corpus — publicly available, no sensitive data
 - **Three framework implementations** compared on the multi-platform scorecard — same corpus, same golden dataset, same governance, different frameworks
 - **Impressive but scoped** — things visibly work, governance visibly catches problems, but not production-grade
 

@@ -34,7 +34,7 @@ class ClaudeGenerator(BaseGenerator):
     """Agentic Q&A using the Claude Agent SDK.
 
     Gives the agent three tools via @tool decorator:
-        - list_pages: table of contents of the Annual Report
+        - list_pages: table of contents of the governance policies
         - read_page: read a full markdown page
         - cite_source: record a citation for a claim
 
@@ -43,7 +43,7 @@ class ClaudeGenerator(BaseGenerator):
 
     Usage:
         generator = ClaudeGenerator()
-        response = generator.generate("What was CBA's NIM?", chunks)
+        response = generator.generate("What is the PII handling policy?", chunks)
     """
 
     framework = "claude-agent-sdk"
@@ -80,7 +80,7 @@ class ClaudeGenerator(BaseGenerator):
 
         @tool(
             name="list_pages",
-            description="List all pages in the CBA Annual Report with page numbers and section titles.",
+            description="List all pages in the PetSure governance policies with page numbers and section titles.",
             input_schema=EmptyInput,
         )
         async def list_pages(input: EmptyInput) -> dict:
@@ -95,7 +95,7 @@ class ClaudeGenerator(BaseGenerator):
 
         @tool(
             name="read_page",
-            description="Read a full page from the CBA Annual Report by filename.",
+            description="Read a full page from the PetSure governance policies by filename.",
             input_schema=ReadPageInput,
         )
         async def read_page(input: ReadPageInput) -> dict:
@@ -199,12 +199,12 @@ class ClaudeGenerator(BaseGenerator):
         tools = [
             {
                 "name": "list_pages",
-                "description": "List all pages in the CBA Annual Report with page numbers and section titles.",
+                "description": "List all pages in the PetSure governance policies with page numbers and section titles.",
                 "input_schema": {"type": "object", "properties": {}, "required": []},
             },
             {
                 "name": "read_page",
-                "description": "Read a full page from the CBA Annual Report by filename.",
+                "description": "Read a full page from the PetSure governance policies by filename.",
                 "input_schema": {
                     "type": "object",
                     "properties": {"filename": {"type": "string"}},

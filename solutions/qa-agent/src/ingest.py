@@ -169,7 +169,7 @@ def chunk_markdown(
 def chunk_all_markdown(
     markdown_dir: Path,
     *,
-    document_name: str = "CBA Annual Report 2025",
+    document_name: str = "PetSure Governance Policies",
     max_chunk_size: int = 500,
     overlap: int = 50,
 ) -> list[dict]:
@@ -240,7 +240,7 @@ def save_chunks(
 def embed_chunks(
     chunks: list[dict],
     *,
-    collection_name: str = "cba_annual_report",
+    collection_name: str = "petsure_governance_policies",
     persist_directory: str | None = None,
 ) -> chromadb.Collection:
     """Embed chunks and store in ChromaDB.
@@ -297,9 +297,9 @@ def embed_chunks(
 def ingest_knowledge_base(
     knowledge_base_dir: Path,
     *,
-    collection_name: str = "cba_annual_report",
+    collection_name: str = "petsure_governance_policies",
     persist_directory: str | None = None,
-    document_name: str = "CBA Annual Report 2025",
+    document_name: str = "PetSure Governance Policies",
     skip_extract: bool = False,
     engine: Engine = "pymupdf4llm",
 ) -> chromadb.Collection:
@@ -394,7 +394,7 @@ if __name__ == "__main__":
 
     if not pdfs and not md_files:
         print("No PDFs in originals/ and no markdown files.")
-        print(f"Place the CBA Annual Report PDF in: {originals}/")
+        print(f"Place the PetSure governance policy PDF in: {originals}/")
         raise SystemExit(1)
 
     if pdfs:

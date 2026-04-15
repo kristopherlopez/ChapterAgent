@@ -1,14 +1,14 @@
 {
   "query_id": "QRY-2026-0001",
-  "question": "What was CBA's net interest margin in FY2025?",
+  "question": "What was PetSure Australia's net interest margin in FY2025?",
   "answer": {
-    "text": "CBA's net interest margin for FY2025 was 2.08%, up 9 basis points from FY2024's 1.99%.",
+    "text": "PetSure Australia's net interest margin for FY2025 was 2.08%, up 9 basis points from FY2024's 1.99%.",
     "scope_level_used": 1,
     "grounding": "corpus"
   },
   "citations": [
     {
-      "document": "CBA Annual Report 2025",
+      "document": "PetSure Governance Policies",
       "page": 30,
       "section": "Operational Excellence",
       "quote": "Net interest margin 2.08%, FY24 1.99%"

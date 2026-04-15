@@ -350,7 +350,7 @@ if __name__ == "__main__":
     pdfs = list(originals.glob("*.pdf"))
     if not pdfs:
         print(f"No PDFs found in {originals}")
-        print("Place the CBA Annual Report PDF in:")
+        print("Place the PetSure governance policy PDF in:")
         print(f"  {originals}/")
         raise SystemExit(1)
 

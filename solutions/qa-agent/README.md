@@ -1,6 +1,6 @@
-# Q&A Agent — CBA Annual Report
+# Q&A Agent — PetSure Policy Q&A
 
-Demo Solution #1: Answers questions about CBA's 2025 Annual Report with source citations.
+Demo Solution #1: Answers questions about PetSure Australia's governance policies with source citations.
 
 ## What It Does
 
@@ -14,7 +14,7 @@ Given a question, the agent:
 
 ```
 qa-agent/
-  solution.yaml         # Solution manifest (id: cba-annual-report-qa)
+  solution.yaml         # Solution manifest (id: petsure-policy-qa)
   topic_graph.json      # 7 topic clusters with keywords
   knowledge_base/       # 7 synthetic markdown files (~400 words each)
   golden_dataset/       # 50 test cases across 10 query types

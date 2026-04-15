@@ -1,14 +1,14 @@
 {
   "query_id": "QRY-2026-0002",
-  "question": "What was CBA's return on equity in FY2025?",
+  "question": "What was PetSure Australia's return on equity in FY2025?",
   "answer": {
-    "text": "CBA's return on equity for FY2025 was 14.8%, reflecting strong performance across the business.",
+    "text": "PetSure Australia's return on equity for FY2025 was 14.8%, reflecting strong performance across the business.",
     "scope_level_used": 1,
     "grounding": "corpus"
   },
   "citations": [
     {
-      "document": "CBA Annual Report 2025",
+      "document": "PetSure Governance Policies",
       "page": 26,
       "section": "Delivering financial performance",
       "quote": "Return on equity of 13.5%"

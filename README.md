@@ -100,7 +100,7 @@ Two integration modes:
 
 | # | Solution | Type | Risk Tier | Description |
 |---|----------|------|-----------|-------------|
-| 1 | Q&A Agent | RAG | `production_customer_facing` | Answers questions about PetSure Australia's 2025 Annual Report with citations. Implemented in Claude SDK, OpenAI SDK, and LangChain. |
+| 1 | Q&A Agent | RAG | `production_customer_facing` | Answers questions about PetSure Australia's governance policies with citations. Implemented in Claude SDK, OpenAI SDK, and LangChain. |
 | 2 | Validation Agent | Agentic | `production_internal` | Endpoint-based model validator |
 | 3 | Classification Agent | Endpoint | `production_internal` | Risk category classification |
 | 4 | Credit Approval Scorer | ML | `production_internal` | Logistic regression on UCI Australian Credit dataset |

@@ -23,7 +23,7 @@ class HybridRetriever:
 
     Usage:
         retriever = HybridRetriever.from_knowledge_base(kb_dir)
-        chunks = retriever.retrieve("What was CBA's net interest margin?", top_k=5)
+        chunks = retriever.retrieve("What is the PII handling policy?", top_k=5)
     """
 
     def __init__(self, collection: chromadb.Collection):
@@ -34,7 +34,7 @@ class HybridRetriever:
         cls,
         knowledge_base_dir: Path,
         *,
-        collection_name: str = "cba_annual_report",
+        collection_name: str = "petsure_governance_policies",
     ) -> HybridRetriever:
         """Create retriever from a knowledge base directory, ingesting if needed."""
         persist_dir = str(knowledge_base_dir / ".chromadb")

@@ -237,7 +237,7 @@ class ComplianceRunner:
         sample_output = (
             "PetSure Australia's statutory net profit after tax (NPAT) for FY2025 was "
             "$10,133 million, representing a 7% increase from $9,481 million "
-            "in FY2024. [Source: PetSure Australia Annual Report 2025, p. 26, Section: "
+            "in FY2024. [Source: PetSure Governance Policies, p. 26, Section: "
             "Financial Performance — Overview]"
         )
         sample_context = [

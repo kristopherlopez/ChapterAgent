@@ -1,4 +1,4 @@
-"""Evaluate the CBA Annual Report Q&A Agent using DeepEval.
+"""Evaluate the PetSure Policy Q&A Agent using DeepEval.
 
 Runs golden dataset questions through the agent, then scores the
 responses with DeepEval's LLM-as-judge metrics (faithfulness,
@@ -83,7 +83,7 @@ def run_agent_on_dataset(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Evaluate CBA Annual Report Q&A Agent with DeepEval",
+        description="Evaluate PetSure Policy Q&A Agent with DeepEval",
     )
     parser.add_argument(
         "--framework",
@@ -145,7 +145,7 @@ def main():
 
     report = harness.run_live(
         test_cases,
-        solution_id="cba-annual-report-qa",
+        solution_id="petsure-policy-qa",
         model=args.judge,
     )
 
@@ -154,7 +154,7 @@ def main():
     print(f"  EVALUATION REPORT — {args.framework.upper()}")
     print("=" * 60)
     print()
-    print(f"  Solution:    cba-annual-report-qa")
+    print(f"  Solution:    petsure-policy-qa")
     print(f"  Framework:   {args.framework}")
     print(f"  Risk Tier:   {report.risk_tier}")
     print(f"  Test Cases:  {report.total_test_cases}")

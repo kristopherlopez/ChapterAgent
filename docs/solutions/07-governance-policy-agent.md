@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A Q&A agent that answers questions about the governance policy documents loaded into the platform. While the existing PetSure Australia Annual Report Q&A Agent demonstrates governance over an external document (a public annual report), this agent demonstrates the same governance applied to the platform's own policy corpus — the internal policies, frameworks, standards, and guidelines that define how AI solutions must be built, tested, and deployed.
+A Q&A agent that answers questions about the governance policy documents loaded into the platform. While the existing PetSure Policy Q&A Agent demonstrates governance over PetSure Australia's governance policies, this agent demonstrates the same governance applied to the platform's own policy corpus — the internal policies, frameworks, standards, and guidelines that define how AI solutions must be built, tested, and deployed.
 
 This is a "dog-fooding" solution: the platform governs an agent whose job is to help people understand the governance rules.
 
@@ -31,7 +31,7 @@ The agent's knowledge base is the governance document library already in the pla
 | APRA CPS 234 — Information Security | Standard | APRA | AI-GOV-005, 006, 008, 010 |
 | Australia's Voluntary AI Safety Standard | Guideline | DISR | AI-GOV-001, 003, 005, 007, 008 |
 
-Unlike the Annual Report agent (single large PDF), this agent works across multiple shorter documents with cross-references between them. This exercises a different retrieval pattern — the agent must understand which document is authoritative for a given question and how documents relate to each other.
+Unlike the Policy Q&A agent (single large PDF), this agent works across multiple shorter documents with cross-references between them. This exercises a different retrieval pattern — the agent must understand which document is authoritative for a given question and how documents relate to each other.
 
 ### Topic Graph
 
@@ -152,7 +152,7 @@ The first three are critical for the demo. Documents 4-7 create the cross-refere
 
 **`production_internal`** — this agent is for internal users (teams, risk officers, compliance teams), not external customers. Guardrails are still enforced but thresholds are slightly relaxed compared to `production_customer_facing`.
 
-This is a deliberate contrast with the Annual Report Q&A Agent (which is `production_customer_facing`). It shows the platform applying different governance intensity based on risk tier — same guardrails, different thresholds.
+This is a deliberate contrast with the Policy Q&A Agent (which is `production_customer_facing`). It shows the platform applying different governance intensity based on risk tier — same guardrails, different thresholds.
 
 ## Guardrails
 
@@ -166,13 +166,13 @@ This is a deliberate contrast with the Annual Report Q&A Agent (which is `produc
 | Bias | <= 0.05 | Standard check |
 | Toxicity | <= 0.05 | Standard check |
 
-**No temporal accuracy guardrail.** Unlike the Annual Report agent, governance documents don't have competing reporting periods. Effective dates and review dates are metadata, not a temporal attribution risk.
+**No temporal accuracy guardrail.** Unlike the Policy Q&A agent, governance documents don't have competing reporting periods. Effective dates and review dates are metadata, not a temporal attribution risk.
 
 ## Evaluation
 
 ### Golden Dataset
 
-30 test cases (fewer than the Annual Report agent's 50 — smaller corpus, narrower scope):
+30 test cases (fewer than the Policy Q&A agent's 50 — smaller corpus, narrower scope):
 
 | Query Type | Count | Purpose |
 |-----------|-------|---------|
@@ -215,11 +215,11 @@ All 8 gates apply. The same gates as every other solution — that's the point.
 
 ## Sidebar Placement
 
-In the platform UI, this solution appears directly below the PetSure Australia Annual Report Q&A Agent in the **AI Solutions** section of the sidebar:
+In the platform UI, this solution appears directly below the PetSure Policy Q&A Agent in the **AI Solutions** section of the sidebar:
 
 ```
 AI Solutions
-  PetSure Australia Annual Report Q&A        [health dot]
+  PetSure Policy Q&A        [health dot]
   Governance Policy Agent       [health dot]    <-- new
   Model Validation Agent        [health dot]
   Classification Agent          [health dot]
@@ -273,9 +273,9 @@ The evaluation harness doesn't care which approach was used. It measures the sam
 
 **Demo point:** "These two implementations read the same policy documents. One loads the full documents into context. The other chunks and embeds them. The platform evaluates them identically — and you can see which approach produces better answers for which question types."
 
-## What Makes This Different from the Annual Report Agent
+## What Makes This Different from the Policy Q&A Agent
 
-| Dimension | Annual Report Agent | Governance Policy Agent |
+| Dimension | Policy Q&A Agent | Governance Policy Agent |
 |-----------|-------------------|------------------------|
 | **Corpus** | Single large PDF (~229 pages) | Multiple shorter documents (10 docs, ~20,000 words total) |
 | **Risk tier** | `production_customer_facing` | `production_internal` |
@@ -299,9 +299,9 @@ The evaluation harness doesn't care which approach was used. It measures the sam
 6. Ask: *"Which of those gates maps to APRA CPS 230?"*
 7. Agent cross-references the regulatory mapping
 
-### Paired Demo (with Annual Report Agent)
+### Paired Demo (with Policy Q&A Agent)
 
-1. Show the Annual Report Agent — `production_customer_facing`, strictest thresholds
+1. Show the Policy Q&A Agent — `production_customer_facing`, strictest thresholds
 2. Show the Governance Policy Agent — `production_internal`, relaxed thresholds
 3. Same guardrails, same compliance gates, different calibration
 4. "The platform doesn't have one setting. It scales governance to the risk."
@@ -340,12 +340,12 @@ The evaluation harness doesn't care which approach was used. It measures the sam
 - [ ] Create `solutions/governance-policy-qa/solution.yaml` manifest
 - [ ] Generate golden dataset (30 test cases)
 - [ ] Create pre-recorded scenarios (4-5 scenarios)
-- [ ] Add to `data.ts` solutions array (position: after `petsure-annual-report-qa`)
+- [ ] Add to `data.ts` solutions array (position: after `petsure-policy-qa`)
 - [ ] Add summary.json to `results/governance-policy-qa/`
 
 ### Phase 5: Portal Integration
 
-- [ ] Sidebar placement (below Annual Report Q&A)
+- [ ] Sidebar placement (below Policy Q&A)
 - [ ] Chat interface (reuse existing chat page)
 - [ ] Solution detail page (traces, guardrails, eval, compliance)
 - [ ] Framework scorecard showing Claude SDK vs RAG comparison
