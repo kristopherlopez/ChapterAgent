@@ -84,7 +84,7 @@ export default function CatalogPage() {
     <div>
       <Header
         title="Component Catalog"
-        subtitle="Reusable platform components the Chapter ships to squads"
+        subtitle="Reusable platform components the Governance Portal ships to teams"
       />
       <div className="px-8 py-6 space-y-6">
         {/* Summary stats */}
@@ -224,10 +224,10 @@ export default function CatalogPage() {
                       <div className="grid grid-cols-2 gap-4 pt-2">
                         <div>
                           <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">
-                            Squad Provides
+                            Team Provides
                           </p>
                           <p className="text-sm text-zinc-700">
-                            {component.interface.squadProvides}
+                            {component.interface.teamProvides}
                           </p>
                         </div>
                         <div>
@@ -281,10 +281,10 @@ export default function CatalogPage() {
         {/* Ownership model explainer */}
         <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-6">
           <h3 className="text-sm font-semibold text-zinc-900 mb-2">
-            Chapter Builds, Squads Consume
+            Governance Portal Builds, Teams Consume
           </h3>
           <p className="text-sm text-zinc-600">
-            The Chapter owns and maintains every component listed here. Squads consume them by declaring
+            The Governance Portal owns and maintains every component listed here. Teams consume them by declaring
             configuration in their{" "}
             <code className="px-1.5 py-0.5 bg-zinc-200 rounded text-xs font-mono">
               solution.yaml

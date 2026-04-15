@@ -145,7 +145,7 @@ export type ComponentType =
 export type ComponentStatus = "active" | "beta";
 
 export interface ComponentInterface {
-  squadProvides: string;
+  teamProvides: string;
   componentReturns: string;
 }
 

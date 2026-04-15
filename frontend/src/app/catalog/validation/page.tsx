@@ -420,7 +420,7 @@ export default function ValidationPage() {
             How Validation Works
           </h3>
           <p className="text-sm text-zinc-600">
-            The Chapter provides this validation UI; squads bring their SMEs. Each test case must be
+            The Governance Portal provides this validation UI; teams bring their SMEs. Each test case must be
             reviewed and either approved, rejected, or edited before the dataset can be signed off.
             Sign-off produces a compliance artifact (AI-GOV-009) that the deployment gate checks
             before allowing production promotion. Rejected cases are sent back to the generator for

@@ -1,5 +1,5 @@
 /**
- * API client for the Chapter Agent backend.
+ * API client for the Governance Portal backend.
  * Falls back to hardcoded data if the backend is unavailable.
  */
 

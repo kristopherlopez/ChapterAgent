@@ -24,7 +24,7 @@ SOLUTIONS_DIR = ROOT / "solutions"
 # ---------------------------------------------------------------------------
 
 class ComponentInterface(BaseModel):
-    squad_provides: str
+    team_provides: str
     component_returns: str
 
 
@@ -60,38 +60,38 @@ class SignOffRequest(BaseModel):
 # ---------------------------------------------------------------------------
 
 GUARDRAIL_COMPONENTS: list[dict[str, Any]] = [
-    {"id": "guardrail-scope-adherence", "name": "Scope Adherence", "description": "Enforces topic boundaries using a configurable topic graph with 3 strictness levels", "interface": {"squad_provides": "Topic graph JSON, scope level (1-3), refusal message", "component_returns": "pass/warn/fail with boundary violation detail"}},
-    {"id": "guardrail-pii-scan", "name": "PII Detection", "description": "Scans agent output for personally identifiable information using NER-based detection", "interface": {"squad_provides": "Agent output text", "component_returns": "pass/fail with detected PII entities and types"}},
-    {"id": "guardrail-bias", "name": "Bias Detection", "description": "Monitors for demographic and language bias in agent outputs", "interface": {"squad_provides": "Agent output text", "component_returns": "pass/warn/fail with bias score and flagged phrases"}},
-    {"id": "guardrail-toxicity", "name": "Toxicity Filter", "description": "Screens agent output for harmful, offensive, or toxic content", "interface": {"squad_provides": "Agent output text", "component_returns": "pass/fail with toxicity score"}},
-    {"id": "guardrail-citation-coverage", "name": "Citation Coverage", "description": "Verifies response includes proper source citations for factual claims", "interface": {"squad_provides": "Agent output with citation markers, threshold", "component_returns": "pass/fail with coverage ratio"}},
-    {"id": "guardrail-temporal-accuracy", "name": "Temporal Accuracy", "description": "Validates time-sensitive references are consistent with source documents", "interface": {"squad_provides": "Agent output, context with dates", "component_returns": "pass/warn/fail with temporal inconsistencies"}},
-    {"id": "guardrail-prompt-injection", "name": "Prompt Injection Detection", "description": "Detects prompt injection and jailbreak attempts in user input", "interface": {"squad_provides": "User input text", "component_returns": "pass/fail with injection type and confidence"}},
+    {"id": "guardrail-scope-adherence", "name": "Scope Adherence", "description": "Enforces topic boundaries using a configurable topic graph with 3 strictness levels", "interface": {"team_provides": "Topic graph JSON, scope level (1-3), refusal message", "component_returns": "pass/warn/fail with boundary violation detail"}},
+    {"id": "guardrail-pii-scan", "name": "PII Detection", "description": "Scans agent output for personally identifiable information using NER-based detection", "interface": {"team_provides": "Agent output text", "component_returns": "pass/fail with detected PII entities and types"}},
+    {"id": "guardrail-bias", "name": "Bias Detection", "description": "Monitors for demographic and language bias in agent outputs", "interface": {"team_provides": "Agent output text", "component_returns": "pass/warn/fail with bias score and flagged phrases"}},
+    {"id": "guardrail-toxicity", "name": "Toxicity Filter", "description": "Screens agent output for harmful, offensive, or toxic content", "interface": {"team_provides": "Agent output text", "component_returns": "pass/fail with toxicity score"}},
+    {"id": "guardrail-citation-coverage", "name": "Citation Coverage", "description": "Verifies response includes proper source citations for factual claims", "interface": {"team_provides": "Agent output with citation markers, threshold", "component_returns": "pass/fail with coverage ratio"}},
+    {"id": "guardrail-temporal-accuracy", "name": "Temporal Accuracy", "description": "Validates time-sensitive references are consistent with source documents", "interface": {"team_provides": "Agent output, context with dates", "component_returns": "pass/warn/fail with temporal inconsistencies"}},
+    {"id": "guardrail-prompt-injection", "name": "Prompt Injection Detection", "description": "Detects prompt injection and jailbreak attempts in user input", "interface": {"team_provides": "User input text", "component_returns": "pass/fail with injection type and confidence"}},
 ]
 
 EVALUATION_COMPONENTS: list[dict[str, Any]] = [
-    {"id": "evaluation-harness", "name": "Evaluation Harness", "description": "Standardised test runner scoring AI solutions against risk-tier thresholds with 10+ metrics", "interface": {"squad_provides": "Golden dataset, risk tier, metric overrides (optional)", "component_returns": "EvaluationReport with per-metric scores and pass/fail"}},
+    {"id": "evaluation-harness", "name": "Evaluation Harness", "description": "Standardised test runner scoring AI solutions against risk-tier thresholds with 10+ metrics", "interface": {"team_provides": "Golden dataset, risk tier, metric overrides (optional)", "component_returns": "EvaluationReport with per-metric scores and pass/fail"}},
 ]
 
 COMPLIANCE_COMPONENTS: list[dict[str, Any]] = [
-    {"id": "compliance-registration", "name": "Registration Check (AI-GOV-001)", "description": "Verifies solution.yaml manifest is complete with all required fields", "interface": {"squad_provides": "solution.yaml in solution directory", "component_returns": "PASS/FAIL with field-level evidence"}},
-    {"id": "compliance-evaluation", "name": "Evaluation Gate (AI-GOV-003)", "description": "Confirms solution passed evaluation harness for its risk tier", "interface": {"squad_provides": "EvaluationReport from the harness", "component_returns": "PASS/FAIL with per-metric evidence"}},
-    {"id": "compliance-pii", "name": "PII Validation (AI-GOV-005)", "description": "Validates PII guardrail passes on golden dataset sample", "interface": {"squad_provides": "Guardrail results from sample", "component_returns": "PASS/FAIL with PII detection evidence"}},
-    {"id": "compliance-guardrails", "name": "Guardrail Validation (AI-GOV-006)", "description": "Confirms all configured guardrails pass on golden dataset sample", "interface": {"squad_provides": "Full guardrail results from sample", "component_returns": "PASS/FAIL with per-guardrail breakdown"}},
-    {"id": "compliance-bias-toxicity", "name": "Bias & Toxicity Gate (AI-GOV-007)", "description": "Verifies bias and toxicity scores within acceptable bounds", "interface": {"squad_provides": "Guardrail results + evaluation report", "component_returns": "PASS/FAIL with scores and thresholds"}},
-    {"id": "compliance-audit-trail", "name": "Audit Trail Check (AI-GOV-008)", "description": "Validates execution traces exist for 100% of golden dataset cases. Supports disk-based traces (embedded solutions) and inline traces from endpoint responses", "interface": {"squad_provides": "Trace files on disk OR inline traces in endpoint response body", "component_returns": "PASS/FAIL with trace coverage, sources breakdown (disk vs inline)"}},
-    {"id": "compliance-golden-dataset", "name": "Golden Dataset Sign-off (AI-GOV-009)", "description": "Confirms golden dataset reviewed and signed off by qualified reviewer", "interface": {"squad_provides": "sign-off.json in golden dataset directory", "component_returns": "PASS/FAIL with sign-off evidence"}},
-    {"id": "compliance-prompt-governance", "name": "Prompt Governance (AI-GOV-010)", "description": "Validates system prompts are version-controlled and registered", "interface": {"squad_provides": "Prompt templates in solution directory", "component_returns": "PASS/FAIL with registered/unregistered prompts"}},
+    {"id": "compliance-registration", "name": "Registration Check (AI-GOV-001)", "description": "Verifies solution.yaml manifest is complete with all required fields", "interface": {"team_provides": "solution.yaml in solution directory", "component_returns": "PASS/FAIL with field-level evidence"}},
+    {"id": "compliance-evaluation", "name": "Evaluation Gate (AI-GOV-003)", "description": "Confirms solution passed evaluation harness for its risk tier", "interface": {"team_provides": "EvaluationReport from the harness", "component_returns": "PASS/FAIL with per-metric evidence"}},
+    {"id": "compliance-pii", "name": "PII Validation (AI-GOV-005)", "description": "Validates PII guardrail passes on golden dataset sample", "interface": {"team_provides": "Guardrail results from sample", "component_returns": "PASS/FAIL with PII detection evidence"}},
+    {"id": "compliance-guardrails", "name": "Guardrail Validation (AI-GOV-006)", "description": "Confirms all configured guardrails pass on golden dataset sample", "interface": {"team_provides": "Full guardrail results from sample", "component_returns": "PASS/FAIL with per-guardrail breakdown"}},
+    {"id": "compliance-bias-toxicity", "name": "Bias & Toxicity Gate (AI-GOV-007)", "description": "Verifies bias and toxicity scores within acceptable bounds", "interface": {"team_provides": "Guardrail results + evaluation report", "component_returns": "PASS/FAIL with scores and thresholds"}},
+    {"id": "compliance-audit-trail", "name": "Audit Trail Check (AI-GOV-008)", "description": "Validates execution traces exist for 100% of golden dataset cases. Supports disk-based traces (embedded solutions) and inline traces from endpoint responses", "interface": {"team_provides": "Trace files on disk OR inline traces in endpoint response body", "component_returns": "PASS/FAIL with trace coverage, sources breakdown (disk vs inline)"}},
+    {"id": "compliance-golden-dataset", "name": "Golden Dataset Sign-off (AI-GOV-009)", "description": "Confirms golden dataset reviewed and signed off by qualified reviewer", "interface": {"team_provides": "sign-off.json in golden dataset directory", "component_returns": "PASS/FAIL with sign-off evidence"}},
+    {"id": "compliance-prompt-governance", "name": "Prompt Governance (AI-GOV-010)", "description": "Validates system prompts are version-controlled and registered", "interface": {"team_provides": "Prompt templates in solution directory", "component_returns": "PASS/FAIL with registered/unregistered prompts"}},
 ]
 
 OBSERVABILITY_COMPONENTS: list[dict[str, Any]] = [
-    {"id": "observability-trace-logger", "name": "Trace Logger", "description": "Structured execution tracing capturing every step with timestamps and durations", "interface": {"squad_provides": "Instrument pipeline with trace_step() calls", "component_returns": "Structured JSON trace file"}},
-    {"id": "observability-trace-contract", "name": "Trace Contract Validator", "description": "Validates that endpoint responses include compliant traces. Supports inline traces (endpoint returns trace in response body) and OpenTelemetry sidecar (production pattern for orgs where the Chapter doesn't control endpoint schemas)", "interface": {"squad_provides": "Inline: trace field in JSON response. OTel: spans pushed to platform collector with solution.id tag", "component_returns": "Validation result with matched/missing trace labels and completeness score"}},
+    {"id": "observability-trace-logger", "name": "Trace Logger", "description": "Structured execution tracing capturing every step with timestamps and durations", "interface": {"team_provides": "Instrument pipeline with trace_step() calls", "component_returns": "Structured JSON trace file"}},
+    {"id": "observability-trace-contract", "name": "Trace Contract Validator", "description": "Validates that endpoint responses include compliant traces. Supports inline traces (endpoint returns trace in response body) and OpenTelemetry sidecar (production pattern for orgs where the Governance Portal doesn't control endpoint schemas)", "interface": {"team_provides": "Inline: trace field in JSON response. OTel: spans pushed to platform collector with solution.id tag", "component_returns": "Validation result with matched/missing trace labels and completeness score"}},
 ]
 
 TOOLING_COMPONENTS: list[dict[str, Any]] = [
-    {"id": "tooling-golden-dataset-generator", "name": "Golden Dataset Generator", "description": "Generates draft test triples from a squad's document corpus", "interface": {"squad_provides": "Solution ID, corpus documents, query types", "component_returns": "Generated test cases matching golden dataset schema"}, "status": "beta"},
-    {"id": "tooling-golden-dataset-validation", "name": "Golden Dataset Validation UI", "description": "SME review interface for approving, rejecting, or editing test cases", "interface": {"squad_provides": "Golden dataset, SME reviewers", "component_returns": "Validated dataset with review statuses and sign-off"}, "status": "beta"},
+    {"id": "tooling-golden-dataset-generator", "name": "Golden Dataset Generator", "description": "Generates draft test triples from a team's document corpus", "interface": {"team_provides": "Solution ID, corpus documents, query types", "component_returns": "Generated test cases matching golden dataset schema"}, "status": "beta"},
+    {"id": "tooling-golden-dataset-validation", "name": "Golden Dataset Validation UI", "description": "SME review interface for approving, rejecting, or editing test cases", "interface": {"team_provides": "Golden dataset, SME reviewers", "component_returns": "Validated dataset with review statuses and sign-off"}, "status": "beta"},
 ]
 
 

@@ -470,8 +470,8 @@ function ThresholdsTab() {
           Thresholds are encoded in the platform&apos;s configuration and
           enforced automatically. Higher-risk solutions (customer-facing) face
           stricter thresholds. Experimental solutions log metrics without
-          gating, allowing squads to iterate before committing to production
-          standards. The chapter reviews and calibrates thresholds quarterly.
+          gating, allowing teams to iterate before committing to production
+          standards. The team reviews and calibrates thresholds quarterly.
         </p>
       </div>
     </div>

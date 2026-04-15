@@ -64,7 +64,7 @@ class EvidenceReportGenerator:
                 "evidence": {
                     "solution_id": solution_id,
                     "risk_tier": risk_tier,
-                    "owner": "Chapter Platform Team",
+                    "owner": "Governance Portal Team",
                     "registration_date": now.strftime("%Y-%m-%d"),
                 },
             },

@@ -87,7 +87,7 @@ class TracingConfig(BaseModel):
       runner can validate traces without extra infrastructure.
     - **opentelemetry** (production): The solution pushes spans to a
       platform-provided OTel collector (e.g. LangFuse).  More realistic at
-      PetSure Australia scale where the Chapter may not control endpoint response schemas.
+      PetSure Australia scale where the Governance Portal may not control endpoint response schemas.
     """
     contract_version: str = "1.0"
     format: str = "inline"  # "inline" | "opentelemetry"
@@ -103,7 +103,7 @@ class SolutionManifest(BaseModel):
     id: str
     description: str = ""
     version: str = "1.0.0"
-    owner: str = "Chapter Platform Team"
+    owner: str = "Governance Portal Team"
     type: str = "embedded"
     risk_tier: str = "production_internal"
     endpoint: EndpointConfig | None = None

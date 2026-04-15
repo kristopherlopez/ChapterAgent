@@ -374,12 +374,12 @@ export default function GeneratorPage() {
             How the Generator Works
           </h3>
           <p className="text-sm text-zinc-600">
-            The generator ingests a squad&apos;s source documents, identifies key passages, and
+            The generator ingests a team&apos;s source documents, identifies key passages, and
             synthesises question-answer-context triples across configurable query types. The output
             is a draft golden dataset &mdash; not production-ready until SMEs review and approve
             each case through the{" "}
-            <span className="font-medium text-zinc-900">Validation UI</span>. The Chapter provides
-            the generator; squads bring their documents and their SMEs.
+            <span className="font-medium text-zinc-900">Validation UI</span>. The Governance Portal provides
+            the generator; teams bring their documents and their SMEs.
           </p>
         </div>
       </div>
