@@ -7,13 +7,13 @@ integration patterns:
 **Option 1 — Inline traces (demo / lightweight):**
     The endpoint returns traces embedded in its JSON response body.  The
     compliance runner validates the trace at test time.  Simple to implement
-    but requires the squad to change their response schema.
+    but requires the team to change their response schema.
 
 **Option 2 — Sidecar export via OpenTelemetry (production / PetSure Australia-realistic):**
     The endpoint pushes spans to a platform-provided OTel collector (e.g.
-    LangFuse, Jaeger).  The Chapter doesn't own the endpoint response schema
-    — it owns the collector.  More realistic at PetSure Australia scale where the Chapter
-    may not have the influence to mandate response format changes.
+    LangFuse, Jaeger).  The platform doesn't own the endpoint response schema
+    — it owns the collector.  More realistic at PetSure Australia scale where the
+    Head of may not have the influence to mandate response format changes.
 
 This module implements Option 1 for the demo and documents the Option 2
 contract for production readiness.
@@ -129,10 +129,10 @@ def validate_inline_trace(trace_data: dict | list) -> tuple[bool, list[str]]:
 OTEL_CONTRACT_DOCS = """
 ## OpenTelemetry Sidecar Contract (Production Pattern)
 
-For production deployments where the Chapter does not control the endpoint
+For production deployments where the platform does not control the endpoint
 response schema, solutions export traces via OpenTelemetry:
 
-### Squad responsibilities:
+### Team responsibilities:
 1. Instrument their pipeline with OTel SDK (Python: opentelemetry-sdk)
 2. Export spans to the platform's OTel collector endpoint
 3. Tag spans with the solution ID and trace contract version
@@ -150,9 +150,9 @@ response schema, solutions export traces via OpenTelemetry:
 - `step.type` — one of: query, retrieval, generation, guardrail, response, tool_call, reasoning_step
 
 ### Why this pattern at PetSure Australia:
-The Chapter Area Lead typically doesn't have the authority to mandate response
-schema changes across all squads.  OTel is an industry standard that squads
-may already use.  The Chapter provides the collector; squads instrument at
+The Head of typically doesn't have the authority to mandate response
+schema changes across all teams.  OTel is an industry standard that teams
+may already use.  The platform provides the collector; teams instrument at
 their own pace.  Adoption is tracked via the dashboard — visibility, not
 enforcement.
 """

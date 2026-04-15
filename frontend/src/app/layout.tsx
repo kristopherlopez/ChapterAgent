@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chapter AI Platform",
+  title: "Governance Portal",
   description: "Compliance health dashboard for AI solutions in Risk Management",
 };
 

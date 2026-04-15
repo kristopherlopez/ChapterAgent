@@ -1,8 +1,8 @@
-# PetSure Australia Chapter Agent — Background
+# PetSure Australia Governance Portal — Background
 
 ## The Role
 
-**Chapter Area Lead (Executive Manager) -- Gen AI, Data Science, Risk Management AI Capability** at PetSure Australia. Reporting to Alex Mendes. Building a chapter from scratch -- initially 5 staff, growing to 10. Focus is GenAI and AI Agents over traditional ML. The chapter sits in 2nd-line Risk Management: it doesn't build fraud models or credit scorers -- it builds the tooling, platforms, governance frameworks, and reusable components that make those models safe to deploy.
+**Head of Gen AI, Data Science, Risk Management AI Capability** at PetSure Australia. Reporting to Alex Mendes. Building a team from scratch -- initially 5 staff, growing to 10. Focus is GenAI and AI Agents over traditional ML. The team sits in 2nd-line Risk Management: it doesn't build fraud models or credit scorers -- it builds the tooling, platforms, governance frameworks, and reusable components that make those models safe to deploy.
 
 ## The Strategy
 
@@ -18,16 +18,16 @@ Alex explicitly called out that there is heavy manual effort to usher AI solutio
 
 ## The Interview Thesis
 
-During the first interview (2026-03-25), Kris emphasised that AI leaders must not build just for the present -- they need to predict where the technology is going and build for that. The platform demonstrates this: the reusable components work regardless of which framework or solution type a squad chooses.
+During the first interview (2026-03-25), Kris emphasised that AI leaders must not build just for the present -- they need to predict where the technology is going and build for that. The platform demonstrates this: the reusable components work regardless of which framework or solution type a team chooses.
 
 ## What This Demonstrates in One Shot
 
 | Interview Question | How the Platform Answers It |
 |---|---|
-| Leadership vision | The portfolio of solutions, the portal, the governance model — a chapter operating system |
+| Leadership vision | The portfolio of solutions, the portal, the governance model — a team operating system |
 | Technical depth | He built it — RAG, agents, compliance-as-code, evaluation, multi-platform |
 | Reusable component thinking | Three different solutions, same shared platform — the components are genuinely reusable |
 | Framework evaluation capability | Multi-platform agent with comparative scorecard = live framework evaluation |
 | Governance awareness | Every solution passes through the same compliance pipeline — deployment gate, real-time monitoring, evidence export |
 | Unified portal delivery | The portal IS the demo — solution registry, compliance dashboard, evidence export |
-| Initiative and builder mentality | He didn't wait to be asked — he built the chapter's first quarter of output |
+| Initiative and builder mentality | He didn't wait to be asked — he built the team's first quarter of output |

@@ -1,8 +1,8 @@
-# Chapter Agent Platform
+# Governance Portal
 
 An AI governance platform that automates compliance, guardrails, and evaluation for AI solutions. Replaces manual governance processes with compliance-as-code — automated deployment gates, reusable safety components, and real-time monitoring through a unified portal.
 
-**Core idea:** Squads build AI solutions using whatever framework they choose. The platform provides reusable governance components that every solution plugs into. The portal makes it all visible.
+**Core idea:** Teams build AI solutions using whatever framework they choose. The platform provides reusable governance components that every solution plugs into. The portal makes it all visible.
 
 ---
 
@@ -39,7 +39,7 @@ An AI governance platform that automates compliance, guardrails, and evaluation 
 ### Design Principles
 
 - **Portal-first** — every component exists to populate the portal
-- **Reusable components, not frameworks** — squads choose their orchestration; the platform provides guardrails, evaluation, and compliance
+- **Reusable components, not frameworks** — teams choose their orchestration; the platform provides guardrails, evaluation, and compliance
 - **Config-driven** — guardrail rules, thresholds, and risk tiers defined in YAML
 - **Solution self-registration** — add a solution by dropping a folder with a `solution.yaml` manifest
 - **Human-reviewable** — all artifacts (config, results, evidence, traces) are readable without tooling
@@ -184,7 +184,7 @@ cd frontend && npm run lint
 ## Project Structure
 
 ```
-ChapterAgent/
+GovernancePortal/
   backend/
     src/
       api/           # FastAPI routes

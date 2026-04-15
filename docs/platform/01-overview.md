@@ -1,4 +1,4 @@
-# PetSure Australia Chapter Agent — Overview
+# PetSure Australia Governance Portal — Overview
 
 ## What We're Building
 
@@ -10,7 +10,7 @@ The platform is the product. The portal is the entry point. The demo solution is
 
 ## Platform-First, Governance-Led
 
-The platform provides **reusable components** that any squad's AI solution plugs into — guardrails, evaluation, compliance gates, observability. The portal surfaces the results. Alex's first impression should be: "manual governance is gone."
+The platform provides **reusable components** that any team's AI solution plugs into — guardrails, evaluation, compliance gates, observability. The portal surfaces the results. Alex's first impression should be: "manual governance is gone."
 
 ### Portal Screens
 
@@ -32,20 +32,20 @@ One solution, exercised thoroughly, proving the platform works end-to-end:
 |---|---|---|
 | **Q&A Agent** — answers questions about PetSure Australia's most recent Annual Report, retrieves context, cites sources. Implemented in three frameworks (Claude Agent SDK, OpenAI SDK, LangChain/LangGraph) with multiple retrieval strategies. | Q&A | Guardrails catching bad answers, eval harness in action, compliance gates firing, multi-framework governance, scope enforcement, citation coverage — all visible in the portal |
 
-The Q&A agent is the most common solution type squads build. If the platform can govern it well — across multiple frameworks, retrieval strategies, and failure modes — it can govern anything. See `../solutions/01-qa-agent.md` for the full solution spec.
+The Q&A agent is the most common solution type teams build. If the platform can govern it well — across multiple frameworks, retrieval strategies, and failure modes — it can govern anything. See `../solutions/01-qa-agent.md` for the full solution spec.
 
 ---
 
 ## Platform Components (Reusable)
 
-These are the components the Chapter builds once. Every squad's solution plugs into them.
+These are the components the team builds once. Every team's solution plugs into them.
 
 | Component | Real Code | What It Does | Portal Representation |
 |---|---|---|---|
 | Guardrail framework | Yes | Catches bad answers, PII, scope violations, prompt injection | Results shown in solution detail |
 | Evaluation harness | Yes | Golden dataset scoring, pass/fail thresholds, DeepEval metrics | Scores shown in solution detail |
 | Compliance-as-code gates | Yes | 8 automated deployment gates that actually fire | Gate pass/fail shown in dashboard |
-| Solution manifest schema | Yes | Self-registration via `solution.yaml` — squads declare, platform discovers | Solution registry in portal |
+| Solution manifest schema | Yes | Self-registration via `solution.yaml` — teams declare, platform discovers | Solution registry in portal |
 | Observability layer | Pre-recorded | Step-level traces from instrumented solutions | Traces shown in observability view |
 | Unified portal | Yes | Real, functional UI surfacing all of the above | — |
 

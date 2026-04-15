@@ -1,7 +1,7 @@
 [project]
-name = "chapter-agent-backend"
+name = "governance-portal-backend"
 version = "1.0.0"
-description = "AI governance platform backend — Chapter Agent"
+description = "AI governance platform backend — Governance Portal"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",

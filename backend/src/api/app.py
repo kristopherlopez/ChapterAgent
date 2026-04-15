@@ -1,4 +1,4 @@
-"""Chapter Agent — API application."""
+"""Governance Portal — API application."""
 
 from pathlib import Path
 
@@ -15,7 +15,7 @@ from src.api.routes import catalog, chat, compliance, controls, evaluate, eviden
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(
-        title="Chapter Agent Platform",
+        title="Governance Portal",
         description="AI governance platform — guardrails, evaluation, compliance gates",
         version="1.0.0",
     )

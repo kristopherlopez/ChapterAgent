@@ -39,7 +39,7 @@ export default function Sidebar() {
     <aside className="w-64 border-r border-zinc-200 bg-zinc-50 flex flex-col h-full">
       <div className="p-6 border-b border-zinc-200">
         <h1 className="text-lg font-semibold text-zinc-900">
-          Chapter AI Platform
+          Governance Portal
         </h1>
         <p className="text-xs text-zinc-500 mt-1">
           Risk Management AI Capability

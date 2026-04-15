@@ -1,4 +1,4 @@
-# Chapter Agent — Backend
+# Governance Portal — Backend
 
 FastAPI backend serving the AI governance platform. Provides API endpoints for the portal and houses the reusable platform core: guardrails, evaluation harness, compliance gates, and observability.
 

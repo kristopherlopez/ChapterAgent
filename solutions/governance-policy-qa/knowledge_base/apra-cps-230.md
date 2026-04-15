@@ -70,9 +70,9 @@ CPS 230 requires institutions to maintain effective controls for material operat
 | Test control effectiveness regularly | AI-GOV-003 | Evaluation harness runs golden dataset against all metrics at configured cadence (30 or 90 days) |
 | Maintain control assurance | AI-GOV-006 | Guardrail validation gate tests every configured guardrail against the golden dataset |
 | Monitor controls on an ongoing basis | AI-GOV-008 | Audit trail records 100% of AI interactions with full trace data for production solutions |
-| Escalate control failures | AI-GOV-001 to AI-GOV-010 | Any gate failure blocks deployment and generates an alert to the solution owner and Chapter Lead |
+| Escalate control failures | AI-GOV-001 to AI-GOV-010 | Any gate failure blocks deployment and generates an alert to the solution owner and Team Lead |
 
-Control testing is not optional. The platform enforces testing through the compliance gate runner. Solutions that fail a gate cannot deploy — there is no manual override at the pipeline level. Gate exceptions require documented approval from the Chapter Lead and the relevant control owner (see PetSure Australia Group AI Policy, Section 6.3).
+Control testing is not optional. The platform enforces testing through the compliance gate runner. Solutions that fail a gate cannot deploy — there is no manual override at the pipeline level. Gate exceptions require documented approval from the Team Lead and the relevant control owner (see PetSure Australia Group AI Policy, Section 6.3).
 
 ### 4.3 Incident Management (CPS 230 Paragraphs 36-41)
 
@@ -100,7 +100,7 @@ CPS 230 requires notification to APRA of material operational incidents. The fol
 | AI security breach | Prompt injection or adversarial attack succeeds in extracting sensitive information | As soon as practicable, no later than 72 hours |
 | Sustained quality degradation | Customer-facing AI solution operates below thresholds for more than 24 hours | Within 10 business days |
 
-The Chapter Lead, in consultation with Group Risk and Legal, determines whether an AI incident meets the materiality threshold for APRA notification. When in doubt, the bias should be toward notification.
+The Team Lead, in consultation with Group Risk and Legal, determines whether an AI incident meets the materiality threshold for APRA notification. When in doubt, the bias should be toward notification.
 
 ## 5. Third-Party Risk for LLM Providers
 
@@ -123,7 +123,7 @@ CPS 230 explicitly requires institutions to manage concentration risk in third-p
 **Mitigations required by PetSure Australia's interpretation:**
 
 1. **Multi-provider capability**: All production AI solutions must be architecturally capable of switching between at least two LLM providers. The solution manifest must document primary and fallback providers.
-2. **Provider monitoring**: The Chapter maintains a quarterly assessment of each LLM provider's financial health, service reliability, compliance posture, and strategic direction.
+2. **Provider monitoring**: The platform team maintains a quarterly assessment of each LLM provider's financial health, service reliability, compliance posture, and strategic direction.
 3. **Contractual protections**: Agreements with LLM providers must include service level commitments, data handling requirements, change notification obligations, and exit provisions.
 4. **No single-provider dependency for critical operations**: AI solutions that constitute critical operations under CPS 230 must not depend on a single LLM provider without a tested fallback.
 

@@ -10,13 +10,13 @@ The portal is the primary artefact. Every component, solution, and pipeline exis
 
 The platform is built on a **shared core** of framework-agnostic components (guardrails, evaluation, compliance gates, observability). Solutions choose their own orchestration framework. The shared components work identically regardless of whether the solution is a RAG pipeline, an agentic workflow, or a multi-framework comparison.
 
-This mirrors how the chapter would operate: build the components once, let squads choose their orchestration.
+This mirrors how the team would operate: build the components once, let teams choose their orchestration.
 
 ### 3. Config-Driven Where It Matters
 
 Things that change — guardrail rules, evaluation thresholds, compliance gates, risk tiers — are defined in human-readable YAML/JSON config files. Things that don't change — the plumbing that executes those rules — are clean, well-structured code.
 
-The test: a squad developer or a governance reviewer should be able to open a PR that changes a guardrail rule and understand the change from the diff alone, without reading the underlying framework code.
+The test: a team developer or a governance reviewer should be able to open a PR that changes a guardrail rule and understand the change from the diff alone, without reading the underlying framework code.
 
 ### 4. Keras-Style Developer Experience
 
@@ -31,11 +31,11 @@ Components follow a consistent, predictable API pattern inspired by Keras:
 
 Every artefact the platform produces — config, results, evidence, traces — should be readable by a human without tooling. Changes to rules, thresholds, and gates show up clearly in PR diffs. Evaluation results and compliance reports are structured but not opaque.
 
-This principle exists because the chapter sits in 2nd-line Risk Management. The people reviewing this work are not always engineers.
+This principle exists because the team sits in 2nd-line Risk Management. The people reviewing this work are not always engineers.
 
 ### 6. Tested at Two Levels
 
-**Level 1 — Platform tests itself:** Unit tests, integration tests, and linting run in a CI/CD pipeline. This demonstrates engineering discipline and how the chapter operates.
+**Level 1 — Platform tests itself:** Unit tests, integration tests, and linting run in a CI/CD pipeline. This demonstrates engineering discipline and how the team operates.
 
 **Level 2 — Platform tests solutions:** The evaluation harness and compliance gates test the AI solutions that pass through the platform. This is the product — governance on autopilot.
 
